@@ -1,0 +1,198 @@
+import org.jsonschema2pojo.gradle.GenerateJsonSchemaJavaTask
+
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+
+}
+
+plugins {
+    id 'java'
+    id 'application'
+    id 'eclipse'
+    id 'maven-publish'
+}
+
+// Calling 'apply' here because jsonschema2pojo doesn't exist in Gradle Central Plugin Repository
+apply plugin: 'jsonschema2pojo'
+tasks.getByName("generateJsonSchema2Pojo").enabled(false) // Disable default jsonSchema2Pojo task
+
+startScripts {
+    classpath += files('src/main/resources')
+}
+
+archivesBaseName = 'alpaca-java'
+group = 'net.jacobpeterson'
+version = '5.2'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    implementation 'com.google.guava:guava:24.1-jre'
+    implementation "com.google.code.gson:gson:2.8.5"
+    implementation "commons-lang:commons-lang:20030203.000129"
+    implementation 'org.apache.logging.log4j:log4j-api:2.13.3'
+    annotationProcessor 'org.apache.logging.log4j:log4j-core:2.11.1'
+    implementation "org.eclipse.jetty.websocket:javax-websocket-client-impl:9.4.28.v20200408"
+    implementation "com.mashape.unirest:unirest-java:1.4.8"
+//    implementation 'org.apache.httpcomponents:httpcore:4.4.13'
+//    implementation 'org.apache.httpcomponents:httpclient:4.5.12'
+
+    testImplementation 'junit:junit:4.13'
+}
+
+//
+// START Build options
+//
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+[compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
+
+// Used to suppress java doc warnings
+javadoc.options.addStringOption('Xdoclint:none', '-quiet')
+javadoc.options.addStringOption("charset", "UTF-8")
+
+//mainClassName = 'net.jacobpeterson.polygon.PolygonExample'
+mainClassName = 'net.jacobpeterson.alpaca.AlpacaExample'
+//
+// END Build options
+//
+
+//
+// START publishing
+//
+
+modifyPom {
+    project {
+        name = 'alpaca-java'
+        description = 'Java API for Alpaca and Polygon'
+        url = 'https://github.com/Petersoj/alpaca-java'
+        inceptionYear = '2018'
+
+        licenses {
+            license {
+                name = 'MIT License'
+                url = 'https://opensource.org/licenses/MIT'
+            }
+        }
+
+        developers {
+            developer {
+                id = 'Petersoj'
+                name = 'Jacob Peterson'
+            }
+
+            developer {
+                id = 'mainstringargs'
+                name = 'main(String[] args)'
+            }
+        }
+
+        scm {
+            url = "https://github.com/Petersoj/alpaca-java.git"
+            connection = "scm:git:https://github.com/Petersoj/alpaca-java.git"
+            developerConnection = "scm:git:git@github.com/Petersoj/alpaca-java.git"
+        }
+    }
+}
+
+extraArchive {
+    sources = true
+    tests = true
+    javadoc = true
+}
+
+nexus {
+    sign = true
+    repositoryUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+    snapshotRepositoryUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
+}
+
+nexusStaging {
+    packageGroup = "net.jacobpeterson"
+}
+
+// Used to prevent accidental publication of Alpaca keys
+processResources {
+    exclude('alpaca.properties', 'polygon.properties')
+}
+//
+// END publishing
+//
+
+//
+// START POJO generation
+//
+// The generated POJOs will be in a package structure analogous to the path in the 'schema_json/' directory
+// See: https://github.com/joelittlejohn/jsonschema2pojo/wiki/Reference
+task generatePOJOs() {
+    final def targetDirectory = "${project.buildDir}" + File.separator + "generated-sources" + File.separator + "schemajson"
+    final def jsonSourceDirectory = "${project.projectDir}" + File.separator + "schema_json" + File.separator
+    final def jsonPackageNameStart = "net.jacobpeterson.domain."
+
+    // Loop through all files in schema JSON file tree
+    file(jsonSourceDirectory).eachFileRecurse { jsonFile ->
+        if (jsonFile.getName().endsWith(".json")) {
+            def startPackageIndex = jsonFile.getAbsolutePath().indexOf(jsonSourceDirectory) + jsonSourceDirectory.length()
+            def targetPackage = jsonPackageNameStart + jsonFile.getParentFile().getAbsolutePath()
+                    .substring(startPackageIndex)
+                    .replace(File.separator, '.').replace('-', '').replace('_', '')
+                    .toLowerCase()
+
+            def jsonToPOJOTask = tasks.create('json2POJOTask-' + targetPackage + "." + jsonFile.getName(),
+                    GenerateJsonSchemaJavaTask)
+
+            jsonToPOJOTask.doFirst {
+                jsonToPOJOTask.configuration.source = files(jsonFile.getAbsolutePath())
+                jsonToPOJOTask.configuration.targetDirectory = file(targetDirectory)
+                jsonToPOJOTask.configuration.targetPackage = targetPackage
+            }
+
+            dependsOn jsonToPOJOTask
+        }
+    }
+}
+
+compileJava {
+    dependsOn generatePOJOs
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/java'
+            srcDir 'build/generated-sources/schemajson'
+        }
+    }
+}
+
+jsonSchema2Pojo {
+    includeAdditionalProperties = true
+
+    targetDirectory = file('build/generated-sources/schemajson')
+
+    propertyWordDelimiters = ['-', '_'] as char[]
+
+    annotationStyle = 'gson'
+
+    sourceType = 'jsonschema'
+
+    customDateTimePattern = "yyyy-MM-ddTHH:mm:ssZ"
+
+    includeConstructors = true
+
+    serializable = true
+
+    includeGetters = true
+
+    includeSetters = true
+}
+//
+// END POJO generation
+//

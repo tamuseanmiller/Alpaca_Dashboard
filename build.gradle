@@ -1,0 +1,28 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    repositories {
+        jcenter()
+        google()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:4.1.0'
+        classpath 'digital.wup:android-maven-publish:3.6.2'
+        classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
+        classpath 'org.jsonschema2pojo:jsonschema2pojo-gradle-plugin:1.0.2'
+        project(":alpaca-java")
+    }
+}
+
+plugins {
+    id 'io.codearte.nexus-staging' version '0.11.0'
+    id 'com.bmuschko.nexus' version '2.3.1'
+}
+
+allprojects {
+    repositories {
+        jcenter()
+        google()
+        maven { url 'https://jitpack.io' }
+    }
+}

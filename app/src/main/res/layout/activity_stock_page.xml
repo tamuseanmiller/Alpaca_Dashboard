@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorPrimary"
+    android:theme="@style/Theme.Alpaca_Dashboard"
+    android:orientation="horizontal"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    tools:context=".StockPage">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="50dp">
+
+        <ImageView
+            android:id="@+id/arrowDownStocks"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:translationY="-2dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="0dp"
+            android:contentDescription="@string/indication_arrow"
+            android:paddingTop="20dp"
+            android:paddingEnd="20dp"
+            android:src="@drawable/arrow_bottom_right"
+            app:tint="@color/color_negative" />
+
+        <ImageView
+            android:id="@+id/arrowUpStocks"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:translationY="-2dp"
+            android:layout_alignParentEnd="true"
+            android:contentDescription="@string/indication_arrow"
+            android:paddingTop="20dp"
+            android:paddingEnd="20dp"
+            android:src="@drawable/arrow_top_right"
+            android:visibility="invisible"
+            app:tint="@color/color_positive" />
+
+        <TextView
+            android:id="@+id/percentChangeStocks"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentEnd="true"
+            android:layout_centerInParent="true"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@id/arrowUpStocks"
+            android:paddingTop="20dp"
+            android:paddingEnd="50dp"
+            android:text="YEET"
+            android:textAlignment="textEnd"
+            android:textColor="@color/colorLight" />
+
+    </RelativeLayout>
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/stockTraded"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="sans-serif-medium"
+        android:textColor="@color/colorLight"
+        android:textSize="35sp" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/sparkCard"
+        android:layout_width="match_parent"
+        android:layout_height="500dp"
+        android:layout_below="@id/tickerView"
+        android:backgroundTint="@color/colorPrimaryLight"
+        android:clipChildren="false"
+        android:elevation="0dp"
+        app:cardPreventCornerOverlap="false">
+
+        <com.robinhood.spark.SparkView
+            android:id="@+id/sparkview"
+            android:layout_width="wrap_content"
+            android:layout_height="500dp"
+            android:paddingTop="20dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="20dp"
+            app:spark_lineColor="@color/colorPrimaryDark"
+            app:spark_scrubEnabled="true"
+            tools:ignore="RtlSymmetry" />
+
+    </androidx.cardview.widget.CardView>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@id/scrollView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:elevation="10dp">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:translationY="620dp">
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/recycleCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:backgroundTint="@color/colorPrimaryLight"
+                app:cardCornerRadius="3dp"
+                app:cardPreventCornerOverlap="false">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:contentDescription="TODO"
+                    android:src="@drawable/drag"
+                    android:tintMode="add"
+                    app:tint="@color/colorPrimaryLight" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerStockPage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="10dp"
+                    android:paddingTop="20dp"
+                    android:paddingRight="10dp"
+                    android:paddingBottom="10dp">
+
+                </androidx.recyclerview.widget.RecyclerView>
+
+            </androidx.cardview.widget.CardView>
+
+        </RelativeLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/scrollView"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_margin"
+        android:backgroundTint="@color/colorPrimaryDark"
+        app:srcCompat="@android:drawable/ic_menu_preferences" />
+
+    <com.robinhood.ticker.TickerView
+        android:id="@+id/tickerView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/stockTraded"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:textColor="@color/colorPrimaryDark"
+        android:textSize="30sp" />
+
+    <include layout="@layout/content_stock_page" />
+
+</RelativeLayout>

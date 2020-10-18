@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="10dp">
+
+    <!--        style="@style/Widget.MaterialComponents.Button"-->
+
+<!--    <TextView-->
+<!--        android:id="@+id/stockName"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:textSize="20sp"-->
+<!--        android:textAlignment="textStart"-->
+<!--        android:textColor="@color/colorPrimaryDark"/>-->
+
+<!--    <Button-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:id="@+id/stockName"-->
+<!--        style="@style/Widget.MaterialComponents.Button"-->
+<!--        android:textSize="10sp"-->
+<!--        android:textColor="@color/colorPrimaryLight"-->
+<!--        android:background="@color/colorPrimaryDark"-->
+<!--        android:backgroundTintMode="add" />-->
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/stockName"
+        android:textColor="@color/colorLight"
+        android:layout_column="0"
+        android:textSize="10sp"
+        style="@style/Widget.MaterialComponents.Button"
+        android:backgroundTint="@color/colorAccentTransparent"/>
+
+    <TextView
+        android:id="@+id/currentPrice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_column="2"
+        android:text="@string/app_name"
+        android:textSize="12sp"
+        android:gravity="right"
+
+        android:textColor="@color/colorPrimaryDark"/>
+
+</GridLayout>

@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:theme="@style/Theme.Alpaca_Dashboard"
+    android:background="@color/colorPrimary"
+    android:orientation="vertical"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    tools:context=".MainActivity">
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollID"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:elevation="10dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="YEET"
+                    android:id="@+id/percentChange"
+                    android:textColor="@color/colorLight"
+                    android:layout_centerHorizontal="true"
+                    android:paddingTop="20dp"
+                    android:layout_centerVertical="true"
+                    android:layout_toStartOf="@id/arrowUp"
+                    android:paddingEnd="50dp"
+                    android:textAlignment="textEnd"
+                    android:layout_alignParentEnd="true"/>
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/arrowDown"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    android:paddingTop="20dp"
+                    android:paddingEnd="20dp"
+                    android:layout_alignParentEnd="true"
+                    android:src="@drawable/arrow_bottom_right"
+                    app:tint="@color/color_negative"
+                    android:contentDescription="@string/indication_arrow" />
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/arrowUp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    android:visibility="invisible"
+                    android:paddingTop="20dp"
+                    android:paddingEnd="20dp"
+                    android:layout_alignParentEnd="true"
+                    android:src="@drawable/arrow_top_right"
+                    app:tint="@color/color_positive"
+                    android:contentDescription="@string/indication_arrow" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/stockTraded"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingBottom="10dp"
+                android:fontFamily="sans-serif-medium"
+                android:textColor="@color/colorLight"
+                android:textSize="35sp" />
+
+            </RelativeLayout>
+
+            <com.robinhood.ticker.TickerView
+                android:id="@+id/tickerView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingTop="@dimen/activity_vertical_margin"
+                android:textColor="@color/colorLight"
+                android:textSize="30sp" />
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/sparkCard"
+                android:layout_width="match_parent"
+                android:layout_height="500dp"
+                android:backgroundTint="@color/colorPrimaryLight"
+                android:clipChildren="false"
+                android:elevation="0dp"
+                app:cardPreventCornerOverlap="false">
+
+                <com.robinhood.spark.SparkView
+                    android:id="@+id/sparkview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="500dp"
+                    android:paddingTop="20dp"
+                    android:paddingEnd="20dp"
+                    android:paddingBottom="20dp"
+                    app:spark_lineColor="@color/colorPrimaryDark"
+                    app:spark_scrubEnabled="true"
+                    tools:ignore="RtlSymmetry" />
+
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/recycleCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:backgroundTint="@color/colorPrimaryLight"
+                app:cardCornerRadius="3dp"
+                app:cardPreventCornerOverlap="false">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerStocks"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="10dp"
+                    android:paddingTop="10dp"
+                    android:paddingRight="10dp"
+                    android:paddingBottom="10dp">
+
+                </androidx.recyclerview.widget.RecyclerView>
+
+            </androidx.cardview.widget.CardView>
+
+            <Button
+                android:id="@+id/random_button"
+                style="@style/Widget.MaterialComponents.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/colorPrimaryDark"
+                android:text="@string/randomize"
+                android:textColor="@color/colorPrimaryLight"
+                android:textSize="10sp" />
+
+            <Button
+                android:id="@+id/reset_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/colorPrimaryDark"
+                android:fontFamily="sans-serif"
+                android:text="@string/Reset"
+                android:textColor="@color/colorPrimaryLight"
+                android:textSize="10sp" />
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</LinearLayout>
