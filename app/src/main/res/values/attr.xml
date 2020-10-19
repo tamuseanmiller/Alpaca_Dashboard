@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="colorAccentTransparent" format="color"/>
+    <attr name="color_positive" format="color"/>
+    <attr name="color_negative" format="color"/>
+    <attr name="color_positive_light" format="color"/>
+    <attr name="color_negative_light" format="color"/>
+    <attr name="colorLight" format="color"/>
+    <attr name="colorPrimaryLight" format="color"/>
+</resources>

@@ -1,17 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#30303C</color>
-    <color name="colorPrimaryLight">#393945</color>
+
+<!--    Dark Variants-->
+<!--    <color name="colorPrimary">#30303C</color>-->
+    <color name="colorPrimary">#040404</color>
+<!--    <color name="colorPrimaryLight">#393945</color>-->
+    <color name="colorPrimaryLight">#070707</color>
     <color name="colorPrimaryDark">#FF4495</color>
     <color name="colorAccentTransparent">#4D505F</color>
-    <color name="color_positive">#52E3C2</color>
-    <color name="color_negative">#FF4495</color>
-    <color name="colorLight">#F7F8F8</color>
+<!--    <color name="color_positive">#52E3C2</color>-->
+    <color name="color_positive">#37a689</color>
+    <color name="color_negative">#BA1F54</color>
+<!--    <color name="color_positive_light">#EDFCF8</color>-->
+    <color name="color_positive_light">#125647</color>
+    <color name="color_negative_light">#612b32</color>
     <color name="purple_200">#FFBB86FC</color>
+    <color name="colorLight">#F7F8F8</color>
 <!--    <color name="purple_500">#FF6200EE</color>-->
     <color name="purple_700">#FF3700B3</color>
     <color name="teal_200">#FF03DAC5</color>
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+<!--    Light Variants-->
+    <color name="colorPrimary_light">#FFFFFF</color>
+    <color name="colorPrimaryLight_light">#FBFBFB</color>
+    <color name="colorPrimaryDark_light">#FF4495</color>
+    <color name="colorAccentTransparent_light">#D3D3D3</color>
+    <color name="colorLight_light">#30303C</color>
+    <color name="color_positive_light2">#70a67c</color>
+    <color name="color_negative_light2">#d05651</color>
+    <color name="color_positive_light_light">#e6f3ea</color>
+    <color name="color_negative_light_light">#fbe7e5</color>
+
 </resources>

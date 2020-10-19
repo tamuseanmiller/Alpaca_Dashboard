@@ -1,24 +1,40 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.Alpaca_Dashboard" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/colorPrimaryLight</item>
-        <item name="colorPrimaryVariant">@color/colorPrimary</item>
-        <item name="colorOnPrimary">@color/white</item>
-        <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/teal_200</item>
-        <item name="colorSecondaryVariant">@color/teal_700</item>
-        <item name="colorOnSecondary">@color/black</item>
+    <style name="Theme.Alpaca_Dashboard.Dark" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryLight">@color/colorPrimaryLight</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccentTransparent">@color/colorAccentTransparent</item>
+
+        <item name="color_positive">@color/color_positive</item>
+        <item name="color_negative">@color/color_negative</item>
+        <item name="color_positive_light">@color/color_positive_light</item>
+        <item name="color_negative_light">@color/color_negative_light</item>
+        <item name="colorLight">@color/colorLight</item>
+
         <!-- Status bar color. -->
-        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+<!--        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>-->
         <!-- Customize your theme here. -->
     </style>
 
-    <style name="Theme.Default" parent="@android:style/Theme" />
-    <style name="Theme.NoTitle" parent="@android:style/Theme.NoTitleBar">
-        <item name="android:windowNoTitle">true</item>
+    <style name="Theme.Alpaca_Dashboard.Light" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+
+        <item name="colorPrimary">@color/colorPrimary_light</item>
+        <item name="colorPrimaryLight">@color/colorPrimaryLight_light</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark_light</item>
+        <item name="colorAccentTransparent">@color/colorAccentTransparent_light</item>
+
+        <item name="color_positive">@color/color_positive_light2</item>
+        <item name="color_negative">@color/color_negative_light2</item>
+        <item name="color_positive_light">@color/color_positive_light_light</item>
+        <item name="color_negative_light">@color/color_negative_light_light</item>
+        <item name="colorLight">@color/colorLight_light</item>
+
+        <!-- Status bar color. -->
+<!--        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>-->
+        <!-- Customize your theme here. -->
     </style>
-    <style name="Theme.FullScreen" parent="@android:style/Theme.NoTitleBar.Fullscreen" />
 
     <style name="Theme.Alpaca_Dashboard.NoActionBar" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="windowActionBar">false</item>
