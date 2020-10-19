@@ -33,7 +33,7 @@ public class RecyclerViewAdapterStocks extends RecyclerView.Adapter<RecyclerView
     // data is passed into the constructor
     RecyclerViewAdapterStocks(Context context, List<String> data) {
         this.mInflater = LayoutInflater.from(context);
-        this.mData = data;
+        mData = data;
     }
 
 

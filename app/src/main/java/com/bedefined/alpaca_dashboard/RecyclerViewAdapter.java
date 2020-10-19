@@ -4,16 +4,22 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.PointerIcon;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.jacobpeterson.alpaca.AlpacaAPI;
@@ -50,10 +56,11 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     // data is passed into the constructor
     RecyclerViewAdapter(Context context, List<String> data) {
         this.mInflater = LayoutInflater.from(context);
-        this.mData = data;
+        mData = data;
     }
 
 
+    @NonNull
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.recyclerview_row, parent, false);
@@ -65,10 +72,9 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     public void onBindViewHolder(@NonNull RecyclerViewAdapter.ViewHolder holder, int position) {
 
         String stockName = mData.get(position);
-        holder.myTextView.setText(stockName);
+        holder.stock_name.setText(stockName);
 
         PolygonAPI polygonAPI = new PolygonAPI();
-        AlpacaAPI alpacaAPI = new AlpacaAPI();
 
         // Get Last value
         float close = 0;
@@ -93,11 +99,31 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             // Sets the precision and adds to view, then changes color
             if (temp >= 0) {
                 holder.percentChange.setText(String.format("+%.2f%%", temp));
-                holder.percentChange.setTextColor(Color.parseColor("#52E3C2"));
+                holder.percentChange.setTextColor(holder.percentChange.getContext().getResources().getColor(R.color.color_positive));
+                holder.percentChange.setBackgroundTintList(ColorStateList.valueOf(holder.percentChange.getContext().getResources().getColor(R.color.color_positive_light)));
+                holder.percentChange.getContext().getResources().getDrawable(R.drawable.arrow_top_right).setTint(holder.percentChange.getContext().getResources().getColor(R.color.color_positive));
+
+//                TypedValue typedValue = new TypedValue();
+//                Resources.Theme theme = context.getTheme();
+//                theme.resolveAttribute(R.attr.color_positive, typedValue, true);
+//                @ColorInt int color = typedValue.data;
+//                holder.percentChange.setTextColor(R.attr.color_positive);
+//                holder.percentChange.setBackgroundTintList(ColorStateList.valueOf(R.attr.color_positive_light));
+//                holder.percentChange.getContext().getResources().getDrawable(R.drawable.arrow_top_right).setTint(R.attr.color_positive);
+                Drawable upArrow = holder.percentChange.getContext().getResources().getDrawable(R.drawable.arrow_top_right);
+                holder.percentChange.setCompoundDrawablesWithIntrinsicBounds( upArrow, null, null, null);
 
             } else {
                 holder.percentChange.setText(String.format("%.2f%%", temp));
-                holder.percentChange.setTextColor(Color.parseColor("#FF4495"));
+                holder.percentChange.setTextColor(holder.percentChange.getContext().getResources().getColor(R.color.color_negative));
+                holder.percentChange.setBackgroundTintList(ColorStateList.valueOf(holder.percentChange.getContext().getResources().getColor(R.color.color_negative_light)));
+                holder.percentChange.getContext().getResources().getDrawable(R.drawable.arrow_bottom_right).setTint(holder.percentChange.getContext().getResources().getColor(R.color.color_negative));
+
+//                holder.percentChange.setTextColor(R.attr.color_negative);
+//                holder.percentChange.setBackgroundTintList(ColorStateList.valueOf(R.attr.color_negative_light));
+//                holder.percentChange.getContext().getResources().getDrawable(R.drawable.arrow_bottom_right).setTint(R.attr.color_negative);
+                Drawable downArrow = holder.percentChange.getContext().getResources().getDrawable(R.drawable.arrow_bottom_right);
+                holder.percentChange.setCompoundDrawablesWithIntrinsicBounds( downArrow, null, null, null);
             }
         }
 
@@ -112,7 +138,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
             // Start stream of values
             float finalClose = close;
-            Thread thread = new Thread(() -> {
+            Thread thread2 = new Thread(() -> {
 
                 polygonAPI.addPolygonStreamListener(new PolygonStreamListenerAdapter(String.valueOf(mData.get(position)), PolygonStreamMessageType.QUOTE) {
 
@@ -127,6 +153,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                         askingPrice = ((QuoteMessage) streamMessage).getAp().floatValue();
 
                         // Update the percent change in the recycler view
+                        // Update the percent change in the recycler view
                         percentChange = (finalClose - askingPrice) / finalClose * 100;
                         if (percentChange >= 0) {
                             holder.percentChange.setText(String.format("+%.2f%%", percentChange));
@@ -138,6 +165,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                     }
                 });
             });
+            thread2.start();
         }
     }
 
@@ -150,20 +178,20 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     // stores and recycles views as they are scrolled off screen
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        TextView myTextView;
+        TextView stock_name;
         TextView percentChange;
 
         ViewHolder(View itemView) {
             super(itemView);
-            myTextView = itemView.findViewById(R.id.stockName);
+            stock_name = itemView.findViewById(R.id.stockName);
             percentChange = itemView.findViewById(R.id.currentPrice);
             itemView.setOnClickListener(this);
-            myTextView.setOnClickListener(this);
+            stock_name.setOnClickListener(this);
         }
 
         @Override
         public void onClick(View view) {
-            if (view.getId() == myTextView.getId()) {
+            if (view.getId() == stock_name.getId()) {
 
             }
             if (mClickListener != null) {

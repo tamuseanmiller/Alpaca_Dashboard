@@ -8,11 +8,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.Window;
 import android.widget.ImageView;
@@ -25,12 +27,14 @@ import com.robinhood.ticker.TickerUtils;
 import com.robinhood.ticker.TickerView;
 
 import net.jacobpeterson.alpaca.AlpacaAPI;
+import net.jacobpeterson.alpaca.enums.BarsTimeFrame;
 import net.jacobpeterson.alpaca.enums.PortfolioPeriodUnit;
 import net.jacobpeterson.alpaca.enums.PortfolioTimeFrame;
 import net.jacobpeterson.alpaca.properties.AlpacaProperties;
 import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
 import net.jacobpeterson.alpaca.websocket.listener.AlpacaStreamListenerAdapter;
 import net.jacobpeterson.alpaca.websocket.message.AlpacaStreamMessageType;
+import net.jacobpeterson.domain.alpaca.calendar.Calendar;
 import net.jacobpeterson.domain.alpaca.position.Position;
 import net.jacobpeterson.domain.alpaca.websocket.AlpacaStreamMessage;
 import net.jacobpeterson.domain.alpaca.websocket.account.AccountUpdateMessage;
@@ -50,6 +54,9 @@ import org.xmlpull.v1.XmlPullParser;
 import java.text.DecimalFormat;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicReference;
@@ -131,16 +138,23 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                                 if (askingPrice >= adapter.baseline && sparkView.getLineColor() != getColor(R.color.color_positive)) {
                                     arrowDown.setVisibility(View.INVISIBLE);
                                     arrowUp.setVisibility(View.VISIBLE);
+
+                                    TypedValue typedValue = new TypedValue();
+                                    getTheme().resolveAttribute(R.attr.color_positive, typedValue, true);
+                                    int color = ContextCompat.getColor(getApplicationContext(), typedValue.resourceId);
                                     percentChange.setText(String.format("+$%.2f (%.2f%%)", profitLoss, percentageChange));
-                                    percentChange.setTextColor(getColor(R.color.color_positive));
-                                    sparkView.setLineColor(getColor(R.color.color_positive));
+                                    percentChange.setTextColor(color);
+                                    sparkView.setLineColor(color);
 
                                 } else if (askingPrice < adapter.baseline && sparkView.getLineColor() != getColor(R.color.color_negative)) {
                                     arrowDown.setVisibility(View.VISIBLE);
                                     arrowUp.setVisibility(View.INVISIBLE);
+                                    TypedValue typedValue = new TypedValue();
+                                    getTheme().resolveAttribute(R.attr.color_negative, typedValue, true);
+                                    int color = ContextCompat.getColor(getApplicationContext(), typedValue.resourceId);
                                     percentChange.setText(String.format("-$%.2f (%.2f%%)", Math.abs(profitLoss), percentageChange));
-                                    percentChange.setTextColor(getColor(R.color.color_negative));
-                                    sparkView.setLineColor(getColor(R.color.color_negative));
+                                    percentChange.setTextColor(color);
+                                    sparkView.setLineColor(color);
                                 }
                             }
 
@@ -193,10 +207,13 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     protected void onCreate(Bundle savedInstanceState) {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
+        setTheme(R.style.Theme_Alpaca_Dashboard_Dark);
+
         super.onCreate(savedInstanceState);
         this.supportRequestWindowFeature(Window.FEATURE_NO_TITLE); //Remove title bar
         setContentView(R.layout.activity_main);
         props.setProperties();
+//        recreate();
 
         // Initializations
         ticker = new AtomicReference<>("AMD");
@@ -229,9 +246,13 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         }
         sparkView.setAdapter(adapter);
 
+        TypedValue typedValue = new TypedValue();
+        getTheme().resolveAttribute(R.attr.colorPrimaryLight, typedValue, true);
+        int color = ContextCompat.getColor(this, typedValue.resourceId);
+
         // Scrub for chart
         sparkView.setSparkAnimator(null);
-        sparkView.setBaseLineColor(getColor(R.color.colorAccentTransparent));
+        sparkView.setBaseLineColor(color);
 
         sparkView.setScrubListener(value -> {
 
@@ -325,10 +346,20 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
             t1.start();
         } else {
 
+            // Fetch last open day's information
+            ArrayList<Calendar> calendar = null;
+            try {
+                calendar = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(1), LocalDate.now());
+            } catch (AlpacaAPIRequestException e) {
+                e.printStackTrace();
+            }
+            assert calendar != null;
+            LocalDate lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 1).getDate());
+
             // Gather old portfolio data
             ArrayList<Double> history = new ArrayList<>();
             try {
-                history = alpacaAPI.getPortfolioHistory(1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.FIVE_MINUTE, LocalDate.now().minusDays(1), true).getEquity();
+                history = alpacaAPI.getPortfolioHistory(1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.FIVE_MINUTE, lastOpenDate, true).getEquity();
 
             } catch (AlpacaAPIRequestException e) {
                 e.printStackTrace();
@@ -381,15 +412,21 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                 arrowUp.setVisibility(View.VISIBLE);
                 arrowDown.setVisibility(View.INVISIBLE);
                 percentChange.setText(String.format("+$%.2f (%.2f%%)", profitLoss, percentageChange));
-                percentChange.setTextColor(getColor(R.color.color_positive));
-                sparkView.setLineColor(getColor(R.color.color_positive));
+
+                getTheme().resolveAttribute(R.attr.color_positive, typedValue, true);
+                color = ContextCompat.getColor(this, typedValue.resourceId);
+                percentChange.setTextColor(color);
+                sparkView.setLineColor(color);
 
             } else {
                 arrowUp.setVisibility(View.INVISIBLE);
                 arrowDown.setVisibility(View.VISIBLE);
                 percentChange.setText(String.format("-$%.2f (%.2f%%)", Math.abs(profitLoss), percentageChange));
-                percentChange.setTextColor(getColor(R.color.color_negative));
-                sparkView.setLineColor(getColor(R.color.color_positive));
+
+                getTheme().resolveAttribute(R.attr.color_negative, typedValue, true);
+                color = ContextCompat.getColor(this, typedValue.resourceId);
+                percentChange.setTextColor(color);
+                sparkView.setLineColor(color);
             }
         }
 
@@ -407,9 +444,11 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         }
 
         // Fetch the Recycler View
+        getTheme().resolveAttribute(R.attr.colorAccentTransparent, typedValue, true);
+        color = ContextCompat.getColor(this, typedValue.resourceId);
         recyclerView = findViewById(R.id.recyclerStocks);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.addItemDecoration(LinearDividerDecoration.create(getColor(R.color.colorAccentTransparent), 10, 10, 10, 10, 10, LinearLayoutManager.VERTICAL, false, null));
+        recyclerView.addItemDecoration(LinearDividerDecoration.create(color, 10, 10, 10, 10, 10, LinearLayoutManager.VERTICAL, false, null));
 
         // Set Recycle Adapter
         recycleAdapter = new RecyclerViewAdapter(this, stocks);
