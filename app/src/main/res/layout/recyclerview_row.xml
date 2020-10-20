@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="10dp"
+    android:padding="5dp"
     app:rippleColor="?attr/color_positive"
     android:focusable="true">
 
@@ -50,10 +50,6 @@
         app:strokeWidth="1dp"
         android:focusable="true">
 
-<!--        <HorizontalScrollView-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content">-->
-
             <GridLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
@@ -65,15 +61,15 @@
                     android:layout_height="wrap_content"
                     android:layout_row="3"
                     android:layout_column="0"
-                    android:backgroundTint="?attr/color_positive_light"
+                    android:backgroundTint="?attr/colorAccentTransparent"
                     android:stateListAnimator="@null"
-                    android:text="@string/randomize"
-                    android:textColor="?attr/color_positive"
+                    android:text="@string/loading"
+                    android:textColor="?attr/colorPrimaryLight"
                     android:textSize="10sp"
                     app:cornerRadius="15dp"
                     app:rippleColor="?attr/color_positive"
                     app:iconSize="3dp"
-                    app:iconTint="?attr/color_positive" />
+                    app:iconTint="?attr/colorPrimaryLight" />
 
                 <TextView
                     android:id="@+id/sharesOwned"
@@ -82,7 +78,7 @@
                     android:layout_row="1"
                     android:layout_column="0"
                     android:paddingBottom="20dp"
-                    android:text="@string/randomize"
+                    android:text="@string/loading"
                     android:textColor="?attr/colorPrimarySlightLight"
                     android:textSize="10sp" />
 
@@ -94,7 +90,7 @@
                     android:layout_column="0"
                     android:paddingBottom="5dp"
                     android:textColor="?attr/colorPrimaryLight"
-                    android:text="@string/randomize"
+                    android:text="@string/loading"
                     android:textSize="12sp" />
 
                 <TextView
@@ -104,7 +100,7 @@
                     android:layout_row="0"
                     android:layout_column="0"
                     android:gravity="right"
-                    android:text="@string/app_name"
+                    android:text="@string/loading"
                     android:textColor="?attr/colorLight"
                     android:textSize="12sp" />
 

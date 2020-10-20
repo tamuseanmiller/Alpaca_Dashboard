@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.PointerIcon;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,6 +25,8 @@ import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import com.google.android.material.button.MaterialButton;
 
 import net.jacobpeterson.alpaca.AlpacaAPI;
 import net.jacobpeterson.alpaca.enums.BarsTimeFrame;
@@ -97,52 +100,60 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                 e.printStackTrace();
             }
 
-            // Get Amount of shares owned
-            Position shrOwned = null;
-            try {
-                shrOwned = alpacaAPI.getOpenPositionBySymbol(mData.get(position));
-            } catch (AlpacaAPIRequestException e) {
-                e.printStackTrace();
-            }
+            while(true) {
 
-            Position finalShrOwned = shrOwned;
-            mainActivity.runOnUiThread(() -> {
-
-                if (finalShrOwned.getQty().equals("1")) {
-                    holder.sharesOwned.setText(finalShrOwned.getQty() + " share owned");
-                } else {
-                    holder.sharesOwned.setText(finalShrOwned.getQty() + " shares owned");
+                // Get Amount of shares owned
+                Position shrOwned = null;
+                try {
+                    shrOwned = alpacaAPI.getOpenPositionBySymbol(mData.get(position));
+                } catch (AlpacaAPIRequestException e) {
+                    e.printStackTrace();
                 }
-            });
 
-            // Get the last quote
-            try {
-                curr = polygonAPI.getLastQuote(mData.get(position));
+                Position finalShrOwned = shrOwned;
+                mainActivity.runOnUiThread(() -> {
 
-            } catch (PolygonAPIRequestException e) {
-                e.printStackTrace();
-            }
-
-            LastQuoteResponse finalCurr = curr;
-            float finalClose = close;
-            mainActivity.runOnUiThread(() -> {
-
-                if (finalCurr != null && finalClose != 0) {
-                    holder.priceOfStock.setText(String.format("$%.2f", finalCurr.getLast().getAskprice().floatValue()));
-                    float temp = (finalCurr.getLast().getAskprice().floatValue() - finalClose) / finalClose * 100;
-
-                    // Sets the precision and adds to view, then changes color
-                    if (temp >= 0) {
-                        holder.percentChange.setText(String.format("+%.2f%%", temp));
-                        mClickListener.switchColors(holder, true);
-
+                    if (finalShrOwned.getQty().equals("1")) {
+                        holder.sharesOwned.setText(finalShrOwned.getQty() + " share owned");
                     } else {
-                        holder.percentChange.setText(String.format("%.2f%%", temp));
-                        mClickListener.switchColors(holder, true);
+                        holder.sharesOwned.setText(finalShrOwned.getQty() + " shares owned");
                     }
+                });
 
+                // Get the last quote
+                try {
+                    curr = polygonAPI.getLastQuote(mData.get(position));
+
+                } catch (PolygonAPIRequestException e) {
+                    e.printStackTrace();
                 }
-            });
+
+                LastQuoteResponse finalCurr = curr;
+                float finalClose = close;
+                mainActivity.runOnUiThread(() -> {
+
+                    if (finalCurr != null && finalClose != 0) {
+                        holder.priceOfStock.setText(String.format("$%.2f", finalCurr.getLast().getAskprice().floatValue()));
+                        float temp = (finalCurr.getLast().getAskprice().floatValue() - finalClose) / finalClose * 100;
+
+                        // Sets the precision and adds to view, then changes color
+                        if (temp >= 0) {
+                            holder.percentChange.setText(String.format("+%.2f%%", temp));
+                            mClickListener.switchColors(holder, true);
+
+                        } else {
+                            holder.percentChange.setText(String.format("%.2f%%", temp));
+                            mClickListener.switchColors(holder, false);
+                        }
+
+                    }
+                });
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         });
         thread.start();
 
@@ -199,7 +210,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     // stores and recycles views as they are scrolled off screen
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView stock_name;
-        TextView percentChange;
+        Button percentChange;
         TextView sharesOwned;
         TextView priceOfStock;
         CardView stockCard;

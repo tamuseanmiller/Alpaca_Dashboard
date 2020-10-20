@@ -1,161 +1,143 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/refreshStock"
+    android:elevation="100dp"
+    app:icon="@drawable/arrow_top_right"
     android:background="?attr/colorPrimary"
-    android:theme="@style/Theme.Alpaca_Dashboard.Light"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
-    tools:context=".StockPage">
-
-    <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="50dp">
-
-        <ImageView
-            android:id="@+id/arrowDownStocks"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:translationY="-2dp"
-            android:layout_alignParentEnd="true"
-            android:layout_marginEnd="0dp"
-            android:contentDescription="@string/indication_arrow"
-            android:paddingTop="20dp"
-            android:paddingEnd="20dp"
-            android:src="@drawable/arrow_bottom_right"
-            app:tint="?attr/color_negative" />
-
-        <ImageView
-            android:id="@+id/arrowUpStocks"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:translationY="-2dp"
-            android:layout_alignParentEnd="true"
-            android:contentDescription="@string/indication_arrow"
-            android:paddingTop="20dp"
-            android:paddingEnd="20dp"
-            android:src="@drawable/arrow_top_right"
-            android:visibility="invisible"
-            app:tint="?attr/color_positive" />
-
-        <TextView
-            android:id="@+id/percentChangeStocks"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_alignParentEnd="true"
-            android:layout_centerInParent="true"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            android:layout_toStartOf="@id/arrowUpStocks"
-            android:paddingTop="20dp"
-            android:paddingEnd="50dp"
-            android:text="YEET"
-            android:textAlignment="textEnd"
-            android:textColor="?attr/colorLight" />
-
-    </RelativeLayout>
-
-    <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/stockTraded"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="sans-serif-medium"
-        android:textColor="?attr/colorLight"
-        android:textSize="35sp" />
-
-    <androidx.cardview.widget.CardView
-        android:id="@+id/sparkCard"
-        android:layout_width="match_parent"
-        android:layout_height="500dp"
-        android:layout_below="@id/tickerView"
-        android:backgroundTint="?attr/colorPrimaryLight"
-        android:clipChildren="false"
-        android:elevation="5dp"
-        app:cardPreventCornerOverlap="false">
-
-        <com.robinhood.spark.SparkView
-            android:id="@+id/sparkview"
-            android:layout_width="wrap_content"
-            android:layout_height="500dp"
-            android:paddingTop="20dp"
-            android:paddingEnd="20dp"
-            android:paddingBottom="20dp"
-            app:spark_lineColor="?attr/colorPrimaryDark"
-            app:spark_scrubEnabled="true"
-            tools:ignore="RtlSymmetry" />
-
-    </androidx.cardview.widget.CardView>
+    tools:context=".MainActivity">
 
     <androidx.core.widget.NestedScrollView
-        android:id="@id/scrollView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:id="@+id/scrollIDStock"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:elevation="10dp">
 
-        <RelativeLayout
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:translationY="620dp">
+            android:orientation="vertical">
 
-            <androidx.cardview.widget.CardView
-                android:id="@+id/recycleCard"
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="30dp"
-                android:elevation="10dp"
-                android:backgroundTint="?attr/colorPrimaryLight"
-                app:cardCornerRadius="3dp"
+                android:layout_height="match_parent">
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/percentChangeStock"
+                    android:text="@string/loading"
+                    android:textSize="10sp"
+                    android:gravity="center"
+                    android:layout_centerInParent="true"
+                    app:cornerRadius="15dp"
+                    android:layout_alignParentEnd="true"
+                    android:stateListAnimator="@null"
+                    app:iconSize="3dp"
+                    app:iconGravity="textEnd"
+                    android:elevation="0dp"
+                    app:iconTint="?attr/color_positive"
+                    android:textColor="?attr/color_positive"
+                    style="@style/Widget.MaterialComponents.Button.Icon"
+                    android:backgroundTint="?attr/color_positive_light"/>
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/stockTradedStock"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="10dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="?attr/colorLight"
+                    android:textSize="35sp" />
+
+            </RelativeLayout>
+
+<!--            <RelativeLayout-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="match_parent">-->
+
+                <com.robinhood.ticker.TickerView
+                    android:id="@+id/tickerViewStock"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="@dimen/activity_vertical_margin"
+                    android:textColor="?attr/colorLight"
+                    android:textSize="30sp" />
+
+<!--                <androidx.appcompat.widget.AppCompatImageButton-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:clickable="true"-->
+<!--                    android:src="@drawable/brightness_6"-->
+<!--                    android:id="@+id/themeChangeStock"-->
+<!--                    android:paddingEnd="10dp"-->
+<!--                    android:background="@null"-->
+<!--                    android:stateListAnimator="@null"-->
+<!--                    android:paddingBottom="10dp"-->
+<!--                    android:layout_centerVertical="true"-->
+<!--                    android:layout_alignParentEnd="true"-->
+<!--                    app:tint="?attr/colorPrimaryLight"-->
+<!--                    tools:ignore="RtlSymmetry"-->
+<!--                    android:focusable="true" />-->
+
+<!--            </RelativeLayout>-->
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/sparkCardStock"
+                android:layout_width="match_parent"
+                android:layout_height="500dp"
+                android:backgroundTint="?attr/colorPrimary"
+                android:clipChildren="true"
+                android:elevation="0dp"
+                app:cardCornerRadius="15dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorAccentTransparent"
                 app:cardPreventCornerOverlap="false">
 
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:contentDescription="TODO"
-                    android:src="@drawable/drag"
-                    android:tintMode="add"
-                    app:tint="?attr/colorPrimaryLight" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recyclerStockPage"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingLeft="10dp"
+                <com.robinhood.spark.SparkView
+                    android:id="@+id/sparkviewStock"
+                    android:layout_width="wrap_content"
+                    android:layout_height="500dp"
                     android:paddingTop="20dp"
-                    android:paddingRight="10dp"
-                    android:paddingBottom="10dp">
+                    android:paddingEnd="20dp"
+                    android:paddingBottom="20dp"
+                    app:spark_lineColor="?attr/color_negative"
+                    app:spark_scrubEnabled="true"
+                    android:elevation="3dp"
+                    tools:ignore="RtlSymmetry" />
 
-                </androidx.recyclerview.widget.RecyclerView>
+            </com.google.android.material.card.MaterialCardView>
 
-            </androidx.cardview.widget.CardView>
+            <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingBottom="10dp"
+                android:paddingTop="20dp"
+                android:fontFamily="sans-serif-medium"
+                android:textColor="?attr/colorLight"
+                android:textSize="25sp"
+                android:text="@string/orders"/>
 
-        </RelativeLayout>
+            <androidx.recyclerview.widget.RecyclerView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/ordersStock"
+                android:clickable="true"
+                android:paddingStart="-5dp"
+                android:paddingEnd="-5dp"
+                android:focusable="true"/>
+
+        </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/scrollView"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        android:backgroundTint="?attr/colorPrimaryDark"
-        app:srcCompat="@android:drawable/ic_menu_preferences" />
-
-    <com.robinhood.ticker.TickerView
-        android:id="@+id/tickerView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/stockTraded"
-        android:paddingTop="@dimen/activity_vertical_margin"
-        android:textColor="?attr/colorPrimaryDark"
-        android:textSize="30sp" />
-
-    <include layout="@layout/content_stock_page" />
-
-</RelativeLayout>
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

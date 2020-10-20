@@ -83,12 +83,13 @@ public class StockAdapter extends SparkAdapter {
 
         if (marketStatus.equals("open")) {
             try {
-                bars = alpacaAPI.getBars(BarsTimeFrame.FIVE_MINUTE, ticker.get(), 1000, null, null,
-                        ZonedDateTime.of(LocalDateTime.of(LocalDate.now(), LocalTime.of(9, 30)), ZoneId.of("UTC-4")), ZonedDateTime.now());
+                bars = alpacaAPI.getBars(BarsTimeFrame.ONE_MIN, ticker.get(), 1000, null, null,
+                        ZonedDateTime.of(LocalDateTime.of(LocalDate.now(), LocalTime.of(8, 30)), ZoneId.of("UTC-6")), null);
 
             } catch (AlpacaAPIRequestException e) {
                 e.printStackTrace();
             }
+
         } else {
 
             // Fetch last open day's information
@@ -99,8 +100,8 @@ public class StockAdapter extends SparkAdapter {
 
             try {
                 bars = alpacaAPI.getBars(BarsTimeFrame.FIVE_MINUTE, ticker.get(), 1000, null, null,
-                        ZonedDateTime.of(lastOpenDate, lastOpenTimeStart, ZoneId.of("UTC")),
-                        ZonedDateTime.of(lastOpenDate, lastOpenTime, ZoneId.of("UTC")));
+                        ZonedDateTime.of(lastOpenDate, lastOpenTimeStart, ZoneId.of("UTC-4")),
+                        ZonedDateTime.of(lastOpenDate, lastOpenTime, ZoneId.of("UTC-4")));
 
             } catch (AlpacaAPIRequestException e) {
                 e.printStackTrace();
@@ -193,7 +194,7 @@ public class StockAdapter extends SparkAdapter {
     @Override
     public float getBaseLine() {
 
-//        PolygonAPI polygonAPI = new PolygonAPI();
+        PolygonAPI polygonAPI = new PolygonAPI();
         float lastClose = 0;
 //        AlpacaAPI alpacaAPI = new AlpacaAPI();
 //        try {
@@ -202,13 +203,13 @@ public class StockAdapter extends SparkAdapter {
 //            e.printStackTrace();
 //        }
 
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            try {
-//                lastClose = polygonAPI.getPreviousClose(String.valueOf(ticker), false).getResults().get(0).getC().floatValue();
-//            } catch (PolygonAPIRequestException e) {
-//                e.printStackTrace();
-//            }
-//        }
+        if (!ticker.get().equals("NOTICKER")) {
+            try {
+                lastClose = polygonAPI.getPreviousClose(String.valueOf(ticker), false).getResults().get(0).getC().floatValue();
+            } catch (PolygonAPIRequestException e) {
+                e.printStackTrace();
+            }
+        }
 
         if (lastClose != 0.0) {
             baseline = lastClose;

@@ -2,22 +2,17 @@
 <resources>
 
 <!--    Dark Variants-->
-<!--    <color name="colorPrimary">#30303C</color>-->
     <color name="colorPrimary">#000000</color>
-<!--    <color name="colorPrimaryLight">#393945</color>-->
     <color name="colorPrimaryLight">#4e4e4e</color>
     <color name="colorPrimaryDark">#FF4495</color>
     <color name="colorAccentTransparent">#181818</color>
-<!--    <color name="color_positive">#52E3C2</color>-->
     <color name="color_positive">#3bb698</color>
-    <color name="color_negative">#80023a</color>
-<!--    <color name="color_positive_light">#EDFCF8</color>-->
+    <color name="color_negative">#B12864</color>
     <color name="color_positive_light">#04221b</color>
-    <color name="color_negative_light">#150009</color>
+    <color name="color_negative_light">#2C0516</color>
     <color name="colorPrimarySlightLight">#4e4e4e</color>
     <color name="purple_200">#FFBB86FC</color>
     <color name="colorLight">#F7F8F8</color>
-<!--    <color name="purple_500">#FF6200EE</color>-->
     <color name="purple_700">#FF3700B3</color>
     <color name="teal_200">#FF03DAC5</color>
     <color name="teal_700">#FF018786</color>
