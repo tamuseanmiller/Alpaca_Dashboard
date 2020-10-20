@@ -84,7 +84,7 @@ public class StockAdapter extends SparkAdapter {
         if (marketStatus.equals("open")) {
             try {
                 bars = alpacaAPI.getBars(BarsTimeFrame.FIVE_MINUTE, ticker.get(), 1000, null, null,
-                        ZonedDateTime.of(LocalDateTime.from(LocalTime.of(9, 30)), ZoneId.of("UTC-4")), ZonedDateTime.now());
+                        ZonedDateTime.of(LocalDateTime.of(LocalDate.now(), LocalTime.of(9, 30)), ZoneId.of("UTC-4")), ZonedDateTime.now());
 
             } catch (AlpacaAPIRequestException e) {
                 e.printStackTrace();

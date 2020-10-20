@@ -2,6 +2,7 @@
     <!-- Base application theme. -->
     <style name="Theme.Alpaca_Dashboard.Dark" parent="Theme.MaterialComponents.DayNight.NoActionBar">
 
+        <item name="themeName">dark</item>
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryLight">@color/colorPrimaryLight</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
@@ -12,14 +13,16 @@
         <item name="color_positive_light">@color/color_positive_light</item>
         <item name="color_negative_light">@color/color_negative_light</item>
         <item name="colorLight">@color/colorLight</item>
+        <item name="colorPrimarySlightLight">@color/colorPrimarySlightLight</item>
 
-        <!-- Status bar color. -->
-<!--        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>-->
+<!--         Status bar color.-->
+        <item name="android:statusBarColor" tools:targetApi="l">@color/colorPrimary</item>
         <!-- Customize your theme here. -->
     </style>
 
     <style name="Theme.Alpaca_Dashboard.Light" parent="Theme.MaterialComponents.DayNight.NoActionBar">
 
+        <item name="themeName">light</item>
         <item name="colorPrimary">@color/colorPrimary_light</item>
         <item name="colorPrimaryLight">@color/colorPrimaryLight_light</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark_light</item>
@@ -30,9 +33,10 @@
         <item name="color_positive_light">@color/color_positive_light_light</item>
         <item name="color_negative_light">@color/color_negative_light_light</item>
         <item name="colorLight">@color/colorLight_light</item>
+        <item name="colorPrimarySlightLight">@color/colorPrimarySlightLight_light</item>
 
-        <!-- Status bar color. -->
-<!--        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>-->
+<!--         Status bar color.-->
+        <item name="android:statusBarColor" tools:targetApi="l">@color/colorPrimary_light</item>
         <!-- Customize your theme here. -->
     </style>
 

@@ -3,24 +3,33 @@ package com.bedefined.alpaca_dashboard;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.StrictMode;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.Window;
+import android.widget.Button;
+import android.widget.GridLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.button.MaterialButton;
 import com.robinhood.spark.SparkView;
 import com.robinhood.spark.animation.LineSparkAnimator;
 import com.robinhood.ticker.TickerUtils;
@@ -51,6 +60,7 @@ import net.jacobpeterson.polygon.websocket.message.PolygonStreamMessageType;
 import org.w3c.dom.Text;
 import org.xmlpull.v1.XmlPullParser;
 
+import java.lang.reflect.Type;
 import java.text.DecimalFormat;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -61,9 +71,11 @@ import java.util.ArrayList;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.cabriole.decorator.ColumnProvider;
+import io.cabriole.decorator.GridMarginDecoration;
 import io.cabriole.decorator.LinearDividerDecoration;
 
-public class MainActivity extends AppCompatActivity implements RecyclerViewAdapter.ItemClickListener {
+public class MainActivity extends AppCompatActivity implements RecyclerViewAdapter.ItemClickListener, View.OnClickListener {
 
     private SparkView sparkView;
     private StockAdapter adapter;
@@ -72,14 +84,14 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     public static AtomicReference<String> ticker;
     private static PolygonStreamListener polygonStream;
     private RecyclerViewAdapter recycleAdapter;
-    private ImageView arrowUp;
-    private ImageView arrowDown;
-    private TextView percentChange;
+    private static Button percentChange;
     private String cash = null;
-    Properties props = new Properties();
+    private Properties props = new Properties();
+    private SwipeRefreshLayout swipeRefresh;
+    private ImageButton themeChange;
 
     // Streams ticker data from polygon
-    public void streamStockData(PolygonAPI polygonAPI, AtomicReference<String> ticker) {
+    public void streamStockData(PolygonAPI polygonAPI, AtomicReference<String> ticker, StockAdapter adap, SparkView sparkV, TickerView tickerV) {
 
         props.setProperties();
         Thread thread = new Thread(() -> {
@@ -91,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                 float oldPrice = 0;
                 float askingPrice = 0;
                 int cnt = 0;
+                final AlpacaAPI alpacaAPI = new AlpacaAPI();
 
                 @RequiresApi(api = Build.VERSION_CODES.M)
                 @Override
@@ -101,7 +114,9 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                     runOnUiThread(() -> {
                         double amount = Double.parseDouble(String.valueOf(askingPrice));
                         DecimalFormat formatter = new DecimalFormat("#,###.00");
-                        tickerView.setText("$" + formatter.format(amount));
+//                        if (formatter.format(amount).equals(0))
+//                        System.out.println(formatter.format(amount));
+                        tickerV.setText("$" + formatter.format(amount));
                     });
 
                     // Add point to graph
@@ -114,12 +129,13 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                                 stash.removeElementAt(0);
                             }
                             stash.add(askingPrice);
-                            runOnUiThread(() -> adapter.addVal(askingPrice));
+                            if (askingPrice == 0)
+                                System.out.println(askingPrice);
+                            runOnUiThread(() -> adap.addVal(askingPrice));
 
                             // Fetch portfolio value
                             String portVal = null;
                             try {
-                                AlpacaAPI alpacaAPI = new AlpacaAPI();
                                 portVal = alpacaAPI.getAccount().getPortfolioValue();
                             } catch (AlpacaAPIRequestException e) {
                                 e.printStackTrace();
@@ -130,40 +146,49 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
 
                                 float holdingVal = Float.parseFloat(portVal) - Float.parseFloat(cash);
 
-                                float oldVal = adapter.getValue(0) - holdingVal;
-                                float newVal = adapter.getValue(adapter.getCount() - 1) - holdingVal;
+                                float oldVal = adap.getValue(0) - holdingVal;
+                                float newVal = adap.getValue(adap.getCount() - 1) - holdingVal;
                                 float percentageChange = (newVal - oldVal) / oldVal * 100;
-                                float profitLoss = adapter.getValue(adapter.getCount() - 1) - adapter.getValue(0);
+                                float profitLoss = adap.getValue(adap.getCount() - 1) - adap.getValue(0);
 
-                                if (askingPrice >= adapter.baseline && sparkView.getLineColor() != getColor(R.color.color_positive)) {
-                                    arrowDown.setVisibility(View.INVISIBLE);
-                                    arrowUp.setVisibility(View.VISIBLE);
+                                TypedValue typedValue = new TypedValue();
+                                getTheme().resolveAttribute(R.attr.color_negative, typedValue, true);
+                                int negColor = ContextCompat.getColor(getApplicationContext(), typedValue.resourceId);
+                                getTheme().resolveAttribute(R.attr.color_positive, typedValue, true);
+                                int posColor = ContextCompat.getColor(getApplicationContext(), typedValue.resourceId);
+                                getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
+                                int posColorLight = ContextCompat.getColor(getApplicationContext(), typedValue.resourceId);
+                                getTheme().resolveAttribute(R.attr.color_negative_light, typedValue, true);
+                                int negColorLight = ContextCompat.getColor(getApplicationContext(), typedValue.resourceId);
 
-                                    TypedValue typedValue = new TypedValue();
-                                    getTheme().resolveAttribute(R.attr.color_positive, typedValue, true);
-                                    int color = ContextCompat.getColor(getApplicationContext(), typedValue.resourceId);
+                                if (askingPrice >= adap.baseline && sparkV.getLineColor() != posColor) {
+//                                    arrowDown.setVisibility(View.INVISIBLE);
+//                                    arrowUp.setVisibility(View.VISIBLE);
+
                                     percentChange.setText(String.format("+$%.2f (%.2f%%)", profitLoss, percentageChange));
-                                    percentChange.setTextColor(color);
-                                    sparkView.setLineColor(color);
+                                    percentChange.setTextColor(posColor);
+                                    percentChange.setBackgroundTintList(ColorStateList.valueOf(posColorLight));
+                                    sparkV.setLineColor(posColor);
+                                    tickerV.setTextColor(posColor);
 
-                                } else if (askingPrice < adapter.baseline && sparkView.getLineColor() != getColor(R.color.color_negative)) {
-                                    arrowDown.setVisibility(View.VISIBLE);
-                                    arrowUp.setVisibility(View.INVISIBLE);
-                                    TypedValue typedValue = new TypedValue();
-                                    getTheme().resolveAttribute(R.attr.color_negative, typedValue, true);
-                                    int color = ContextCompat.getColor(getApplicationContext(), typedValue.resourceId);
+                                } else if (askingPrice < adap.baseline && sparkV.getLineColor() != negColor) {
+//                                    arrowDown.setVisibility(View.VISIBLE);
+//                                    arrowUp.setVisibility(View.INVISIBLE);
+
                                     percentChange.setText(String.format("-$%.2f (%.2f%%)", Math.abs(profitLoss), percentageChange));
-                                    percentChange.setTextColor(color);
-                                    sparkView.setLineColor(color);
+                                    percentChange.setTextColor(negColor);
+                                    percentChange.setBackgroundTintList(ColorStateList.valueOf(negColorLight));
+                                    sparkV.setLineColor(negColor);
+                                    tickerV.setTextColor(negColor);
                                 }
                             }
 
-                            // Smooth graph every 20 points
-                            if (cnt == 20) {
-                                LineSparkAnimator lineSparkAnimator = new LineSparkAnimator();
-                                sparkView.setSparkAnimator(lineSparkAnimator);
-                                runOnUiThread(() -> adapter.smoothGraph());
-                                sparkView.setSparkAnimator(null);
+                            // Smooth graph every 50 points
+                            if (cnt == 50) {
+//                                LineSparkAnimator lineSparkAnimator = new LineSparkAnimator();
+//                                sparkView.setSparkAnimator(lineSparkAnimator);
+                                runOnUiThread(adap::smoothGraph);
+//                                sparkView.setSparkAnimator(null);
                                 cnt = 0;
                             }
                             cnt++;
@@ -207,13 +232,26 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     protected void onCreate(Bundle savedInstanceState) {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
-        setTheme(R.style.Theme_Alpaca_Dashboard_Dark);
+//        setTheme(R.style.Theme_Alpaca_Dashboard_Dark);
+
+        Utils.onActivityCreateSetTheme(this);
 
         super.onCreate(savedInstanceState);
-        this.supportRequestWindowFeature(Window.FEATURE_NO_TITLE); //Remove title bar
         setContentView(R.layout.activity_main);
         props.setProperties();
-//        recreate();
+
+        // Set theme and icon
+        themeChange = findViewById(R.id.themeChange);
+        themeChange.setOnClickListener(this);
+        TypedValue outValue = new TypedValue();
+        getTheme().resolveAttribute(R.attr.themeName, outValue, true);
+        if ("light".equals(outValue.string)) {
+            Drawable lightTheme = getDrawable(R.drawable.brightness_6);
+            themeChange.setImageDrawable(lightTheme);
+        } else {
+            Drawable darkTheme = getDrawable(R.drawable.brightness_4);
+            themeChange.setImageDrawable(darkTheme);
+        }
 
         // Initializations
         ticker = new AtomicReference<>("AMD");
@@ -225,15 +263,21 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         totalEquity.setText("Total Equity");
 
         // Set arrows
-        arrowUp = findViewById(R.id.arrowUp);
-        arrowDown = findViewById(R.id.arrowDown);
+//        arrowUp = findViewById(R.id.arrowUp);
+//        arrowDown = findViewById(R.id.arrowDown);
 
         // Set percent change
         percentChange = findViewById(R.id.percentChange);
+        ;
 
         // Ticker information
         tickerView = findViewById(R.id.tickerView);
         tickerView.setCharacterLists(TickerUtils.provideNumberList());
+
+        // Set swipe refresh
+        swipeRefresh = findViewById(R.id.refresh);
+        swipeRefresh.setTranslationZ(100);
+        swipeRefresh.bringToFront();
 
         // The sparkline graph itself
         sparkView = findViewById(R.id.sparkview);
@@ -256,7 +300,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
 
         sparkView.setScrubListener(value -> {
 
-            String numEquity = getString(R.string.scrub_format, value);
+//            String numEquity = getString(R.string.scrub_format, value);
 
             // Format to add commas
             if (value != null) {
@@ -300,24 +344,27 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
 
         if (marketStatus.equals("open")) {
 
+            // Gather old portfolio data
+            ArrayList<Double> history = new ArrayList<>();
+            try {
+                history = alpacaAPI.getPortfolioHistory(1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.FIVE_MINUTE, LocalDate.now(), true).getEquity();
+
+            } catch (AlpacaAPIRequestException e) {
+                e.printStackTrace();
+            }
+
+            // Add data to chart
+            if (history.get(0) != null)
+                for (Double i : history) {
+                    if (i != null) {
+//                runOnUiThread(() -> {
+                        adapter.addVal(Float.parseFloat(String.valueOf(i)));
+//                });
+                    }
+                }
+
             // Create thread for updating equity
             Thread t1 = new Thread(() -> {
-
-                // Gather old portfolio data
-                ArrayList<Double> history = new ArrayList<>();
-                try {
-                    history = alpacaAPI.getPortfolioHistory(1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.FIVE_MINUTE, LocalDate.now(), true).getEquity();
-
-                } catch (AlpacaAPIRequestException e) {
-                    e.printStackTrace();
-                }
-
-                // Add data to chart
-                for (double i : history) {
-                    runOnUiThread(() -> {
-                        adapter.addVal((float) i);
-                    });
-                }
 
                 // Run forever to get the new equities
                 while (true) {
@@ -338,6 +385,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                             adapter.addVal(Float.parseFloat(currentValue));
                         });
                         Thread.sleep(60000 * 5);
+
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -366,23 +414,24 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
             }
 
             // Add data to chart
-            for (double i : history) {
-                runOnUiThread(() -> {
-                    adapter.addVal((float) i);
-                });
-            }
+            if (history.get(0) != null)
+                for (Double i : history) {
+                    if (i != null) {
+                        adapter.addVal(Float.parseFloat(String.valueOf(i)));
+                    }
+                }
 
             if (adapter.getCount() != 0) {
                 double amount = Double.parseDouble(String.valueOf(adapter.getValue(adapter.getCount() - 1)));
                 DecimalFormat formatter = new DecimalFormat("#,###.00");
                 tickerView.setText("$" + formatter.format(amount));
                 if (adapter.getValue(adapter.getCount() - 1) >= adapter.baseline) {
-                    arrowDown.setVisibility(View.INVISIBLE);
-                    arrowUp.setVisibility(View.VISIBLE);
+//                    arrowDown.setVisibility(View.INVISIBLE);
+//                    arrowUp.setVisibility(View.VISIBLE);
 //                    tickerView.setTextColor(getColor(R.color.color_positive));
                 } else {
-                    arrowDown.setVisibility(View.VISIBLE);
-                    arrowUp.setVisibility(View.INVISIBLE);
+//                    arrowDown.setVisibility(View.VISIBLE);
+//                    arrowUp.setVisibility(View.INVISIBLE);
 //                    tickerView.setTextColor(getColor(R.color.color_negative));
                 }
             }
@@ -407,59 +456,66 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
             float percentageChange = (newVal - oldVal) / oldVal * 100;
             float profitLoss = adapter.getValue(adapter.getCount() - 1) - adapter.getValue(0);
 
+            getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
+            int posColorLight = ContextCompat.getColor(getApplicationContext(), typedValue.resourceId);
+            getTheme().resolveAttribute(R.attr.color_negative_light, typedValue, true);
+            int negColorLight = ContextCompat.getColor(getApplicationContext(), typedValue.resourceId);
+
             // Set colors
             if (percentageChange >= 0) {
-                arrowUp.setVisibility(View.VISIBLE);
-                arrowDown.setVisibility(View.INVISIBLE);
+//                arrowUp.setVisibility(View.VISIBLE);
+//                arrowDown.setVisibility(View.INVISIBLE);
                 percentChange.setText(String.format("+$%.2f (%.2f%%)", profitLoss, percentageChange));
 
                 getTheme().resolveAttribute(R.attr.color_positive, typedValue, true);
                 color = ContextCompat.getColor(this, typedValue.resourceId);
                 percentChange.setTextColor(color);
+                percentChange.setBackgroundTintList(ColorStateList.valueOf(posColorLight));
+                Drawable upArrow = percentChange.getContext().getResources().getDrawable(R.drawable.arrow_top_right);
+                upArrow.setTint(color);
+                percentChange.setCompoundDrawablesWithIntrinsicBounds(null, null, upArrow, null);
+
                 sparkView.setLineColor(color);
 
             } else {
-                arrowUp.setVisibility(View.INVISIBLE);
-                arrowDown.setVisibility(View.VISIBLE);
+//                arrowUp.setVisibility(View.INVISIBLE);
+//                arrowDown.setVisibility(View.VISIBLE);
                 percentChange.setText(String.format("-$%.2f (%.2f%%)", Math.abs(profitLoss), percentageChange));
 
                 getTheme().resolveAttribute(R.attr.color_negative, typedValue, true);
                 color = ContextCompat.getColor(this, typedValue.resourceId);
                 percentChange.setTextColor(color);
+                percentChange.setBackgroundTintList(ColorStateList.valueOf(negColorLight));
+                Drawable downArrow = percentChange.getContext().getResources().getDrawable(R.drawable.arrow_bottom_right);
+                downArrow.setTint(color);
+                percentChange.setCompoundDrawablesWithIntrinsicBounds(null, null, downArrow, null);
+
                 sparkView.setLineColor(color);
             }
         }
 
-        // Fetch current positions
-        ArrayList<Position> positions = new ArrayList<>();
-        try {
-            positions = alpacaAPI.getOpenPositions();
-        } catch (AlpacaAPIRequestException e) {
-            e.printStackTrace();
-        }
-
-        ArrayList<String> stocks = new ArrayList<>();
-        for (Position i : positions) {
-            stocks.add(i.getSymbol());
-        }
-
         // Fetch the Recycler View
-        getTheme().resolveAttribute(R.attr.colorAccentTransparent, typedValue, true);
-        color = ContextCompat.getColor(this, typedValue.resourceId);
         recyclerView = findViewById(R.id.recyclerStocks);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.addItemDecoration(LinearDividerDecoration.create(color, 10, 10, 10, 10, 10, LinearLayoutManager.VERTICAL, false, null));
+//        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+//        recyclerView.addItemDecoration(LinearDividerDecoration.create(color, 10, 10, 10, 10, 10, LinearLayoutManager.VERTICAL, false, null));
 
-        // Set Recycle Adapter
-        recycleAdapter = new RecyclerViewAdapter(this, stocks);
-        recycleAdapter.setClickListener(this);
-        recyclerView.setAdapter(recycleAdapter);
+        ColumnProvider col = () -> 3;
+        recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
+        recyclerView.addItemDecoration(new GridMarginDecoration(0, col, GridLayoutManager.VERTICAL, false, null));
+        onRefresh();
 
-        // Set both buttons
-        findViewById(R.id.random_button).setOnClickListener(view -> {
-            adapter.randomize();
+//        // Set Recycle Adapter
+//        recycleAdapter = new RecyclerViewAdapter(this, stocks);
+//        recycleAdapter.setClickListener(this);
+//        recyclerView.setAdapter(recycleAdapter);
+
+        // Swipe to refresh recycler data
+        swipeRefresh.setOnRefreshListener(() -> {
+
+            onRefresh();
+            swipeRefresh.setNestedScrollingEnabled(false);
         });
-        findViewById(R.id.reset_button).setOnClickListener(value -> adapter.clearData());
+
     }
 
     // If stock is tapped, switch to that stock
@@ -469,5 +525,79 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         ticker.set(recycleAdapter.getItem(position));
         Intent intentMain = new Intent(MainActivity.this, StockPage.class);
         MainActivity.this.startActivity(intentMain);
+    }
+
+    @Override
+    public void switchColors(RecyclerViewAdapter.ViewHolder view, boolean pos) {
+
+        TypedValue typedValue = new TypedValue();
+        getTheme().resolveAttribute(R.attr.color_positive, typedValue, true);
+        int posColor = ContextCompat.getColor(getApplicationContext(), typedValue.resourceId);
+        getTheme().resolveAttribute(R.attr.color_negative, typedValue, true);
+        int negColor = ContextCompat.getColor(getApplicationContext(), typedValue.resourceId);
+        getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
+        int posColorLight = ContextCompat.getColor(getApplicationContext(), typedValue.resourceId);
+        getTheme().resolveAttribute(R.attr.color_negative_light, typedValue, true);
+        int negColorLight = ContextCompat.getColor(getApplicationContext(), typedValue.resourceId);
+
+        if (pos) {
+            view.percentChange.setTextColor(posColor);
+            view.percentChange.setBackgroundTintList(ColorStateList.valueOf(posColorLight));
+
+            Drawable downArrow = getDrawable(R.drawable.arrow_top_right);
+            downArrow.setTint(posColor);
+            view.percentChange.setCompoundDrawablesWithIntrinsicBounds(downArrow, null, null, null);
+        } else {
+            view.percentChange.setTextColor(negColor);
+            view.percentChange.setBackgroundTintList(ColorStateList.valueOf(negColorLight));
+
+            Drawable downArrow = getDrawable(R.drawable.arrow_bottom_right);
+            downArrow.setTint(negColor);
+            view.percentChange.setCompoundDrawablesWithIntrinsicBounds(downArrow, null, null, null);
+        }
+    }
+
+    public void onRefresh() {
+
+        swipeRefresh.setRefreshing(true);
+
+        Thread thread = new Thread(() -> {
+
+            AlpacaAPI alpacaAPI = new AlpacaAPI();
+
+            // Fetch current positions
+            ArrayList<Position> positions = new ArrayList<>();
+            try {
+                positions = alpacaAPI.getOpenPositions();
+            } catch (AlpacaAPIRequestException e) {
+                e.printStackTrace();
+            }
+
+            ArrayList<String> stocks = new ArrayList<>();
+            for (Position i : positions) {
+                stocks.add(i.getSymbol());
+            }
+
+            // Set Recycle Adapter
+            recycleAdapter = new RecyclerViewAdapter(this, stocks);
+            recycleAdapter.setClickListener(this);
+            runOnUiThread(() -> recyclerView.setAdapter(recycleAdapter));
+            swipeRefresh.setRefreshing(false);
+        });
+        thread.start();
+    }
+
+    @Override
+    public void onClick(View v) {
+
+        TypedValue outValue = new TypedValue();
+        getTheme().resolveAttribute(R.attr.themeName, outValue, true);
+        if ("light".equals(outValue.string)) {
+            Utils.changeToTheme(this, Utils.THEME_DARK);
+
+        } else {
+            Utils.changeToTheme(this, Utils.THEME_LIGHT);
+        }
+
     }
 }

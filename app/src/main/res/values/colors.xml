@@ -3,17 +3,18 @@
 
 <!--    Dark Variants-->
 <!--    <color name="colorPrimary">#30303C</color>-->
-    <color name="colorPrimary">#040404</color>
+    <color name="colorPrimary">#000000</color>
 <!--    <color name="colorPrimaryLight">#393945</color>-->
-    <color name="colorPrimaryLight">#070707</color>
+    <color name="colorPrimaryLight">#4e4e4e</color>
     <color name="colorPrimaryDark">#FF4495</color>
-    <color name="colorAccentTransparent">#4D505F</color>
+    <color name="colorAccentTransparent">#181818</color>
 <!--    <color name="color_positive">#52E3C2</color>-->
-    <color name="color_positive">#37a689</color>
-    <color name="color_negative">#BA1F54</color>
+    <color name="color_positive">#3bb698</color>
+    <color name="color_negative">#80023a</color>
 <!--    <color name="color_positive_light">#EDFCF8</color>-->
-    <color name="color_positive_light">#125647</color>
-    <color name="color_negative_light">#612b32</color>
+    <color name="color_positive_light">#04221b</color>
+    <color name="color_negative_light">#150009</color>
+    <color name="colorPrimarySlightLight">#4e4e4e</color>
     <color name="purple_200">#FFBB86FC</color>
     <color name="colorLight">#F7F8F8</color>
 <!--    <color name="purple_500">#FF6200EE</color>-->
@@ -25,13 +26,14 @@
 
 <!--    Light Variants-->
     <color name="colorPrimary_light">#FFFFFF</color>
-    <color name="colorPrimaryLight_light">#FBFBFB</color>
-    <color name="colorPrimaryDark_light">#FF4495</color>
-    <color name="colorAccentTransparent_light">#D3D3D3</color>
+    <color name="colorPrimaryLight_light">#959595</color>
+    <color name="colorPrimaryDark_light">#fb4896</color>
+    <color name="colorAccentTransparent_light">#E8E8E8</color>
     <color name="colorLight_light">#30303C</color>
-    <color name="color_positive_light2">#70a67c</color>
-    <color name="color_negative_light2">#d05651</color>
-    <color name="color_positive_light_light">#e6f3ea</color>
-    <color name="color_negative_light_light">#fbe7e5</color>
+    <color name="color_positive_light2">#5ebfa9</color>
+    <color name="color_negative_light2">#fe7eb6</color>
+    <color name="color_positive_light_light">#ddfbf3</color>
+    <color name="color_negative_light_light">#ffecf5</color>
+    <color name="colorPrimarySlightLight_light">#B1B1B1</color>
 
 </resources>

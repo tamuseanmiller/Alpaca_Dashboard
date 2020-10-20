@@ -1,59 +1,128 @@
 <?xml version="1.0" encoding="utf-8"?>
 <GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:theme="@style/Theme.Alpaca_Dashboard.Light"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="horizontal"
-    android:padding="10dp">
+    android:orientation="vertical"
+    android:padding="10dp"
+    app:rippleColor="?attr/color_positive"
+    android:focusable="true">
 
-    <!--        style="@style/Widget.MaterialComponents.Button"-->
+    <!--    <Button-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:id="@+id/currentPrice"-->
+    <!--        android:layout_column="2"-->
+    <!--        android:textSize="10sp"-->
+    <!--        app:cornerRadius="15dp"-->
+    <!--        app:iconSize="3dp"-->
+    <!--        app:iconGravity="textEnd"-->
+    <!--        app:iconTint="?attr/color_positive"-->
+    <!--        android:stateListAnimator="@null"-->
+    <!--        android:textColor="?attr/color_positive"-->
+    <!--        style="@style/Widget.MaterialComponents.Button.Icon"-->
+    <!--        android:backgroundTint="?attr/color_positive_light"/>-->
 
-<!--    <TextView-->
-<!--        android:id="@+id/stockName"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:textSize="20sp"-->
-<!--        android:textAlignment="textStart"-->
-<!--        android:textColor="?attr/colorPrimaryDark"/>-->
+    <!--    <TextView-->
+    <!--        android:id="@+id/stockName"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_column="0"-->
+    <!--        android:text="@string/app_name"-->
+    <!--        android:textSize="12sp"-->
+    <!--        android:gravity="right"-->
+    <!--        android:textColor="?attr/colorLight"/>-->
 
-<!--    <Button-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:id="@+id/stockName"-->
-<!--        style="@style/Widget.MaterialComponents.Button"-->
-<!--        android:textSize="10sp"-->
-<!--        android:textColor="?attr/colorPrimaryLight"-->
-<!--        android:background="?attr/colorPrimaryDark"-->
-<!--        android:backgroundTintMode="add" />-->
-
-    <Button
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="wrap_content"
+        android:id="@+id/positionCard"
         android:layout_height="wrap_content"
-        android:id="@+id/currentPrice"
-        android:layout_column="2"
-        android:textSize="10sp"
-        app:iconTint="?attr/color_positive"
-        android:stateListAnimator="@null"
-
-        android:textColor="?attr/color_positive"
-        style="@style/Widget.MaterialComponents.Button.Icon"
-        android:backgroundTint="?attr/color_positive_light"/>
-
-    <TextView
-        android:id="@+id/stockName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_row="0"
         android:layout_column="0"
-        android:text="@string/app_name"
-        android:textSize="12sp"
-        android:gravity="right"
-        android:textColor="?attr/colorLight"/>
+        app:cardCornerRadius="15dp"
+        app:cardElevation="0dp"
+        android:clickable="true"
+        android:backgroundTint="?attr/colorPrimary"
+        app:rippleColor="?attr/color_positive"
+        app:cardPreventCornerOverlap="false"
+        app:contentPadding="10dp"
+        app:strokeColor="?attr/colorAccentTransparent"
+        app:strokeWidth="1dp"
+        android:focusable="true">
 
-<!--    <TextView-->
-<!--        android:id="@+id/sharesOwned"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_column="0"/>-->
+<!--        <HorizontalScrollView-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content">-->
+
+            <GridLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <Button
+                    android:id="@+id/currentPrice"
+                    style="@style/Widget.MaterialComponents.Button.Icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_row="3"
+                    android:layout_column="0"
+                    android:backgroundTint="?attr/color_positive_light"
+                    android:stateListAnimator="@null"
+                    android:text="@string/randomize"
+                    android:textColor="?attr/color_positive"
+                    android:textSize="10sp"
+                    app:cornerRadius="15dp"
+                    app:rippleColor="?attr/color_positive"
+                    app:iconSize="3dp"
+                    app:iconTint="?attr/color_positive" />
+
+                <TextView
+                    android:id="@+id/sharesOwned"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_row="1"
+                    android:layout_column="0"
+                    android:paddingBottom="20dp"
+                    android:text="@string/randomize"
+                    android:textColor="?attr/colorPrimarySlightLight"
+                    android:textSize="10sp" />
+
+                <TextView
+                    android:id="@+id/priceOfTicker"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_row="2"
+                    android:layout_column="0"
+                    android:paddingBottom="5dp"
+                    android:textColor="?attr/colorPrimaryLight"
+                    android:text="@string/randomize"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/stockName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_row="0"
+                    android:layout_column="0"
+                    android:gravity="right"
+                    android:text="@string/app_name"
+                    android:textColor="?attr/colorLight"
+                    android:textSize="12sp" />
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/ic"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_row="0"
+                    android:layout_column="1"
+                    android:paddingStart="3dp"
+                    android:paddingTop="2dp"
+                    android:src="@drawable/poll"
+                    android:tint="?attr/colorPrimarySlightLight" />
+
+            </GridLayout>
+
+<!--        </HorizontalScrollView>-->
+
+    </com.google.android.material.card.MaterialCardView>
 
 </GridLayout>

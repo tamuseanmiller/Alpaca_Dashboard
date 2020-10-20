@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.TypedValue;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.PointerIcon;
 import android.view.View;
@@ -19,13 +20,16 @@ import android.widget.Toast;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import net.jacobpeterson.alpaca.AlpacaAPI;
 import net.jacobpeterson.alpaca.enums.BarsTimeFrame;
 import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
 import net.jacobpeterson.domain.alpaca.bar.Bar;
+import net.jacobpeterson.domain.alpaca.position.Position;
 import net.jacobpeterson.domain.polygon.dailyopenclose.DailyOpenCloseResponse;
 import net.jacobpeterson.domain.polygon.dailyopenclose.DailyOpenCloseTrade;
 import net.jacobpeterson.domain.polygon.lastquote.LastQuoteResponse;
@@ -36,6 +40,8 @@ import net.jacobpeterson.polygon.rest.exception.PolygonAPIRequestException;
 import net.jacobpeterson.polygon.websocket.listener.PolygonStreamListenerAdapter;
 import net.jacobpeterson.polygon.websocket.message.PolygonStreamMessageType;
 
+import org.w3c.dom.Text;
+
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZonedDateTime;
@@ -45,6 +51,7 @@ import java.util.Map;
 import java.util.Vector;
 
 import static androidx.core.app.ActivityCompat.startActivityForResult;
+import static androidx.core.content.ContextCompat.createDeviceProtectedStorageContext;
 
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
 
@@ -71,63 +78,75 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     @Override
     public void onBindViewHolder(@NonNull RecyclerViewAdapter.ViewHolder holder, int position) {
 
+        MainActivity mainActivity = new MainActivity();
+
         String stockName = mData.get(position);
         holder.stock_name.setText(stockName);
 
-        PolygonAPI polygonAPI = new PolygonAPI();
+        Thread thread = new Thread(() -> {
 
-        // Get Last value
-        float close = 0;
-        LastQuoteResponse curr = null;
-        try {
-            close = polygonAPI.getPreviousClose(mData.get(position), false).getResults().get(0).getC().floatValue();
-        } catch (PolygonAPIRequestException e) {
-            e.printStackTrace();
-        }
+            PolygonAPI polygonAPI = new PolygonAPI();
+            AlpacaAPI alpacaAPI = new AlpacaAPI();
 
-        // Get the last quote
-        try {
-            curr = polygonAPI.getLastQuote(mData.get(position));
-
-        } catch (PolygonAPIRequestException e) {
-            e.printStackTrace();
-        }
-
-        if (curr != null && close != 0) {
-            float temp = (curr.getLast().getAskprice().floatValue() - close) / close * 100;
-
-            // Sets the precision and adds to view, then changes color
-            if (temp >= 0) {
-                holder.percentChange.setText(String.format("+%.2f%%", temp));
-                holder.percentChange.setTextColor(holder.percentChange.getContext().getResources().getColor(R.color.color_positive));
-                holder.percentChange.setBackgroundTintList(ColorStateList.valueOf(holder.percentChange.getContext().getResources().getColor(R.color.color_positive_light)));
-                holder.percentChange.getContext().getResources().getDrawable(R.drawable.arrow_top_right).setTint(holder.percentChange.getContext().getResources().getColor(R.color.color_positive));
-
-//                TypedValue typedValue = new TypedValue();
-//                Resources.Theme theme = context.getTheme();
-//                theme.resolveAttribute(R.attr.color_positive, typedValue, true);
-//                @ColorInt int color = typedValue.data;
-//                holder.percentChange.setTextColor(R.attr.color_positive);
-//                holder.percentChange.setBackgroundTintList(ColorStateList.valueOf(R.attr.color_positive_light));
-//                holder.percentChange.getContext().getResources().getDrawable(R.drawable.arrow_top_right).setTint(R.attr.color_positive);
-                Drawable upArrow = holder.percentChange.getContext().getResources().getDrawable(R.drawable.arrow_top_right);
-                holder.percentChange.setCompoundDrawablesWithIntrinsicBounds( upArrow, null, null, null);
-
-            } else {
-                holder.percentChange.setText(String.format("%.2f%%", temp));
-                holder.percentChange.setTextColor(holder.percentChange.getContext().getResources().getColor(R.color.color_negative));
-                holder.percentChange.setBackgroundTintList(ColorStateList.valueOf(holder.percentChange.getContext().getResources().getColor(R.color.color_negative_light)));
-                holder.percentChange.getContext().getResources().getDrawable(R.drawable.arrow_bottom_right).setTint(holder.percentChange.getContext().getResources().getColor(R.color.color_negative));
-
-//                holder.percentChange.setTextColor(R.attr.color_negative);
-//                holder.percentChange.setBackgroundTintList(ColorStateList.valueOf(R.attr.color_negative_light));
-//                holder.percentChange.getContext().getResources().getDrawable(R.drawable.arrow_bottom_right).setTint(R.attr.color_negative);
-                Drawable downArrow = holder.percentChange.getContext().getResources().getDrawable(R.drawable.arrow_bottom_right);
-                holder.percentChange.setCompoundDrawablesWithIntrinsicBounds( downArrow, null, null, null);
+            // Get Last value
+            float close = 0;
+            LastQuoteResponse curr = null;
+            try {
+                close = polygonAPI.getPreviousClose(mData.get(position), false).getResults().get(0).getC().floatValue();
+            } catch (PolygonAPIRequestException e) {
+                e.printStackTrace();
             }
-        }
 
-        String marketStatus = null;
+            // Get Amount of shares owned
+            Position shrOwned = null;
+            try {
+                shrOwned = alpacaAPI.getOpenPositionBySymbol(mData.get(position));
+            } catch (AlpacaAPIRequestException e) {
+                e.printStackTrace();
+            }
+
+            Position finalShrOwned = shrOwned;
+            mainActivity.runOnUiThread(() -> {
+
+                if (finalShrOwned.getQty().equals("1")) {
+                    holder.sharesOwned.setText(finalShrOwned.getQty() + " share owned");
+                } else {
+                    holder.sharesOwned.setText(finalShrOwned.getQty() + " shares owned");
+                }
+            });
+
+            // Get the last quote
+            try {
+                curr = polygonAPI.getLastQuote(mData.get(position));
+
+            } catch (PolygonAPIRequestException e) {
+                e.printStackTrace();
+            }
+
+            LastQuoteResponse finalCurr = curr;
+            float finalClose = close;
+            mainActivity.runOnUiThread(() -> {
+
+                if (finalCurr != null && finalClose != 0) {
+                    holder.priceOfStock.setText(String.format("$%.2f", finalCurr.getLast().getAskprice().floatValue()));
+                    float temp = (finalCurr.getLast().getAskprice().floatValue() - finalClose) / finalClose * 100;
+
+                    // Sets the precision and adds to view, then changes color
+                    if (temp >= 0) {
+                        holder.percentChange.setText(String.format("+%.2f%%", temp));
+                        mClickListener.switchColors(holder, true);
+
+                    } else {
+                        holder.percentChange.setText(String.format("%.2f%%", temp));
+                        mClickListener.switchColors(holder, true);
+                    }
+
+                }
+            });
+        });
+        thread.start();
+
+        /*String marketStatus = null;
         try {
             marketStatus = polygonAPI.getMarketStatus().getMarket();
         } catch (PolygonAPIRequestException e) {
@@ -138,7 +157,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
             // Start stream of values
             float finalClose = close;
-            Thread thread2 = new Thread(() -> {
+//            Thread thread2 = new Thread(() -> {
 
                 polygonAPI.addPolygonStreamListener(new PolygonStreamListenerAdapter(String.valueOf(mData.get(position)), PolygonStreamMessageType.QUOTE) {
 
@@ -155,18 +174,19 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                         // Update the percent change in the recycler view
                         // Update the percent change in the recycler view
                         percentChange = (finalClose - askingPrice) / finalClose * 100;
-                        if (percentChange >= 0) {
-                            holder.percentChange.setText(String.format("+%.2f%%", percentChange));
-                            holder.percentChange.setTextColor(Color.parseColor("#52E3C2"));
-                        } else {
-                            holder.percentChange.setText(String.format("%.2f%%", percentChange));
-                            holder.percentChange.setTextColor(Color.parseColor("#FF4495"));
-                        }
+
+//                        if (percentChange >= 0) {
+//                            holder.percentChange.setText(String.format("+%.2f%%", percentChange));
+//                            holder.percentChange.setTextColor(Color.parseColor("#52E3C2"));
+//                        } else {
+//                            holder.percentChange.setText(String.format("%.2f%%", percentChange));
+//                            holder.percentChange.setTextColor(Color.parseColor("#FF4495"));
+//                        }
                     }
-                });
-            });
-            thread2.start();
-        }
+                });*/
+//            });
+//            thread2.start();
+//    }
     }
 
     // total number of rows
@@ -180,13 +200,21 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView stock_name;
         TextView percentChange;
+        TextView sharesOwned;
+        TextView priceOfStock;
+        CardView stockCard;
 
         ViewHolder(View itemView) {
             super(itemView);
             stock_name = itemView.findViewById(R.id.stockName);
             percentChange = itemView.findViewById(R.id.currentPrice);
+            sharesOwned = itemView.findViewById(R.id.sharesOwned);
+            priceOfStock = itemView.findViewById(R.id.priceOfTicker);
+            stockCard = itemView.findViewById(R.id.positionCard);
+            stockCard.setOnClickListener(this);
             itemView.setOnClickListener(this);
-            stock_name.setOnClickListener(this);
+            percentChange.setOnClickListener(this);
+
         }
 
         @Override
@@ -213,6 +241,8 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     // parent activity will implement this method to respond to click events
     public interface ItemClickListener {
         void onItemClick(View view, int position);
+
+        void switchColors(ViewHolder view, boolean pos);
     }
 }
 

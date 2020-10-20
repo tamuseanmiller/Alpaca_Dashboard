@@ -16,9 +16,12 @@ import com.robinhood.ticker.TickerView;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -41,6 +44,8 @@ import java.util.ArrayList;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.cabriole.decorator.ColumnProvider;
+import io.cabriole.decorator.GridMarginDecoration;
 import io.cabriole.decorator.LinearDividerDecoration;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
@@ -58,6 +63,8 @@ public class StockPage extends AppCompatActivity implements RecyclerViewAdapterS
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        setTheme(R.style.Theme_Alpaca_Dashboard_Light);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stock_page);
 
@@ -103,16 +110,22 @@ public class StockPage extends AppCompatActivity implements RecyclerViewAdapterS
         tickerView.setText("$" + formatter.format(amount));
         sparkView.setAdapter(adapter);
 
+        TypedValue typedValue = new TypedValue();
+        getTheme().resolveAttribute(R.attr.color_negative, typedValue, true);
+        int negColor = ContextCompat.getColor(getApplicationContext(), typedValue.resourceId);
+        getTheme().resolveAttribute(R.attr.color_positive, typedValue, true);
+        int posColor = ContextCompat.getColor(getApplicationContext(), typedValue.resourceId);
+
         // Set Line and Ticker color
         if (adapter.baseline < amount) {
-            tickerView.setTextColor(getColor(R.color.color_positive));
-            sparkView.setLineColor(getColor(R.color.color_positive));
+            tickerView.setTextColor(posColor);
+            sparkView.setLineColor(posColor);
             arrowUp.setVisibility(View.INVISIBLE);
             arrowDown.setVisibility(View.VISIBLE);
 
         } else {
-            tickerView.setTextColor(getColor(R.color.color_negative));
-            sparkView.setLineColor(getColor(R.color.color_negative));
+            tickerView.setTextColor(negColor);
+            sparkView.setLineColor(negColor);
             arrowUp.setVisibility(View.VISIBLE);
             arrowDown.setVisibility(View.INVISIBLE);
         }
@@ -139,7 +152,7 @@ public class StockPage extends AppCompatActivity implements RecyclerViewAdapterS
 
             // Stream live data for a stock
             MainActivity vars = new MainActivity();
-            vars.streamStockData(polygonAPI, MainActivity.ticker);
+            vars.streamStockData(polygonAPI, MainActivity.ticker, adapter, sparkView, tickerView);
         }
 
         // Fetch orders of stock
@@ -157,8 +170,11 @@ public class StockPage extends AppCompatActivity implements RecyclerViewAdapterS
 
         // Fetch the Recycler View
         recyclerView = findViewById(R.id.recyclerStockPage);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.addItemDecoration(LinearDividerDecoration.create(getColor(R.color.colorAccentTransparent), 10, 10, 10, 10, 10, LinearLayoutManager.VERTICAL, false, null));
+//        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+//        recyclerView.addItemDecoration(LinearDividerDecoration.create(getColor(R.color.colorAccentTransparent), 10, 10, 10, 10, 10, LinearLayoutManager.VERTICAL, false, null));
+        ColumnProvider col = () -> 3;
+        recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
+        recyclerView.addItemDecoration(new GridMarginDecoration(0, col, GridLayoutManager.VERTICAL, false, null));
 
         // Set Recycle Adapter
         recycleAdapter = new RecyclerViewAdapterStocks(this, orders);

@@ -7,4 +7,6 @@
     <attr name="color_negative_light" format="color"/>
     <attr name="colorLight" format="color"/>
     <attr name="colorPrimaryLight" format="color"/>
+    <attr name="colorPrimarySlightLight" format="color"/>
+    <attr name="themeName" format="string"/>
 </resources>

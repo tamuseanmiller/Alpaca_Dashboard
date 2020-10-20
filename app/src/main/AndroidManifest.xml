@@ -12,7 +12,8 @@
         <activity
             android:name=".StockPage"
             android:label="@string/title_activity_stock_page"
-            android:theme="@style/Theme.Alpaca_Dashboard.NoActionBar"></activity>
+            android:theme="@style/Theme.Alpaca_Dashboard.NoActionBar" />
+
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
