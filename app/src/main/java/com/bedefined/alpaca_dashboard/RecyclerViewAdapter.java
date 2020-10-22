@@ -1,60 +1,26 @@
 package com.bedefined.alpaca_dashboard;
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
-import android.content.res.ColorStateList;
-import android.content.res.Resources;
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.util.TypedValue;
-import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
-import android.view.PointerIcon;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.cardview.widget.CardView;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-
-import com.google.android.material.button.MaterialButton;
 
 import net.jacobpeterson.alpaca.AlpacaAPI;
-import net.jacobpeterson.alpaca.enums.BarsTimeFrame;
 import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
-import net.jacobpeterson.domain.alpaca.bar.Bar;
 import net.jacobpeterson.domain.alpaca.position.Position;
-import net.jacobpeterson.domain.polygon.dailyopenclose.DailyOpenCloseResponse;
-import net.jacobpeterson.domain.polygon.dailyopenclose.DailyOpenCloseTrade;
 import net.jacobpeterson.domain.polygon.lastquote.LastQuoteResponse;
-import net.jacobpeterson.domain.polygon.websocket.PolygonStreamMessage;
-import net.jacobpeterson.domain.polygon.websocket.quote.QuoteMessage;
 import net.jacobpeterson.polygon.PolygonAPI;
 import net.jacobpeterson.polygon.rest.exception.PolygonAPIRequestException;
-import net.jacobpeterson.polygon.websocket.listener.PolygonStreamListenerAdapter;
-import net.jacobpeterson.polygon.websocket.message.PolygonStreamMessageType;
 
-import org.w3c.dom.Text;
-
-import java.time.LocalDate;
-import java.time.Period;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Vector;
-
-import static androidx.core.app.ActivityCompat.startActivityForResult;
-import static androidx.core.content.ContextCompat.createDeviceProtectedStorageContext;
 
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
 
@@ -73,7 +39,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = mInflater.inflate(R.layout.recyclerview_row, parent, false);
+        View view = mInflater.inflate(R.layout.recyclerview_position, parent, false);
         return new ViewHolder(view);
     }
 

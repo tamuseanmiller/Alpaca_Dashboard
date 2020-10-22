@@ -29,6 +29,7 @@ import net.jacobpeterson.alpaca.enums.OrderStatus;
 import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
 import net.jacobpeterson.domain.alpaca.order.Order;
 import net.jacobpeterson.domain.alpaca.position.Position;
+import net.jacobpeterson.domain.polygon.lastquote.LastQuoteResponse;
 import net.jacobpeterson.polygon.PolygonAPI;
 import net.jacobpeterson.polygon.rest.exception.PolygonAPIRequestException;
 
@@ -174,36 +175,106 @@ public class StockPage extends AppCompatActivity implements RecyclerViewAdapterS
                 });
 
             });
-
-            // Check if the market is open
-            String marketStatus = null;
-            try {
-                marketStatus = polygonAPI.getMarketStatus().getMarket();
-            } catch (PolygonAPIRequestException e) {
-                e.printStackTrace();
-            }
-
-            if (marketStatus.equals("open")) {
-
-                // Stream live data for a stock
-                MainActivity vars = new MainActivity();
-                vars.streamStockData(polygonAPI, MainActivity.ticker, adapterStock, sparkViewStock, tickerViewStock, percentChangeStock);
-            }
         });
         t1.start();
+
+        // Check if the market is open, stream to ticker
+        String marketStatus = null;
+        try {
+            marketStatus = polygonAPI.getMarketStatus().getMarket();
+        } catch (PolygonAPIRequestException e) {
+            e.printStackTrace();
+        }
+
+        // Stream to chart
+        if (marketStatus.equals("open")) {
+
+            // Stream live data for a stock
+            MainActivity vars = new MainActivity();
+            vars.streamStockData(polygonAPI, MainActivity.ticker, tickerViewStock);
+
+            Thread t2 = new Thread(() -> {
+
+                while (true) {
+                    float askingPrice = 0;
+                    try {
+                        askingPrice = polygonAPI.getLastQuote(MainActivity.ticker.get()).getLast().getAskprice().floatValue();
+
+                    } catch (PolygonAPIRequestException e) {
+                        e.printStackTrace();
+                    }
+
+                    adapterStock.addVal(askingPrice);
+
+                    // Fetch colors
+                    TypedValue typedValue = new TypedValue();
+                    getTheme().resolveAttribute(R.attr.color_negative, typedValue, true);
+                    int negColor = ContextCompat.getColor(getApplicationContext(), typedValue.resourceId);
+                    getTheme().resolveAttribute(R.attr.color_positive, typedValue, true);
+                    int posColor = ContextCompat.getColor(getApplicationContext(), typedValue.resourceId);
+                    getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
+                    int posColorLight = ContextCompat.getColor(getApplicationContext(), typedValue.resourceId);
+                    getTheme().resolveAttribute(R.attr.color_negative_light, typedValue, true);
+                    int negColorLight = ContextCompat.getColor(getApplicationContext(), typedValue.resourceId);
+
+                    float oldVal = adapterStock.getValue(0);
+                    float newVal = adapterStock.getValue(adapterStock.getCount() - 1);
+                    float percentageChange = (newVal - oldVal) / oldVal * 100;
+                    float profitLoss = adapterStock.getValue(adapterStock.getCount() - 1) - adapterStock.getValue(0);
+
+                    runOnUiThread(() -> {
+
+                        // Set colors
+                        if (newVal >= oldVal) {
+                            percentChangeStock.setText(String.format("+$%.2f (%.2f%%)", profitLoss, percentageChange));
+
+                            percentChangeStock.setTextColor(posColor);
+                            percentChangeStock.setBackgroundTintList(ColorStateList.valueOf(posColorLight));
+                            Drawable upArrow = percentChangeStock.getContext().getResources().getDrawable(R.drawable.arrow_top_right);
+                            upArrow.setTint(posColor);
+                            percentChangeStock.setCompoundDrawablesWithIntrinsicBounds(null, null, upArrow, null);
+                            sparkViewStock.setLineColor(posColor);
+
+                        } else {
+                            percentChangeStock.setText(String.format("-$%.2f (%.2f%%)", Math.abs(profitLoss), percentageChange));
+
+                            percentChangeStock.setTextColor(negColor);
+                            percentChangeStock.setBackgroundTintList(ColorStateList.valueOf(negColorLight));
+                            Drawable downArrow = percentChangeStock.getContext().getResources().getDrawable(R.drawable.arrow_bottom_right);
+                            downArrow.setTint(negColor);
+                            percentChangeStock.setCompoundDrawablesWithIntrinsicBounds(null, null, downArrow, null);
+                            sparkViewStock.setLineColor(negColor);
+                        }
+                    });
+
+                    try {
+                        Thread.sleep(60000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            t2.start();
+        }
 
         Thread thread = new Thread(() -> {
 
             // Fetch curent orders
             ordersStock = new ArrayList<>();
+            ArrayList<Order> order = new ArrayList();
             try {
-                ordersStock = alpacaAPI.getOrders(OrderStatus.CLOSED, 10, null, ZonedDateTime.now().plusDays(1), Direction.DESCENDING, false);
+                ordersStock = alpacaAPI.getOrders(OrderStatus.CLOSED, 100, null, ZonedDateTime.now().plusDays(1), Direction.DESCENDING, false);
             } catch (AlpacaAPIRequestException e) {
                 e.printStackTrace();
             }
+            for (int i = 0; i < ordersStock.size(); i++) {
+                if (ordersStock.get(i).getSymbol().equals(MainActivity.ticker.get())) {
+                    order.add(ordersStock.get(i));
+                }
+            }
 
             recyclerOrdersStock = findViewById(R.id.ordersStock);
-            recycleAdapterOrdersStock = new RecyclerViewAdapterOrders(this, ordersStock);
+            recycleAdapterOrdersStock = new RecyclerViewAdapterOrders(this, order);
 
             runOnUiThread(() -> {
                 recyclerOrdersStock.setLayoutManager(new LinearLayoutManager(this));

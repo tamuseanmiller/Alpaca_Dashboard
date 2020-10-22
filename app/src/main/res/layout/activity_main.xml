@@ -9,11 +9,57 @@
     app:icon="@drawable/arrow_top_right"
     android:id="@+id/refresh"
     android:background="?attr/colorPrimary"
+    app:swipeRefreshLayoutProgressSpinnerBackgroundColor="?attr/color_positive"
     android:orientation="vertical"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     tools:context=".MainActivity">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+<!--        <com.google.android.material.floatingactionbutton.FloatingActionButton-->
+<!--            android:layout_width="50dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_alignParentBottom="true"-->
+<!--            android:id="@+id/placeOrder"-->
+<!--            android:layout_alignParentEnd="true"-->
+<!--            android:src="@drawable/plus"-->
+<!--            app:tint="?attr/color_positive_light"-->
+<!--            android:layout_marginBottom="10dp"-->
+<!--            app:elevation="1000dp"-->
+<!--            android:layout_above="@id/scrollID"-->
+<!--            android:contentDescription="@string/places_orders" />-->
+
+<!--        <com.google.android.material.button.MaterialButton-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:translationY="-60dp"-->
+<!--            android:backgroundTint="?attr/color_positive_light"-->
+<!--            app:elevation="1000dp"-->
+<!--            app:cornerRadius="15dp"-->
+<!--            android:layout_above="@id/bottom_navigation"-->
+<!--            android:textColor="?attr/color_positive"-->
+<!--            android:layout_alignParentBottom="true"-->
+<!--            android:id="@+id/placeOrderButton"-->
+<!--            android:layout_alignParentEnd="true"-->
+<!--            android:text="@string/order" />-->
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottom_navigation"
+            style="@style/Widget.MaterialComponents.BottomNavigationView.Colored"
+            app:elevation="500dp"
+            android:backgroundTint="?attr/colorPrimary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:labelVisibilityMode="unlabeled"
+            app:itemIconTint="?attr/colorPrimaryLight"
+            android:layout_above="@id/scrollID"
+            app:menu="@menu/bottom_navigation_menu"
+            android:layout_alignParentBottom="true"/>
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollID"
@@ -127,29 +173,15 @@
                 android:textSize="25sp"
                 android:text="@string/positions"/>
 
-<!--            <com.google.android.material.card.MaterialCardView-->
-<!--                android:id="@+id/recycleCard"-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_marginTop="30dp"-->
-<!--                android:backgroundTint="?attr/colorPrimary"-->
-<!--                app:cardCornerRadius="15dp"-->
-<!--                app:cardElevation="0dp"-->
-<!--                app:strokeWidth="1dp"-->
-<!--                app:strokeColor="?attr/colorAccentTransparent"-->
-<!--                app:cardPreventCornerOverlap="false">-->
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recyclerStocks"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:clickable="true"
-                    android:paddingTop="5dp"
-                    android:paddingStart="-5dp"
-                    android:paddingEnd="-5dp"
-                    android:focusable="true"/>
-
-<!--            </com.google.android.material.card.MaterialCardView>-->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerStocks"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clickable="true"
+                android:paddingTop="5dp"
+                android:paddingStart="-5dp"
+                android:paddingEnd="-5dp"
+                android:focusable="true"/>
 
             <androidx.appcompat.widget.AppCompatTextView
                 android:layout_width="match_parent"
@@ -174,5 +206,7 @@
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
+
+    </RelativeLayout>
 
 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

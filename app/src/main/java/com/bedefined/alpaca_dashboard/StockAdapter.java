@@ -83,8 +83,8 @@ public class StockAdapter extends SparkAdapter {
 
         if (marketStatus.equals("open")) {
             try {
-                bars = alpacaAPI.getBars(BarsTimeFrame.ONE_MIN, ticker.get(), 1000, null, null,
-                        ZonedDateTime.of(LocalDateTime.of(LocalDate.now(), LocalTime.of(8, 30)), ZoneId.of("UTC-6")), null);
+                bars = alpacaAPI.getBars(BarsTimeFrame.FIVE_MINUTE, ticker.get(), 1000, null, null,
+                        ZonedDateTime.of(LocalDateTime.of(LocalDate.now(), LocalTime.of(7, 30)), ZoneId.of("UTC-6")), null);
 
             } catch (AlpacaAPIRequestException e) {
                 e.printStackTrace();
@@ -195,7 +195,7 @@ public class StockAdapter extends SparkAdapter {
     public float getBaseLine() {
 
         PolygonAPI polygonAPI = new PolygonAPI();
-        float lastClose = 0;
+        AtomicReference<Float> lastClose = new AtomicReference<>((float) 0);
 //        AlpacaAPI alpacaAPI = new AlpacaAPI();
 //        try {
 //            alpacaAPI.getPortfolioHistory(1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.FIVE_MINUTE, LocalDate.now(), false);
@@ -203,20 +203,25 @@ public class StockAdapter extends SparkAdapter {
 //            e.printStackTrace();
 //        }
 
+        Thread thread = new Thread(() -> {
+
         if (!ticker.get().equals("NOTICKER")) {
             try {
-                lastClose = polygonAPI.getPreviousClose(String.valueOf(ticker), false).getResults().get(0).getC().floatValue();
+                lastClose.set(polygonAPI.getPreviousClose(String.valueOf(ticker), false).getResults().get(0).getC().floatValue());
             } catch (PolygonAPIRequestException e) {
                 e.printStackTrace();
             }
         }
+        });
+        thread.start();
 
-        if (lastClose != 0.0) {
-            baseline = lastClose;
-            return lastClose;
+        if (lastClose.get() != 0.0) {
+            baseline = lastClose.get();
+            return lastClose.get();
         }
         baseline = yData.get(0);
         return yData.get(0);
+
     }
 }
 

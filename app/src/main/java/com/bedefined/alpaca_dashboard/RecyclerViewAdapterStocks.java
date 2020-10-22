@@ -1,7 +1,6 @@
 package com.bedefined.alpaca_dashboard;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,13 +12,7 @@ import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.jacobpeterson.alpaca.AlpacaAPI;
-import net.jacobpeterson.domain.polygon.lastquote.LastQuoteResponse;
-import net.jacobpeterson.domain.polygon.websocket.PolygonStreamMessage;
-import net.jacobpeterson.domain.polygon.websocket.quote.QuoteMessage;
 import net.jacobpeterson.polygon.PolygonAPI;
-import net.jacobpeterson.polygon.rest.exception.PolygonAPIRequestException;
-import net.jacobpeterson.polygon.websocket.listener.PolygonStreamListenerAdapter;
-import net.jacobpeterson.polygon.websocket.message.PolygonStreamMessageType;
 
 import java.util.List;
 
@@ -39,7 +32,7 @@ public class RecyclerViewAdapterStocks extends RecyclerView.Adapter<RecyclerView
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = mInflater.inflate(R.layout.recyclerview_row, parent, false);
+        View view = mInflater.inflate(R.layout.recyclerview_position, parent, false);
         return new ViewHolder(view);
     }
 

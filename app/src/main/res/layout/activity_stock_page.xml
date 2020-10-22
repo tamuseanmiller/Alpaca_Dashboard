@@ -15,6 +15,37 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     tools:context=".MainActivity">
 
+<!--    <RelativeLayout-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content">-->
+
+<!--        <com.google.android.material.button.MaterialButton-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:translationY="-60dp"-->
+<!--            android:backgroundTint="?attr/color_positive_light"-->
+<!--            app:cornerRadius="15dp"-->
+<!--            android:layout_above="@id/bottom_navigation_stock"-->
+<!--            android:layout_alignParentEnd="true"-->
+<!--            android:layout_alignParentBottom="true"-->
+<!--            android:textColor="?attr/color_positive"-->
+<!--            android:id="@+id/placeOrderButton"-->
+<!--            android:text="@string/order" />-->
+
+<!--        <com.google.android.material.bottomnavigation.BottomNavigationView-->
+<!--            android:id="@+id/bottom_navigation_stock"-->
+<!--            style="@style/Widget.MaterialComponents.BottomNavigationView.Colored"-->
+<!--            app:elevation="500dp"-->
+<!--            android:backgroundTint="?attr/colorPrimary"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            app:labelVisibilityMode="unlabeled"-->
+<!--            app:itemIconTint="?attr/colorPrimaryLight"-->
+<!--            app:menu="@menu/bottom_navigation_menu"-->
+<!--            android:layout_alignParentBottom="true"/>-->
+
+<!--    </RelativeLayout>-->
+
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollIDStock"
         android:layout_width="match_parent"
@@ -134,6 +165,7 @@
                 android:clickable="true"
                 android:paddingStart="-5dp"
                 android:paddingEnd="-5dp"
+                android:paddingBottom="10dp"
                 android:focusable="true"/>
 
         </LinearLayout>

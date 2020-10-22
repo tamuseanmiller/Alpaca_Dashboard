@@ -20,7 +20,7 @@
         <!-- Customize your theme here. -->
     </style>
 
-    <style name="Theme.Alpaca_Dashboard.Light" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.Alpaca_Dashboard.Light" parent="Theme.MaterialComponents.Light.NoActionBar">
 
         <item name="themeName">light</item>
         <item name="colorPrimary">@color/colorPrimary_light</item>

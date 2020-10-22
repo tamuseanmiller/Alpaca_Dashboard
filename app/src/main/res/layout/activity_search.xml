@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorPrimary"
+    tools:context=".Search">
+
+    <com.lapism.search.widget.MaterialSearchView
+        android:id="@+id/material_search_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:stateListAnimator="@null"
+        app:search_strokeColor="?attr/colorAccentTransparent"
+        app:elevation="0dp"
+        app:search_navigationIcon="@drawable/magnify"/>
+
+    <view class="androidx.appcompat.app.AlertController$RecycleListView"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:id="@+id/searchResults">
+
+    </view>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+<!--        <HorizontalScrollView-->
+<!--            android:id="@+id/scrollingTicker"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:paddingStart="10dp">-->
+
+<!--            <com.google.android.material.circularreveal.cardview.CircularRevealCardView-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:backgroundTint="?attr/colorPrimary"-->
+<!--                android:clipChildren="true"-->
+<!--                android:elevation="0dp"-->
+<!--                app:cardCornerRadius="15dp"-->
+<!--                app:cardElevation="0dp"-->
+<!--                app:cardPreventCornerOverlap="false"-->
+<!--                app:contentPadding="10dp"-->
+<!--                app:strokeColor="?attr/colorAccentTransparent"-->
+<!--                app:strokeWidth="1dp">-->
+
+<!--                <LinearLayout-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="match_parent"-->
+<!--                    android:orientation="horizontal">-->
+
+<!--                    <TextView-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:paddingEnd="10dp"-->
+<!--                        android:text="S&amp;P 500"-->
+<!--                        android:textColor="?attr/colorLight" />-->
+
+<!--                    <com.google.android.material.button.MaterialButton-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:id="@+id/percentChangeSearch"-->
+<!--                        android:backgroundTint="?attr/colorAccentTransparent"-->
+<!--                        android:stateListAnimator="@null"-->
+<!--                        android:text="@string/loading"-->
+<!--                        android:textColor="?attr/colorPrimaryLight"-->
+<!--                        android:textSize="10sp"-->
+<!--                        app:cornerRadius="15dp"-->
+<!--                        app:iconSize="3dp"-->
+<!--                        app:iconTint="?attr/colorPrimaryLight"-->
+<!--                        app:rippleColor="?attr/color_positive" />-->
+
+<!--                </LinearLayout>-->
+
+<!--            </com.google.android.material.circularreveal.cardview.CircularRevealCardView>-->
+
+<!--        </HorizontalScrollView>-->
+
+<!--        <androidx.appcompat.widget.SearchView-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_below="@id/scrollingTicker" />-->
+
+        <!--            <com.google.android.material.textfield.TextInputLayout-->
+        <!--                android:id="@+id/searchTextField"-->
+        <!--                android:layout_below="@id/scrollingTicker"-->
+        <!--                android:layout_width="match_parent"-->
+        <!--                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"-->
+        <!--                app:hintAnimationEnabled="true"-->
+        <!--                app:hintTextColor="?attr/color_positive"-->
+        <!--                app:boxStrokeColor="?attr/colorAccentTransparent"-->
+        <!--                app:boxStrokeErrorColor="?attr/color_negative"-->
+        <!--                android:textColorHint="?attr/colorPrimaryLight"-->
+        <!--                app:errorTextColor="?attr/color_negative"-->
+        <!--                android:layout_gravity="fill_horizontal"-->
+        <!--                android:gravity="center"-->
+        <!--                app:boxStrokeWidth=".5dp"-->
+        <!--                app:boxStrokeWidthFocused="1dp"-->
+        <!--                app:boxCornerRadiusBottomEnd="15dp"-->
+        <!--                app:boxCornerRadiusBottomStart="15dp"-->
+        <!--                app:boxCornerRadiusTopEnd="15dp"-->
+        <!--                app:boxCornerRadiusTopStart="15dp"-->
+        <!--                android:padding="20dp"-->
+        <!--                android:hint="Ticker"-->
+        <!--                android:paddingTop="20dp"-->
+        <!--                android:layout_height="wrap_content">-->
+
+        <!--                <com.google.android.material.textfield.TextInputEditText-->
+        <!--                    android:layout_width="match_parent"-->
+        <!--                    android:layout_height="wrap_content"/>-->
+
+        <!--            </com.google.android.material.textfield.TextInputLayout>-->
+
+        <!--        </androidx.core.widget.NestedScrollView>-->
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottom_navigation_search"
+            style="@style/Widget.MaterialComponents.BottomNavigationView.Colored"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:backgroundTint="?attr/colorPrimary"
+            app:elevation="500dp"
+            app:itemIconTint="?attr/colorPrimaryLight"
+            app:labelVisibilityMode="unlabeled"
+            app:menu="@menu/bottom_navigation_menu" />
+
+    </RelativeLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

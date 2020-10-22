@@ -58,4 +58,7 @@ dependencies {
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
     implementation 'com.robinhood.spark:spark:1.2.0'
     implementation "androidx.gridlayout:gridlayout:1.0.0"
+    implementation 'com.getbase:floatingactionbutton:1.10.1'
+    implementation 'com.allattentionhere:fabulousfilter:0.0.5'
+    implementation 'com.lapism:search:2.3.0@aar'
 }
