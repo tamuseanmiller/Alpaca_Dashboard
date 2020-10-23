@@ -7,11 +7,35 @@
     android:background="?attr/colorPrimary"
     tools:context=".Search">
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation_search"
+        app:elevation="500dp"
+        style="@style/Widget.MaterialComponents.BottomNavigationView.Colored"
+        android:backgroundTint="?attr/colorPrimary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:labelVisibilityMode="unlabeled"
+        app:itemIconTint="@drawable/bottom_navigation_selector"
+        app:menu="@menu/bottom_navigation_menu"
+        android:layout_alignParentBottom="true">
+
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="4dp"
+            android:background="@drawable/shadow"/>
+
+    </com.google.android.material.bottomnavigation.BottomNavigationView>
+
     <com.lapism.search.widget.MaterialSearchView
         android:id="@+id/material_search_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:stateListAnimator="@null"
+        android:backgroundTint="?attr/colorAccentTransparent"
         app:search_strokeColor="?attr/colorAccentTransparent"
         app:elevation="0dp"
         app:search_navigationIcon="@drawable/magnify"/>
@@ -115,17 +139,19 @@
 
         <!--        </androidx.core.widget.NestedScrollView>-->
 
-        <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/bottom_navigation_search"
-            style="@style/Widget.MaterialComponents.BottomNavigationView.Colored"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:backgroundTint="?attr/colorPrimary"
-            app:elevation="500dp"
-            app:itemIconTint="?attr/colorPrimaryLight"
-            app:labelVisibilityMode="unlabeled"
-            app:menu="@menu/bottom_navigation_menu" />
+<!--        <com.google.android.material.bottomnavigation.BottomNavigationView-->
+<!--            android:id="@+id/bottom_navigation_search"-->
+<!--            style="@style/Widget.MaterialComponents.BottomNavigationView.Colored"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_alignParentBottom="true"-->
+<!--            android:backgroundTint="?attr/colorPrimary"-->
+<!--            app:elevation="500dp"-->
+<!--            app:itemIconTint="?attr/colorPrimaryLight"-->
+<!--            app:labelVisibilityMode="unlabeled"-->
+<!--            app:menu="@menu/bottom_navigation_menu" />-->
+
+    </RelativeLayout>
 
     </RelativeLayout>
 

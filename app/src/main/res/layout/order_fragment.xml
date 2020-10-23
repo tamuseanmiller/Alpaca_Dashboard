@@ -24,10 +24,17 @@
             android:layout_centerHorizontal="true"
             android:orientation="vertical">
 
+            <TextView
+                android:id="@+id/tickerName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="?attr/colorLight"
+                android:textSize="16dp"
+                android:padding="30dp"/>
+
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/quantityTextField"
             android:layout_width="match_parent"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            style="@style/LoginTextInputLayoutStyle"
             app:hintAnimationEnabled="true"
             app:hintTextColor="?attr/color_positive"
             app:boxStrokeColor="?attr/colorAccentTransparent"
@@ -44,43 +51,43 @@
             app:boxCornerRadiusTopStart="15dp"
             android:padding="20dp"
             android:hint="Quantity"
-            android:paddingTop="60dp"
             android:layout_height="wrap_content">
 
             <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/quantityTextField"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tickerTextField"
-            android:layout_width="match_parent"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            app:hintAnimationEnabled="true"
-            app:hintTextColor="?attr/color_positive"
-            app:boxStrokeColor="?attr/colorAccentTransparent"
-            app:boxStrokeErrorColor="?attr/color_negative"
-            android:textColorHint="?attr/colorPrimaryLight"
-            app:errorTextColor="?attr/color_negative"
-            android:layout_gravity="fill_horizontal"
-            android:gravity="center"
-            app:boxStrokeWidth=".5dp"
-            app:boxStrokeWidthFocused="1dp"
-            app:boxCornerRadiusBottomEnd="15dp"
-            app:boxCornerRadiusBottomStart="15dp"
-            app:boxCornerRadiusTopEnd="15dp"
-            app:boxCornerRadiusTopStart="15dp"
-            android:padding="20dp"
-            android:hint="Stock Ticker"
-            android:paddingTop="60dp"
-            android:layout_height="wrap_content">
+<!--        <com.google.android.material.textfield.TextInputLayout-->
+<!--            android:id="@+id/tickerTextField"-->
+<!--            android:layout_width="match_parent"-->
+<!--            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"-->
+<!--            app:hintAnimationEnabled="true"-->
+<!--            app:hintTextColor="?attr/color_positive"-->
+<!--            app:boxStrokeColor="?attr/colorAccentTransparent"-->
+<!--            app:boxStrokeErrorColor="?attr/color_negative"-->
+<!--            android:textColorHint="?attr/colorPrimaryLight"-->
+<!--            app:errorTextColor="?attr/color_negative"-->
+<!--            android:layout_gravity="fill_horizontal"-->
+<!--            android:gravity="center"-->
+<!--            app:boxStrokeWidth=".5dp"-->
+<!--            app:boxStrokeWidthFocused="1dp"-->
+<!--            app:boxCornerRadiusBottomEnd="15dp"-->
+<!--            app:boxCornerRadiusBottomStart="15dp"-->
+<!--            app:boxCornerRadiusTopEnd="15dp"-->
+<!--            app:boxCornerRadiusTopStart="15dp"-->
+<!--            android:padding="20dp"-->
+<!--            android:hint="Stock Ticker"-->
+<!--            android:paddingTop="60dp"-->
+<!--            android:layout_height="wrap_content">-->
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+<!--            <com.google.android.material.textfield.TextInputEditText-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"/>-->
 
-        </com.google.android.material.textfield.TextInputLayout>
+<!--        </com.google.android.material.textfield.TextInputLayout>-->
 
         </LinearLayout>
 

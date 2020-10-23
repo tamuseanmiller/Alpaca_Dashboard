@@ -1,10 +1,17 @@
 package com.bedefined.alpaca_dashboard;
 
+import android.annotation.SuppressLint;
+import android.app.ActivityOptions;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.robinhood.spark.SparkView;
 import com.robinhood.spark.animation.LineSparkAnimator;
 import com.robinhood.ticker.TickerUtils;
@@ -18,10 +25,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.util.TypedValue;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import net.jacobpeterson.alpaca.AlpacaAPI;
 import net.jacobpeterson.alpaca.enums.Direction;
@@ -55,11 +64,18 @@ public class StockPage extends AppCompatActivity implements RecyclerViewAdapterS
     private ArrayList<Order> ordersStock;
     private RecyclerViewAdapterOrders recycleAdapterOrdersStock;
     private SwipeRefreshLayout swipeRefreshStock;
+    private FloatingActionButton fab;
 
+    private static final int SWIPE_THRESHOLD = 100;
+    private float _downX;
+    private BottomNavigationView bottomNavigationViewStocks;
+
+    @SuppressLint("ClickableViewAccessibility")
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Utils.onActivityCreateSetTheme(this);
+
+        Utils.startTheme(this, new SharedPreferencesManager(this).retrieveInt("theme", Utils.THEME_DEFAULT));
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stock_page);
@@ -76,10 +92,62 @@ public class StockPage extends AppCompatActivity implements RecyclerViewAdapterS
         // Set percent change
         percentChangeStock = findViewById(R.id.percentChangeStock);
 
+        // Set fab
+        fab = findViewById(R.id.placeOrder);
+        fab.setOnClickListener(v -> {
+            PlaceOrderFragment dialogFrag = new PlaceOrderFragment();
+            dialogFrag.setParentFab(fab);
+            dialogFrag.show(getSupportFragmentManager(), dialogFrag.getTag());
+//            Drawable plus = ContextCompat.getDrawable(this, R.drawable.plus);
+//            plus.setTint(R.attr.color_positive);
+//            fab.setBackgroundDrawable(plus);
+//            dialogFrag.setAnimationDuration(400);
+        });
+
+        // Set bottom navigation
+        bottomNavigationViewStocks = findViewById(R.id.bottom_navigation_stocks);
+        bottomNavigationViewStocks.setSelectedItemId(R.id.dashboard_page);
+        bottomNavigationViewStocks.setOnNavigationItemSelectedListener( item -> {
+
+            switch(item.getItemId()) {
+                case R.id.dashboard_page:
+                    Intent intentDashboard = new Intent(StockPage.this, MainActivity.class);
+                    StockPage.this.startActivity(intentDashboard, ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
+                    return true;
+                case R.id.search_page:
+                    Intent intentSearch = new Intent(StockPage.this, Search.class);
+                    StockPage.this.startActivity(intentSearch, ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
+                    return true;
+                case R.id.profile_page:
+                    Intent intentProfile = new Intent(StockPage.this, Profile.class);
+                    StockPage.this.startActivity(intentProfile, ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
+                    return true;
+            }
+            return false;
+        });
+
+        // Set number of stocks textview
+        TextView numPos = findViewById(R.id.numberOfStocks);
+        String numPosition = null;
+        try {
+            numPosition = alpacaAPI.getOpenPositionBySymbol(MainActivity.ticker.get()).getQty();
+            numPos.setText(numPosition + " shares owned");
+        } catch (AlpacaAPIRequestException e) {
+            e.printStackTrace();
+        }
+
         // Set swipeRefresh
         swipeRefreshStock = findViewById(R.id.refreshStock);
         swipeRefreshStock.setTranslationZ(100);
         swipeRefreshStock.bringToFront();
+
+        swipeRefreshStock.setOnTouchListener(new onTouchSwipeListener(StockPage.this) {
+
+            @Override
+            public void onSwipeLeft() {
+                Toast.makeText(StockPage.this, "left", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         // Ticker information
         tickerViewStock = findViewById(R.id.tickerViewStock);

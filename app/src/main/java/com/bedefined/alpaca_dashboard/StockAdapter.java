@@ -8,6 +8,8 @@ import com.robinhood.spark.SparkAdapter;
 
 import net.jacobpeterson.alpaca.AlpacaAPI;
 import net.jacobpeterson.alpaca.enums.BarsTimeFrame;
+import net.jacobpeterson.alpaca.enums.PortfolioPeriodUnit;
+import net.jacobpeterson.alpaca.enums.PortfolioTimeFrame;
 import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
 import net.jacobpeterson.domain.alpaca.bar.Bar;
 import net.jacobpeterson.domain.alpaca.calendar.Calendar;
@@ -74,6 +76,7 @@ public class StockAdapter extends SparkAdapter {
         PolygonAPI polygonAPI = new PolygonAPI();
         Map<String, ArrayList<Bar>> bars = null;
 
+        // Check if market is open
         String marketStatus = null;
         try {
             marketStatus = polygonAPI.getMarketStatus().getMarket();
@@ -82,9 +85,11 @@ public class StockAdapter extends SparkAdapter {
         }
 
         if (marketStatus.equals("open")) {
+
+            // Fetch todays bars
             try {
                 bars = alpacaAPI.getBars(BarsTimeFrame.FIVE_MINUTE, ticker.get(), 1000, null, null,
-                        ZonedDateTime.of(LocalDateTime.of(LocalDate.now(), LocalTime.of(7, 30)), ZoneId.of("UTC-6")), null);
+                        ZonedDateTime.of(LocalDateTime.of(LocalDate.now(), LocalTime.of(5, 30)), ZoneId.of("UTC-6")), null);
 
             } catch (AlpacaAPIRequestException e) {
                 e.printStackTrace();
@@ -198,7 +203,7 @@ public class StockAdapter extends SparkAdapter {
         AtomicReference<Float> lastClose = new AtomicReference<>((float) 0);
 //        AlpacaAPI alpacaAPI = new AlpacaAPI();
 //        try {
-//            alpacaAPI.getPortfolioHistory(1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.FIVE_MINUTE, LocalDate.now(), false);
+//            alpacaAPI.getPortfolioHistory(1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.ONE_MIN, LocalDate.now(), false);
 //        } catch (AlpacaAPIRequestException e) {
 //            e.printStackTrace();
 //        }

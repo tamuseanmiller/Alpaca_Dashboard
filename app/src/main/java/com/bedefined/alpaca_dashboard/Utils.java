@@ -23,6 +23,21 @@ public class Utils {
         activity.startActivity(new Intent(activity, activity.getClass()));
     }
 
+    public static void startTheme(Activity activity, int theme) {
+        switch (theme) {
+            default:
+            case THEME_DEFAULT:
+                activity.setTheme(R.style.Theme_Alpaca_Dashboard_Light);
+                break;
+            case THEME_LIGHT:
+                activity.setTheme(R.style.Theme_Alpaca_Dashboard_Light);
+                break;
+            case THEME_DARK:
+                activity.setTheme(R.style.Theme_Alpaca_Dashboard_Dark);
+                break;
+        }
+    }
+
     /**
      * Set the theme of the activity, according to the configuration.
      */
@@ -34,7 +49,6 @@ public class Utils {
                 break;
             case THEME_LIGHT:
                 activity.setTheme(R.style.Theme_Alpaca_Dashboard_Light);
-
                 break;
             case THEME_DARK:
                 activity.setTheme(R.style.Theme_Alpaca_Dashboard_Dark);

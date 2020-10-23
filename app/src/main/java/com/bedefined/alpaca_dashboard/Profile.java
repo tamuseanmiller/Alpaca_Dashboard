@@ -16,7 +16,8 @@ public class Profile extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-        Utils.onActivityCreateSetTheme(this);
+        Utils.startTheme(this, new SharedPreferencesManager(this).retrieveInt("theme", Utils.THEME_DEFAULT));
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
@@ -26,7 +27,7 @@ public class Profile extends AppCompatActivity {
 
             switch(item.getItemId()) {
                 case R.id.dashboard_page:
-                    Intent intentMain = new Intent(this, StockPage.class);
+                    Intent intentMain = new Intent(this, MainActivity.class);
                     this.startActivity(intentMain, ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
                     return true;
                 case R.id.search_page:
@@ -34,8 +35,6 @@ public class Profile extends AppCompatActivity {
                     this.startActivity(intentSearch, ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
                     return true;
                 case R.id.profile_page:
-                    Intent intentProfile = new Intent(this, Profile.class);
-                    this.startActivity(intentProfile, ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
                     return true;
             }
             return false;

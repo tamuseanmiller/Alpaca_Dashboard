@@ -62,7 +62,9 @@ public class Search extends AppCompatActivity implements SearchLayout.OnQueryTex
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Utils.onActivityCreateSetTheme(this);
+
+        Utils.startTheme(this, new SharedPreferencesManager(this).retrieveInt("theme", Utils.THEME_DEFAULT));
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
 
@@ -72,12 +74,10 @@ public class Search extends AppCompatActivity implements SearchLayout.OnQueryTex
 
             switch(item.getItemId()) {
                 case R.id.dashboard_page:
-                    Intent intentMain = new Intent(this, StockPage.class);
+                    Intent intentMain = new Intent(this, MainActivity.class);
                     startActivity(intentMain, ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
                     return true;
                 case R.id.search_page:
-                    Intent intentSearch = new Intent(this, Search.class);
-                    startActivity(intentSearch, ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
                     return true;
                 case R.id.profile_page:
                     Intent intentProfile = new Intent(this, Profile.class);

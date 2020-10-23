@@ -14,6 +14,11 @@
         <item name="color_negative_light">@color/color_negative_light</item>
         <item name="colorLight">@color/colorLight</item>
         <item name="colorPrimarySlightLight">@color/colorPrimarySlightLight</item>
+        <item name="colorControlActivated">@color/colorPrimaryLight</item>
+
+        <item name="mtrl_textinput_default_box_stroke_color">@color/colorAccentTransparent</item>
+        <item name="boxStrokeColor">@color/colorAccentTransparent</item>
+        <item name="boxStrokeWidth">1dp</item>
 
 <!--         Status bar color.-->
         <item name="android:statusBarColor" tools:targetApi="l">@color/colorPrimary</item>
@@ -34,10 +39,32 @@
         <item name="color_negative_light">@color/color_negative_light_light</item>
         <item name="colorLight">@color/colorLight_light</item>
         <item name="colorPrimarySlightLight">@color/colorPrimarySlightLight_light</item>
+        <item name="colorControlActivated">@color/colorPrimaryLight_light</item>
+
+        <item name="mtrl_textinput_default_box_stroke_color">@color/colorAccentTransparent_light</item>
+        <item name="boxStrokeColor">@color/colorAccentTransparent_light</item>
+        <item name="boxStrokeWidth">1dp</item>
 
 <!--         Status bar color.-->
         <item name="android:statusBarColor" tools:targetApi="l">@color/colorPrimary_light</item>
         <!-- Customize your theme here. -->
+    </style>
+
+    <style name="LoginTextInputLayoutStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">?attr/colorAccentTransparent</item>
+        <item name="boxStrokeWidth">1dp</item>
+    </style>
+
+    <style name="DialogThemePositive" parent="Theme.MaterialComponents.DayNight.Dialog.Alert">
+        <item name="colorPrimary">?attr/color_positive</item>
+<!--        <item name="colorSurface">?attr/colorLight</item>-->
+<!--        <item name="colorOnSurface">?attr/colorLight</item>-->
+    </style>
+
+    <style name="DialogThemeNegative" parent="Theme.MaterialComponents.DayNight.Dialog.Alert">
+        <item name="colorPrimary">?attr/color_negative</item>
+<!--        <item name="colorSurface">?attr/color_positive</item>-->
+<!--        <item name="colorOnSurface">?attr/colorLight</item>-->
     </style>
 
     <style name="Theme.Alpaca_Dashboard.NoActionBar" parent="Theme.MaterialComponents.Light.NoActionBar">

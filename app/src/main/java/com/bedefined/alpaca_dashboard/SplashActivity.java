@@ -39,7 +39,8 @@ public class SplashActivity extends Activity {
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Utils.onActivityCreateSetTheme(this);
+
+        Utils.startTheme(this, new SharedPreferencesManager(this).retrieveInt("theme", Utils.THEME_DEFAULT));
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.splash_screen);

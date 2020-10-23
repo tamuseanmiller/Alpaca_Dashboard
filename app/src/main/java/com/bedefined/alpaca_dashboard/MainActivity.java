@@ -15,6 +15,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
@@ -22,6 +23,7 @@ import android.icu.text.RelativeDateTimeFormatter;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.telecom.Call;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
@@ -62,6 +64,7 @@ import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -70,6 +73,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import io.cabriole.decorator.ColumnProvider;
 import io.cabriole.decorator.GridMarginDecoration;
 import io.cabriole.decorator.LinearMarginDecoration;
+
+import static com.bedefined.alpaca_dashboard.Utils.THEME_DARK;
+import static com.bedefined.alpaca_dashboard.Utils.THEME_LIGHT;
 
 public class MainActivity extends AppCompatActivity implements RecyclerViewAdapter.ItemClickListener, View.OnClickListener {
 
@@ -156,7 +162,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
-        Utils.onActivityCreateSetTheme(this);
+        Utils.startTheme(MainActivity.this, new SharedPreferencesManager(this).retrieveInt("theme", Utils.THEME_DEFAULT));
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -201,12 +207,11 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         // Set bottom navbar
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.setSelectedItemId(R.id.dashboard_page);
-        bottomNavigationView.setOnNavigationItemSelectedListener( item -> {
+        bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
 
-            switch(item.getItemId()) {
+            switch (item.getItemId()) {
                 case R.id.dashboard_page:
-                    Intent intentMain = new Intent(MainActivity.this, StockPage.class);
-                    MainActivity.this.startActivity(intentMain, ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
+                    onRefresh();
                     return true;
                 case R.id.search_page:
                     Intent intentSearch = new Intent(MainActivity.this, Search.class);
@@ -607,9 +612,11 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         TypedValue outValue = new TypedValue();
         getTheme().resolveAttribute(R.attr.themeName, outValue, true);
         if ("light".equals(outValue.string)) {
+            new SharedPreferencesManager(getApplicationContext()).storeInt("theme", THEME_DARK);
             Utils.changeToTheme(this, Utils.THEME_DARK);
 
         } else {
+            new SharedPreferencesManager(getApplicationContext()).storeInt("theme", THEME_LIGHT);
             Utils.changeToTheme(this, Utils.THEME_LIGHT);
         }
 

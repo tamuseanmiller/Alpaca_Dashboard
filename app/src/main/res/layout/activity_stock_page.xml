@@ -10,47 +10,106 @@
     app:icon="@drawable/arrow_top_right"
     android:background="?attr/colorPrimary"
     android:orientation="vertical"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
     tools:context=".MainActivity">
 
 <!--    <RelativeLayout-->
 <!--        android:layout_width="wrap_content"-->
 <!--        android:layout_height="wrap_content">-->
 
-<!--        <com.google.android.material.button.MaterialButton-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:translationY="-60dp"-->
-<!--            android:backgroundTint="?attr/color_positive_light"-->
-<!--            app:cornerRadius="15dp"-->
-<!--            android:layout_above="@id/bottom_navigation_stock"-->
-<!--            android:layout_alignParentEnd="true"-->
-<!--            android:layout_alignParentBottom="true"-->
-<!--            android:textColor="?attr/color_positive"-->
-<!--            android:id="@+id/placeOrderButton"-->
-<!--            android:text="@string/order" />-->
-
-<!--        <com.google.android.material.bottomnavigation.BottomNavigationView-->
-<!--            android:id="@+id/bottom_navigation_stock"-->
-<!--            style="@style/Widget.MaterialComponents.BottomNavigationView.Colored"-->
-<!--            app:elevation="500dp"-->
-<!--            android:backgroundTint="?attr/colorPrimary"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            app:labelVisibilityMode="unlabeled"-->
-<!--            app:itemIconTint="?attr/colorPrimaryLight"-->
-<!--            app:menu="@menu/bottom_navigation_menu"-->
-<!--            android:layout_alignParentBottom="true"/>-->
-
 <!--    </RelativeLayout>-->
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="?attr/color_positive"
+            android:id="@+id/placeOrder"
+            android:src="@drawable/plus"
+            android:elevation="2dp"
+            app:borderWidth="0dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="20dp"
+            android:layout_above="@id/bottom_navigation_stocks"
+            android:paddingBottom="100dp"
+            app:fab_stroke_visible="false"
+            app:tint="?attr/colorPrimary"
+            android:contentDescription="@string/places_orders" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/numberOfStocks"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/colorPrimarySlightLight"
+            android:text="@string/loading"
+            android:elevation="2dp"
+            android:layout_marginStart="20dp"
+            android:textSize="10sp"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="60dp"/>
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottom_navigation_stocks"
+            app:elevation="1dp"
+            style="@style/Widget.MaterialComponents.BottomNavigationView.Colored"
+            android:backgroundTint="?attr/colorPrimary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:labelVisibilityMode="unlabeled"
+            app:itemIconTint="@drawable/bottom_navigation_selector"
+            app:menu="@menu/bottom_navigation_menu"
+            android:layout_gravity="bottom"
+            android:layout_alignParentBottom="true">
+
+        </com.google.android.material.bottomnavigation.BottomNavigationView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="90dp"
+            app:cardCornerRadius="0dp"
+            android:id="@+id/fabCard"
+            android:layout_gravity="bottom"
+            android:backgroundTint="?attr/colorPrimary"
+            android:layout_alignParentBottom="true">
+
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="4dp"
+            android:background="@drawable/shadow"/>
+
+        </com.google.android.material.card.MaterialCardView>
+
+<!--                <com.google.android.material.button.MaterialButton-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:translationY="-60dp"-->
+<!--                    android:backgroundTint="?attr/color_positive_light"-->
+<!--                    app:elevation="1000dp"-->
+<!--                    app:cornerRadius="15dp"-->
+<!--                    android:layout_above="@id/bottom_navigation_stock"-->
+<!--                    android:textColor="?attr/color_positive"-->
+<!--                    android:layout_alignParentBottom="true"-->
+<!--                    android:id="@+id/placeOrderButton"-->
+<!--                    android:layout_alignParentEnd="true"-->
+<!--                    android:text="@string/order" />-->
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingTop="@dimen/activity_vertical_margin"
+            android:paddingRight="@dimen/activity_horizontal_margin">
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollIDStock"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:elevation="10dp">
+        android:layout_height="match_parent">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -68,6 +127,7 @@
                     android:text="@string/loading"
                     android:textSize="10sp"
                     android:gravity="center"
+                    android:clickable="false"
                     android:layout_centerInParent="true"
                     app:cornerRadius="15dp"
                     android:layout_alignParentEnd="true"
@@ -162,14 +222,35 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/ordersStock"
+                android:elevation="0dp"
                 android:clickable="true"
                 android:paddingStart="-5dp"
                 android:paddingEnd="-5dp"
-                android:paddingBottom="10dp"
+                android:paddingBottom="90dp"
                 android:focusable="true"/>
 
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
+
+        </RelativeLayout>
+
+<!--        <com.google.android.material.bottomappbar.BottomAppBar-->
+<!--            style="@style/Widget.MaterialComponents.BottomNavigationView.Colored"-->
+<!--            android:id="@+id/bottom_navigation_stock"-->
+<!--            android:backgroundTint="?attr/colorPrimary"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            app:labelVisibilityMode="unlabeled"-->
+<!--            app:itemIconTint="@drawable/bottom_navigation_selector"-->
+<!--            android:layout_gravity="bottom"-->
+<!--            app:fabAlignmentMode="end"-->
+<!--            app:fabCradleMargin="0dp"-->
+<!--            app:menu="@menu/bottom_navigation_menu"-->
+<!--            android:layout_alignParentBottom="true"/>-->
+
+    </RelativeLayout>
+
+    </FrameLayout>
 
 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<style name="MyDialogTheme" parent="Theme.Alpaca_Dashboard_Light">
+    <item name="colorPrimary">@color/colorLight</item>
+</style>

@@ -11,15 +11,38 @@
     android:background="?attr/colorPrimary"
     app:swipeRefreshLayoutProgressSpinnerBackgroundColor="?attr/color_positive"
     android:orientation="vertical"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
     tools:context=".MainActivity">
 
     <RelativeLayout
         android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        app:elevation="500dp"
+        style="@style/Widget.MaterialComponents.BottomNavigationView.Colored"
+        android:backgroundTint="?attr/colorPrimary"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        app:labelVisibilityMode="unlabeled"
+        app:itemIconTint="@drawable/bottom_navigation_selector"
+        app:menu="@menu/bottom_navigation_menu"
+        android:layout_alignParentBottom="true">
+
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="4dp"
+            android:background="@drawable/shadow"/>
+
+    </com.google.android.material.bottomnavigation.BottomNavigationView>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin">
 
 <!--        <com.google.android.material.floatingactionbutton.FloatingActionButton-->
 <!--            android:layout_width="50dp"-->
@@ -48,19 +71,6 @@
 <!--            android:layout_alignParentEnd="true"-->
 <!--            android:text="@string/order" />-->
 
-        <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/bottom_navigation"
-            style="@style/Widget.MaterialComponents.BottomNavigationView.Colored"
-            app:elevation="500dp"
-            android:backgroundTint="?attr/colorPrimary"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:labelVisibilityMode="unlabeled"
-            app:itemIconTint="?attr/colorPrimaryLight"
-            android:layout_above="@id/scrollID"
-            app:menu="@menu/bottom_navigation_menu"
-            android:layout_alignParentBottom="true"/>
-
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollID"
         android:layout_width="match_parent"
@@ -82,6 +92,7 @@
                     android:id="@+id/percentChange"
                     android:text="@string/loading"
                     android:textSize="10sp"
+                    android:clickable="false"
                     android:gravity="center"
                     android:layout_centerInParent="true"
                     app:cornerRadius="15dp"
@@ -200,12 +211,14 @@
                 android:clickable="true"
                 android:paddingStart="-5dp"
                 android:paddingEnd="-5dp"
-                android:paddingBottom="10dp"
+                android:paddingBottom="60dp"
                 android:focusable="true"/>
 
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
+
+    </RelativeLayout>
 
     </RelativeLayout>
 
