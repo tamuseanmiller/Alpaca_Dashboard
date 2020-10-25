@@ -15,8 +15,9 @@
         <item name="colorLight">@color/colorLight</item>
         <item name="colorPrimarySlightLight">@color/colorPrimarySlightLight</item>
         <item name="colorControlActivated">@color/colorPrimaryLight</item>
+        <item name="search_radius">15</item>
+        <item name="search_strokeColor">@color/colorAccentTransparent</item>
 
-        <item name="mtrl_textinput_default_box_stroke_color">@color/colorAccentTransparent</item>
         <item name="boxStrokeColor">@color/colorAccentTransparent</item>
         <item name="boxStrokeWidth">1dp</item>
 
@@ -40,8 +41,10 @@
         <item name="colorLight">@color/colorLight_light</item>
         <item name="colorPrimarySlightLight">@color/colorPrimarySlightLight_light</item>
         <item name="colorControlActivated">@color/colorPrimaryLight_light</item>
+        <item name="search_radius">15</item>
+        <item name="search_strokeColor">@color/colorAccentTransparent_light</item>
 
-        <item name="mtrl_textinput_default_box_stroke_color">@color/colorAccentTransparent_light</item>
+
         <item name="boxStrokeColor">@color/colorAccentTransparent_light</item>
         <item name="boxStrokeWidth">1dp</item>
 

@@ -7,9 +7,9 @@
     <color name="colorPrimaryDark">#FF4495</color>
     <color name="colorAccentTransparent">#181818</color>
     <color name="color_positive">#3bb698</color>
-    <color name="color_negative">#B12864</color>
+    <color name="color_negative">#BC3F76</color>
     <color name="color_positive_light">#04221b</color>
-    <color name="color_negative_light">#2C0516</color>
+    <color name="color_negative_light">#2C0617</color>
     <color name="colorPrimarySlightLight">#4e4e4e</color>
     <color name="purple_200">#FFBB86FC</color>
     <color name="colorLight">#F7F8F8</color>

@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/refreshStock"
+    android:tag="stockPage"
     android:elevation="100dp"
     app:icon="@drawable/arrow_top_right"
     android:background="?attr/colorPrimary"
@@ -35,9 +36,9 @@
             android:elevation="2dp"
             app:borderWidth="0dp"
             android:layout_alignParentEnd="true"
-            android:layout_marginEnd="20dp"
-            android:layout_above="@id/bottom_navigation_stocks"
-            android:paddingBottom="100dp"
+            android:layout_marginEnd="40dp"
+            android:layout_above="@id/fabCard"
+            android:layout_marginBottom="-30dp"
             app:fab_stroke_visible="false"
             app:tint="?attr/colorPrimary"
             android:contentDescription="@string/places_orders" />
@@ -54,20 +55,20 @@
             android:layout_alignParentBottom="true"
             android:layout_marginBottom="60dp"/>
 
-        <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/bottom_navigation_stocks"
-            app:elevation="1dp"
-            style="@style/Widget.MaterialComponents.BottomNavigationView.Colored"
-            android:backgroundTint="?attr/colorPrimary"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:labelVisibilityMode="unlabeled"
-            app:itemIconTint="@drawable/bottom_navigation_selector"
-            app:menu="@menu/bottom_navigation_menu"
-            android:layout_gravity="bottom"
-            android:layout_alignParentBottom="true">
+<!--        <com.google.android.material.bottomnavigation.BottomNavigationView-->
+<!--            android:id="@+id/bottom_navigation_stocks"-->
+<!--            app:elevation="1dp"-->
+<!--            style="@style/Widget.MaterialComponents.BottomNavigationView.Colored"-->
+<!--            android:backgroundTint="?attr/colorPrimary"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            app:labelVisibilityMode="unlabeled"-->
+<!--            app:itemIconTint="@drawable/bottom_navigation_selector"-->
+<!--            app:menu="@menu/bottom_navigation_menu"-->
+<!--            android:layout_gravity="bottom"-->
+<!--            android:layout_alignParentBottom="true">-->
 
-        </com.google.android.material.bottomnavigation.BottomNavigationView>
+<!--        </com.google.android.material.bottomnavigation.BottomNavigationView>-->
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"

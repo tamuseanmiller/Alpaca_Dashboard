@@ -46,6 +46,7 @@ dependencies {
     implementation 'androidx.navigation:navigation-fragment:2.3.0'
     implementation 'androidx.navigation:navigation-ui:2.3.0'
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
@@ -61,4 +62,5 @@ dependencies {
     implementation 'com.getbase:floatingactionbutton:1.10.1'
     implementation 'com.allattentionhere:fabulousfilter:0.0.5'
     implementation 'com.lapism:search:2.3.0@aar'
+    implementation "androidx.viewpager2:viewpager2:1.0.0"
 }

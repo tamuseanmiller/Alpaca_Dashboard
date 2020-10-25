@@ -152,7 +152,11 @@ public class StockAdapter extends SparkAdapter {
     }
 
     public float getValue(int index) {
-        return yData.get(index);
+        if (getCount() > 0) {
+            return yData.get(index);
+        } else {
+            return 0;
+        }
     }
 
 //        @Override

@@ -31,30 +31,34 @@ public class PlaceOrderFragment extends AAH_FabulousFragment {
         contentView.findViewById(R.id.btn_close).setOnClickListener(v -> closeFilter("closed"));
         TextView tickerName = contentView.findViewById(R.id.tickerName);
 
-        tickerName.setText(MainActivity.ticker.get());
+        tickerName.setText(DashboardFragment.ticker.get());
         TextInputEditText qty = contentView.findViewById(R.id.quantityTextField);
 
         // Place buy order on button click
         AlpacaAPI alpacaAPI = new AlpacaAPI();
         MaterialButton buy = contentView.findViewById(R.id.btn_close);
         buy.setOnClickListener(v -> {
+            if (qty.getText().toString().isEmpty()) {
+                qty.setError("Input a quantity");
+                return;
+            }
             AtomicReference<MaterialAlertDialogBuilder> dialogBuilder = new AtomicReference<>(new MaterialAlertDialogBuilder(requireContext(), R.style.DialogThemePositive));
             dialogBuilder.get().setTitle("Buy Order");
-            dialogBuilder.get().setMessage("Are you sure that you want to buy " + qty.getText().toString() + " shares of " + MainActivity.ticker + "?");
+            dialogBuilder.get().setMessage("Are you sure that you want to buy " + qty.getText().toString() + " shares of " + DashboardFragment.ticker + "?");
             dialogBuilder.get().setNeutralButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss());
             dialogBuilder.get().setPositiveButton("Accept", (dialog12, which) -> {
                 try {
-                    alpacaAPI.requestNewMarketOrder(MainActivity.ticker.get(), Integer.valueOf(qty.getText().toString()), OrderSide.BUY, OrderTimeInForce.DAY, true);
+                    alpacaAPI.requestNewMarketOrder(DashboardFragment.ticker.get(), Integer.valueOf(qty.getText().toString()), OrderSide.BUY, OrderTimeInForce.DAY, true);
                     dialogBuilder.set(new MaterialAlertDialogBuilder(requireContext(), R.style.DialogThemePositive));
                     dialogBuilder.get().setTitle("Buy Order");
-                    dialogBuilder.get().setMessage("Congrats! Your " + qty.getText().toString() + " orders of " + MainActivity.ticker + " went through!");
+                    dialogBuilder.get().setMessage("Congrats! Your " + qty.getText().toString() + " orders of " + DashboardFragment.ticker + " went through!");
                     dialogBuilder.get().setNeutralButton("Okay", (dialogInterface, i) -> dialogInterface.dismiss());
                     dialogBuilder.get().create().show();
 
                 } catch (AlpacaAPIRequestException e) {
                     dialogBuilder.set(new MaterialAlertDialogBuilder(requireContext(), R.style.DialogThemeNegative));
                     dialogBuilder.get().setTitle("Buy Order");
-                    dialogBuilder.get().setMessage("Your " + qty.getText().toString() + " orders of " + MainActivity.ticker + " didn't go through! " + e.getAPIResponseMessage());
+                    dialogBuilder.get().setMessage("Your " + qty.getText().toString() + " orders of " + DashboardFragment.ticker + " didn't go through! " + e.getAPIResponseMessage());
                     dialogBuilder.get().setNeutralButton("Okay", (dialogInterface, i) -> dialogInterface.dismiss());
                     dialogBuilder.get().create().show();
                     e.printStackTrace();
@@ -69,7 +73,7 @@ public class PlaceOrderFragment extends AAH_FabulousFragment {
         sell.setOnClickListener(v -> {
 
             try {
-                if (Integer.parseInt(qty.getText().toString()) > Integer.parseInt(alpacaAPI.getOpenPositionBySymbol(MainActivity.ticker.get()).getQty())) {
+                if (qty.getText().toString().isEmpty() || Integer.parseInt(qty.getText().toString()) > Integer.parseInt(alpacaAPI.getOpenPositionBySymbol(DashboardFragment.ticker.get()).getQty())) {
                     qty.setError("Not enough shares");
                     return;
                 }
@@ -78,21 +82,21 @@ public class PlaceOrderFragment extends AAH_FabulousFragment {
             }
             AtomicReference<MaterialAlertDialogBuilder> dialogBuilder = new AtomicReference<>(new MaterialAlertDialogBuilder(requireContext(), R.style.DialogThemePositive));
             dialogBuilder.get().setTitle("Sell Order");
-            dialogBuilder.get().setMessage("Are you sure that you want to sell " + qty.getText().toString() + " shares of " + MainActivity.ticker + "?");
+            dialogBuilder.get().setMessage("Are you sure that you want to sell " + qty.getText().toString() + " shares of " + DashboardFragment.ticker + "?");
             dialogBuilder.get().setNeutralButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss());
             dialogBuilder.get().setPositiveButton("Accept", (dialog12, which) -> {
                 try {
-                    alpacaAPI.requestNewMarketOrder(MainActivity.ticker.get(), Integer.valueOf(qty.getText().toString()), OrderSide.BUY, OrderTimeInForce.DAY, true);
+                    alpacaAPI.requestNewMarketOrder(DashboardFragment.ticker.get(), Integer.valueOf(qty.getText().toString()), OrderSide.BUY, OrderTimeInForce.DAY, true);
                     dialogBuilder.set(new MaterialAlertDialogBuilder(requireContext(), R.style.DialogThemePositive));
-                    dialogBuilder.get().setTitle("Buy Order");
-                    dialogBuilder.get().setMessage("Congrats! Your " + qty.getText().toString() + " orders of " + MainActivity.ticker + " went through!");
+                    dialogBuilder.get().setTitle("Sell Order");
+                    dialogBuilder.get().setMessage("Congrats! Your sell order of " + qty.getText().toString() + " stocks of " + DashboardFragment.ticker + " went through!");
                     dialogBuilder.get().setNeutralButton("Okay", (dialogInterface, i) -> dialogInterface.dismiss());
                     dialogBuilder.get().create().show();
 
                 } catch (AlpacaAPIRequestException e) {
                     dialogBuilder.set(new MaterialAlertDialogBuilder(requireContext(), R.style.DialogThemeNegative));
-                    dialogBuilder.get().setTitle("Buy Order");
-                    dialogBuilder.get().setMessage("Your " + qty.getText().toString() + " orders of " + MainActivity.ticker + " didn't go through! " + e.getAPIResponseMessage());
+                    dialogBuilder.get().setTitle("Sell Order");
+                    dialogBuilder.get().setMessage("Your sell order of " + qty.getText().toString() + " stocks of " + DashboardFragment.ticker + " didn't go through! " + e.getAPIResponseMessage());
                     dialogBuilder.get().setNeutralButton("Okay", (dialogInterface, i) -> dialogInterface.dismiss());
                     dialogBuilder.get().create().show();
                     e.printStackTrace();

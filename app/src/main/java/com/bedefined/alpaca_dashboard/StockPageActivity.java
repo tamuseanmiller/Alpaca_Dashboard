@@ -9,24 +9,30 @@ import android.os.Build;
 import android.os.Bundle;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.button.MaterialButton;
-import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.robinhood.spark.SparkView;
 import com.robinhood.spark.animation.LineSparkAnimator;
 import com.robinhood.ticker.TickerUtils;
 import com.robinhood.ticker.TickerView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.os.StrictMode;
 import android.util.TypedValue;
-import android.view.MotionEvent;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -37,21 +43,23 @@ import net.jacobpeterson.alpaca.enums.Direction;
 import net.jacobpeterson.alpaca.enums.OrderStatus;
 import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
 import net.jacobpeterson.domain.alpaca.order.Order;
-import net.jacobpeterson.domain.alpaca.position.Position;
-import net.jacobpeterson.domain.polygon.lastquote.LastQuoteResponse;
 import net.jacobpeterson.polygon.PolygonAPI;
 import net.jacobpeterson.polygon.rest.exception.PolygonAPIRequestException;
 
 import java.text.DecimalFormat;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.cabriole.decorator.LinearMarginDecoration;
 
+import static com.bedefined.alpaca_dashboard.MainActivity.lastItem;
+import static com.bedefined.alpaca_dashboard.MainActivity.viewPager;
+
 @RequiresApi(api = Build.VERSION_CODES.O)
-public class StockPage extends AppCompatActivity implements RecyclerViewAdapterStocks.ItemClickListener {
+public class StockPageActivity extends AppCompatActivity implements RecyclerViewAdapterStocks.ItemClickListener {
 
     private SparkView sparkViewStock;
     private StockAdapter adapterStock;
@@ -65,21 +73,18 @@ public class StockPage extends AppCompatActivity implements RecyclerViewAdapterS
     private RecyclerViewAdapterOrders recycleAdapterOrdersStock;
     private SwipeRefreshLayout swipeRefreshStock;
     private FloatingActionButton fab;
+    private TextView numPos;
 
     private static final int SWIPE_THRESHOLD = 100;
     private float _downX;
-    private BottomNavigationView bottomNavigationViewStocks;
 
-    @SuppressLint("ClickableViewAccessibility")
-    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
 
         Utils.startTheme(this, new SharedPreferencesManager(this).retrieveInt("theme", Utils.THEME_DEFAULT));
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stock_page);
-        propsStock.setProperties();
 
         // Initializations
         PolygonAPI polygonAPI = new PolygonAPI();
@@ -87,7 +92,7 @@ public class StockPage extends AppCompatActivity implements RecyclerViewAdapterS
 
         // Set title
         TextView totalEquity = findViewById(R.id.stockTradedStock);
-        totalEquity.setText(MainActivity.ticker.get());
+        totalEquity.setText(DashboardFragment.ticker.get());
 
         // Set percent change
         percentChangeStock = findViewById(R.id.percentChangeStock);
@@ -98,56 +103,36 @@ public class StockPage extends AppCompatActivity implements RecyclerViewAdapterS
             PlaceOrderFragment dialogFrag = new PlaceOrderFragment();
             dialogFrag.setParentFab(fab);
             dialogFrag.show(getSupportFragmentManager(), dialogFrag.getTag());
-//            Drawable plus = ContextCompat.getDrawable(this, R.drawable.plus);
-//            plus.setTint(R.attr.color_positive);
-//            fab.setBackgroundDrawable(plus);
-//            dialogFrag.setAnimationDuration(400);
         });
 
-        // Set bottom navigation
-        bottomNavigationViewStocks = findViewById(R.id.bottom_navigation_stocks);
-        bottomNavigationViewStocks.setSelectedItemId(R.id.dashboard_page);
-        bottomNavigationViewStocks.setOnNavigationItemSelectedListener( item -> {
+        Thread t3 = new Thread(() -> {
 
-            switch(item.getItemId()) {
-                case R.id.dashboard_page:
-                    Intent intentDashboard = new Intent(StockPage.this, MainActivity.class);
-                    StockPage.this.startActivity(intentDashboard, ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
-                    return true;
-                case R.id.search_page:
-                    Intent intentSearch = new Intent(StockPage.this, Search.class);
-                    StockPage.this.startActivity(intentSearch, ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
-                    return true;
-                case R.id.profile_page:
-                    Intent intentProfile = new Intent(StockPage.this, Profile.class);
-                    StockPage.this.startActivity(intentProfile, ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
-                    return true;
+            // Set number of stocks textview
+            numPos = findViewById(R.id.numberOfStocks);
+            String numPosition = null;
+            try {
+                numPosition = alpacaAPI.getOpenPositionBySymbol(DashboardFragment.ticker.get()).getQty();
+                String finalNumPosition = numPosition;
+                runOnUiThread(() -> numPos.setText(finalNumPosition + " shares owned"));
+            } catch (AlpacaAPIRequestException e) {
+                runOnUiThread(() -> numPos.setText(0 + " shares owned"));
+                e.printStackTrace();
             }
-            return false;
         });
-
-        // Set number of stocks textview
-        TextView numPos = findViewById(R.id.numberOfStocks);
-        String numPosition = null;
-        try {
-            numPosition = alpacaAPI.getOpenPositionBySymbol(MainActivity.ticker.get()).getQty();
-            numPos.setText(numPosition + " shares owned");
-        } catch (AlpacaAPIRequestException e) {
-            e.printStackTrace();
-        }
+        t3.start();
 
         // Set swipeRefresh
         swipeRefreshStock = findViewById(R.id.refreshStock);
         swipeRefreshStock.setTranslationZ(100);
         swipeRefreshStock.bringToFront();
 
-        swipeRefreshStock.setOnTouchListener(new onTouchSwipeListener(StockPage.this) {
-
-            @Override
-            public void onSwipeLeft() {
-                Toast.makeText(StockPage.this, "left", Toast.LENGTH_SHORT).show();
-            }
-        });
+//        swipeRefreshStock.setOnTouchListener(new onTouchSwipeListener(StockPageFragment.) {
+//
+//            @Override
+//            public void onSwipeLeft() {
+//                Toast.makeText(StockPageFragment., "left", Toast.LENGTH_SHORT).show();
+//            }
+//        });
 
         // Ticker information
         tickerViewStock = findViewById(R.id.tickerViewStock);
@@ -160,7 +145,7 @@ public class StockPage extends AppCompatActivity implements RecyclerViewAdapterS
             LineSparkAnimator lineSparkAnimator = new LineSparkAnimator();
             sparkViewStock.setSparkAnimator(lineSparkAnimator);
             try {
-                adapterStock = new StockAdapter(MainActivity.ticker);
+                adapterStock = new StockAdapter(DashboardFragment.ticker);
             } catch (PolygonAPIRequestException | AlpacaAPIRequestException e) {
                 e.printStackTrace();
             }
@@ -191,14 +176,14 @@ public class StockPage extends AppCompatActivity implements RecyclerViewAdapterS
 
                 TypedValue typedValue = new TypedValue();
                 getTheme().resolveAttribute(R.attr.color_negative, typedValue, true);
-                int negColor = ContextCompat.getColor(getApplicationContext(), typedValue.resourceId);
+                int negColor = ContextCompat.getColor(this, typedValue.resourceId);
                 getTheme().resolveAttribute(R.attr.color_positive, typedValue, true);
-                int posColor = ContextCompat.getColor(getApplicationContext(), typedValue.resourceId);
+                int posColor = ContextCompat.getColor(this, typedValue.resourceId);
 
                 getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
-                int posColorLight = ContextCompat.getColor(getApplicationContext(), typedValue.resourceId);
+                int posColorLight = ContextCompat.getColor(this, typedValue.resourceId);
                 getTheme().resolveAttribute(R.attr.color_negative_light, typedValue, true);
-                int negColorLight = ContextCompat.getColor(getApplicationContext(), typedValue.resourceId);
+                int negColorLight = ContextCompat.getColor(this, typedValue.resourceId);
 
                 if (adapterStock.getCount() != 0) {
 
@@ -243,6 +228,7 @@ public class StockPage extends AppCompatActivity implements RecyclerViewAdapterS
                 });
 
             });
+
         });
         t1.start();
 
@@ -259,14 +245,14 @@ public class StockPage extends AppCompatActivity implements RecyclerViewAdapterS
 
             // Stream live data for a stock
             MainActivity vars = new MainActivity();
-            vars.streamStockData(polygonAPI, MainActivity.ticker, tickerViewStock);
+            vars.streamStockData(polygonAPI, DashboardFragment.ticker, tickerViewStock);
 
             Thread t2 = new Thread(() -> {
 
                 while (true) {
                     float askingPrice = 0;
                     try {
-                        askingPrice = polygonAPI.getLastQuote(MainActivity.ticker.get()).getLast().getAskprice().floatValue();
+                        askingPrice = polygonAPI.getLastQuote(DashboardFragment.ticker.get()).getLast().getAskprice().floatValue();
 
                     } catch (PolygonAPIRequestException e) {
                         e.printStackTrace();
@@ -277,13 +263,13 @@ public class StockPage extends AppCompatActivity implements RecyclerViewAdapterS
                     // Fetch colors
                     TypedValue typedValue = new TypedValue();
                     getTheme().resolveAttribute(R.attr.color_negative, typedValue, true);
-                    int negColor = ContextCompat.getColor(getApplicationContext(), typedValue.resourceId);
+                    int negColor = ContextCompat.getColor(this, typedValue.resourceId);
                     getTheme().resolveAttribute(R.attr.color_positive, typedValue, true);
-                    int posColor = ContextCompat.getColor(getApplicationContext(), typedValue.resourceId);
+                    int posColor = ContextCompat.getColor(this, typedValue.resourceId);
                     getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
-                    int posColorLight = ContextCompat.getColor(getApplicationContext(), typedValue.resourceId);
+                    int posColorLight = ContextCompat.getColor(this, typedValue.resourceId);
                     getTheme().resolveAttribute(R.attr.color_negative_light, typedValue, true);
-                    int negColorLight = ContextCompat.getColor(getApplicationContext(), typedValue.resourceId);
+                    int negColorLight = ContextCompat.getColor(this, typedValue.resourceId);
 
                     float oldVal = adapterStock.getValue(0);
                     float newVal = adapterStock.getValue(adapterStock.getCount() - 1);
@@ -313,7 +299,9 @@ public class StockPage extends AppCompatActivity implements RecyclerViewAdapterS
                             percentChangeStock.setCompoundDrawablesWithIntrinsicBounds(null, null, downArrow, null);
                             sparkViewStock.setLineColor(negColor);
                         }
+
                     });
+
 
                     try {
                         Thread.sleep(60000);
@@ -336,7 +324,7 @@ public class StockPage extends AppCompatActivity implements RecyclerViewAdapterS
                 e.printStackTrace();
             }
             for (int i = 0; i < ordersStock.size(); i++) {
-                if (ordersStock.get(i).getSymbol().equals(MainActivity.ticker.get())) {
+                if (ordersStock.get(i).getSymbol().equals(DashboardFragment.ticker.get())) {
                     order.add(ordersStock.get(i));
                 }
             }
@@ -350,6 +338,7 @@ public class StockPage extends AppCompatActivity implements RecyclerViewAdapterS
                 recyclerOrdersStock.setAdapter(recycleAdapterOrdersStock);
             });
 
+
         });
         thread.start();
 
@@ -357,7 +346,6 @@ public class StockPage extends AppCompatActivity implements RecyclerViewAdapterS
             onRefresh();
             swipeRefreshStock.setNestedScrollingEnabled(false);
         });
-
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -377,10 +365,26 @@ public class StockPage extends AppCompatActivity implements RecyclerViewAdapterS
                 e.printStackTrace();
             }
 
+            // Set number of stocks textview
+            String numPosition = null;
+            try {
+                numPosition = alpacaAPI.getOpenPositionBySymbol(DashboardFragment.ticker.get()).getQty();
+                String finalNumPosition = numPosition;
+                runOnUiThread(() -> numPos.setText(finalNumPosition + " shares owned"));
+            } catch (AlpacaAPIRequestException e) {
+                runOnUiThread(() -> numPos.setText(0 + " shares owned"));
+                e.printStackTrace();
+            }
+
             runOnUiThread(() -> recycleAdapterOrdersStock.notifyDataSetChanged());
             swipeRefreshStock.setRefreshing(false);
         });
         thread2.start();
+    }
+
+    @Override
+    public void onBackPressed() {
+        finish();
     }
 
     @Override

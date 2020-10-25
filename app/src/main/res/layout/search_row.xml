@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.gridlayout.widget.GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="fill"
+    android:padding="5dp"
+    android:layout_alignWithParentIfMissing="true"
+    android:focusable="true">
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:id="@+id/searchCard"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="15dp"
+        app:cardBackgroundColor="@android:color/transparent"
+        app:cardElevation="0dp"
+        android:backgroundTint="?attr/colorPrimary"
+        app:rippleColor="?attr/color_positive"
+        app:cardPreventCornerOverlap="false"
+        app:contentPadding="10dp"
+        app:strokeColor="?attr/colorAccentTransparent"
+        app:strokeWidth="1dp"
+        android:focusable="true">
+
+        <androidx.gridlayout.widget.GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="fill"
+            app:columnCount="3">
+
+            <TextView
+                android:id="@+id/stockTickerSearch"
+                android:layout_width="2dp"
+                android:layout_height="wrap_content"
+                app:layout_columnWeight="1"
+                android:gravity="center"
+                app:layout_gravity="fill_horizontal"
+                android:text="@string/loading"
+                android:textColor="?attr/colorLight"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/stockFullNameSearch"
+                android:layout_width="10dp"
+                android:layout_height="wrap_content"
+                app:layout_gravity="fill_horizontal"
+                app:layout_columnWeight="2"
+                android:gravity="center"
+                android:textColor="?attr/colorPrimaryLight"
+                android:text="@string/loading"
+                android:textSize="14sp" />
+
+<!--            <Button-->
+<!--                android:id="@+id/pricePlaced"-->
+<!--                style="@style/Widget.MaterialComponents.Button.Icon"-->
+<!--                android:layout_width="5dp"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:backgroundTint="?attr/colorAccentTransparent"-->
+<!--                android:stateListAnimator="@null"-->
+<!--                app:layout_columnWeight="1"-->
+<!--                android:gravity="center"-->
+<!--                app:layout_gravity="fill_horizontal"-->
+<!--                android:text="@string/loading"-->
+<!--                android:textColor="?attr/colorPrimaryLight"-->
+<!--                android:textSize="10sp"-->
+<!--                app:cornerRadius="15dp"-->
+<!--                app:rippleColor="?attr/color_positive"-->
+<!--                app:iconSize="3dp"-->
+<!--                app:iconTint="?attr/colorPrimaryLight" />-->
+
+        </androidx.gridlayout.widget.GridLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.gridlayout.widget.GridLayout>

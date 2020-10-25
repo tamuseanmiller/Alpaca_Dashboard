@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".EmergencyFragment">
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/liquidateButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_margin="16dp"
+        android:backgroundTint="?attr/color_negative_light"
+        android:text="@string/liquidate_all_positions"
+        android:textColor="?attr/color_negative"
+        android:textSize="20dp"
+        app:cornerRadius="15dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/cancelButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/liquidateButton"
+        android:layout_margin="16dp"
+        android:layout_centerInParent="true"
+        android:backgroundTint="?attr/color_negative_light"
+        android:text="@string/cancel_all_orders"
+        android:textColor="?attr/color_negative"
+        android:textSize="20dp"
+        app:cornerRadius="15dp" />
+
+</RelativeLayout>

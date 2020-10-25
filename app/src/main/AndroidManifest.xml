@@ -9,12 +9,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Alpaca_Dashboard">
-        <activity android:name=".Profile"></activity>
-        <activity android:name=".Search" />
-        <activity
-            android:name=".StockPage"
-            android:label="@string/title_activity_stock_page"
-            android:theme="@style/Theme.Alpaca_Dashboard.NoActionBar" />
+<!--        <fragment android:name=".Search" />-->
+<!--        <fragment-->
+<!--            android:name=".StockPageFragment"-->
+<!--            android:label="@string/title_activity_stock_page"-->
+<!--            android:theme="@style/Theme.Alpaca_Dashboard.NoActionBar" />-->
         <activity android:name=".SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -22,6 +21,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".StockPageActivity"/>
         <activity android:name=".MainActivity" />
     </application>
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />

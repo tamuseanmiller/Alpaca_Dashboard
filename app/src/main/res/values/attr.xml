@@ -1,13 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <attr name="colorAccentTransparent" format="color"/>
-    <attr name="color_positive" format="color"/>
-    <attr name="color_negative" format="color"/>
-    <attr name="color_positive_light" format="color"/>
-    <attr name="color_negative_light" format="color"/>
-    <attr name="colorLight" format="color"/>
-    <attr name="colorPrimaryLight" format="color"/>
-    <attr name="colorPrimarySlightLight" format="color"/>
-    <attr name="themeName" format="string"/>
-    <attr name="mtrl_textinput_default_box_stroke_color" tools:override="true" format="color"/>
+    <attr name="colorAccentTransparent" format="color" />
+    <attr name="color_positive" format="color" />
+    <attr name="color_negative" format="color" />
+    <attr name="color_positive_light" format="color" />
+    <attr name="color_negative_light" format="color" />
+    <attr name="colorLight" format="color" />
+    <attr name="colorPrimaryLight" format="color" />
+    <attr name="colorPrimarySlightLight" format="color" />
+    <attr name="themeName" format="string" />
+    <attr name="search_navigationIcon" format="reference" />
+    <attr name="search_clearIcon" format="reference" />
+    <attr name="search_micIcon" format="reference" />
+    <attr name="search_textHint" format="string" />
+    <attr name="search_strokeColor" format="reference" />
+    <attr name="search_strokeWidth" format="reference" />
+    <attr name="search_dividerColor" format="reference" />
+    <attr name="search_shadowColor" format="reference" />
+    <attr name="search_transitionDuration" format="integer" />
+    <attr name="search_radius" format="integer" />
 </resources>

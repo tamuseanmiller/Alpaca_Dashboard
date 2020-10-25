@@ -70,9 +70,7 @@ public class RecyclerViewAdapterStocks extends RecyclerView.Adapter<RecyclerView
 
         @Override
         public void onClick(View view) {
-            if (view.getId() == myTextView.getId()) {
 
-            }
             if (mClickListener != null) {
                 mClickListener.onItemClick(view, getAdapterPosition());
             }

@@ -33,8 +33,6 @@ import io.cabriole.decorator.LinearMarginDecoration;
 public class SplashActivity extends Activity {
 
     Handler handler;
-    private RecyclerView recyclerOrders;
-    private RecyclerView recyclerView;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
@@ -45,37 +43,11 @@ public class SplashActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.splash_screen);
 
-//        recyclerView = findViewById(R.id.recyclerStocksSplash);
-//
-//        ColumnProvider col = () -> 3;
-//        recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
-//        recyclerView.addItemDecoration(new GridMarginDecoration(0, col, GridLayoutManager.VERTICAL, false, null));
-//        onRefresh();
-
         handler = new Handler();
         handler.postDelayed(() -> {
             Intent intent = new Intent(SplashActivity.this, MainActivity.class);
             startActivity(intent);
             finish();
-        }, 100);
-
-
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    public void onRefresh() {
-
-        ArrayList<String> stocks = new ArrayList<>();
-        stocks.add(" ");
-        stocks.add(" ");
-        stocks.add(" ");
-        stocks.add(" ");
-        stocks.add(" ");
-        stocks.add(" ");
-        stocks.add(" ");
-
-        // Set Recycle Adapter for positions
-        RecyclerViewAdapter recycleAdapter = new RecyclerViewAdapter(this, stocks);
-        recyclerView.setAdapter(recycleAdapter);
+        }, 1000);
     }
 }

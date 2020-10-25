@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:elevation="100dp"
+    android:elevation="0dp"
     app:icon="@drawable/arrow_top_right"
-    android:id="@+id/refresh"
+    android:id="@+id/containerFrag"
     android:background="?attr/colorPrimary"
-    app:swipeRefreshLayoutProgressSpinnerBackgroundColor="?attr/color_positive"
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <RelativeLayout
+    <com.bedefined.alpaca_dashboard.NoSwipePager
+        android:id="@+id/viewPager"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
@@ -36,190 +36,5 @@
 
     </com.google.android.material.bottomnavigation.BottomNavigationView>
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingTop="@dimen/activity_vertical_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin">
+</RelativeLayout>
 
-<!--        <com.google.android.material.floatingactionbutton.FloatingActionButton-->
-<!--            android:layout_width="50dp"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_alignParentBottom="true"-->
-<!--            android:id="@+id/placeOrder"-->
-<!--            android:layout_alignParentEnd="true"-->
-<!--            android:src="@drawable/plus"-->
-<!--            app:tint="?attr/color_positive_light"-->
-<!--            android:layout_marginBottom="10dp"-->
-<!--            app:elevation="1000dp"-->
-<!--            android:layout_above="@id/scrollID"-->
-<!--            android:contentDescription="@string/places_orders" />-->
-
-<!--        <com.google.android.material.button.MaterialButton-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:translationY="-60dp"-->
-<!--            android:backgroundTint="?attr/color_positive_light"-->
-<!--            app:elevation="1000dp"-->
-<!--            app:cornerRadius="15dp"-->
-<!--            android:layout_above="@id/bottom_navigation"-->
-<!--            android:textColor="?attr/color_positive"-->
-<!--            android:layout_alignParentBottom="true"-->
-<!--            android:id="@+id/placeOrderButton"-->
-<!--            android:layout_alignParentEnd="true"-->
-<!--            android:text="@string/order" />-->
-
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/scrollID"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:elevation="10dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/percentChange"
-                    android:text="@string/loading"
-                    android:textSize="10sp"
-                    android:clickable="false"
-                    android:gravity="center"
-                    android:layout_centerInParent="true"
-                    app:cornerRadius="15dp"
-                    android:layout_alignParentEnd="true"
-                    android:stateListAnimator="@null"
-                    app:iconSize="3dp"
-                    app:iconGravity="textEnd"
-                    android:elevation="0dp"
-                    app:iconTint="?attr/color_positive"
-                    android:textColor="?attr/color_positive"
-                    style="@style/Widget.MaterialComponents.Button.Icon"
-                    android:backgroundTint="?attr/color_positive_light"/>
-
-            <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/stockTraded"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingBottom="10dp"
-                android:fontFamily="sans-serif-medium"
-                android:textColor="?attr/colorLight"
-                android:textSize="35sp" />
-
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-            <com.robinhood.ticker.TickerView
-                android:id="@+id/tickerView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingTop="@dimen/activity_vertical_margin"
-                android:textColor="?attr/colorLight"
-                android:textSize="30sp" />
-
-            <androidx.appcompat.widget.AppCompatImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:clickable="true"
-                android:src="@drawable/brightness_6"
-                android:id="@+id/themeChange"
-                android:paddingEnd="10dp"
-                android:background="@null"
-                android:stateListAnimator="@null"
-                android:paddingBottom="10dp"
-                android:layout_centerVertical="true"
-                android:layout_alignParentEnd="true"
-                app:tint="?attr/colorPrimaryLight"
-                tools:ignore="RtlSymmetry"
-                android:focusable="true" />
-
-            </RelativeLayout>
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/sparkCard"
-                android:layout_width="match_parent"
-                android:layout_height="500dp"
-                android:backgroundTint="?attr/colorPrimary"
-                android:clipChildren="true"
-                android:elevation="0dp"
-                app:cardCornerRadius="15dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="?attr/colorAccentTransparent"
-                app:cardPreventCornerOverlap="false">
-
-                <com.robinhood.spark.SparkView
-                    android:id="@+id/sparkview"
-                    android:layout_width="wrap_content"
-                    android:layout_height="500dp"
-                    android:paddingTop="20dp"
-                    android:paddingEnd="20dp"
-                    android:paddingBottom="20dp"
-                    app:spark_lineColor="?attr/color_negative"
-                    app:spark_scrubEnabled="true"
-                    android:elevation="3dp"
-                    tools:ignore="RtlSymmetry" />
-
-            </com.google.android.material.card.MaterialCardView>
-
-            <androidx.appcompat.widget.AppCompatTextView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:paddingBottom="10dp"
-                android:fontFamily="sans-serif-medium"
-                android:textColor="?attr/colorLight"
-                android:paddingTop="20dp"
-                android:textSize="25sp"
-                android:text="@string/positions"/>
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerStocks"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:clickable="true"
-                android:paddingTop="5dp"
-                android:paddingStart="-5dp"
-                android:paddingEnd="-5dp"
-                android:focusable="true"/>
-
-            <androidx.appcompat.widget.AppCompatTextView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:paddingBottom="10dp"
-                android:paddingTop="20dp"
-                android:fontFamily="sans-serif-medium"
-                android:textColor="?attr/colorLight"
-                android:textSize="25sp"
-                android:text="@string/orders"/>
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/orders"
-                android:clickable="true"
-                android:paddingStart="-5dp"
-                android:paddingEnd="-5dp"
-                android:paddingBottom="60dp"
-                android:focusable="true"/>
-
-        </LinearLayout>
-
-    </androidx.core.widget.NestedScrollView>
-
-    </RelativeLayout>
-
-    </RelativeLayout>
-
-</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

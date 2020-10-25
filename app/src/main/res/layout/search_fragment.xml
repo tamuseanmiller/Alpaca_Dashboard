@@ -4,52 +4,40 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/containerFragSearch"
+    android:elevation="100dp"
     android:background="?attr/colorPrimary"
-    tools:context=".Search">
+    tools:context=".SearchFragment">
 
-    <RelativeLayout
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_navigation_search"
-        app:elevation="500dp"
-        style="@style/Widget.MaterialComponents.BottomNavigationView.Colored"
-        android:backgroundTint="?attr/colorPrimary"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:labelVisibilityMode="unlabeled"
-        app:itemIconTint="@drawable/bottom_navigation_selector"
-        app:menu="@menu/bottom_navigation_menu"
-        android:layout_alignParentBottom="true">
+        <com.google.android.material.appbar.AppBarLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:stateListAnimator="@null">
 
-        <View
-            android:layout_width="wrap_content"
-            android:layout_height="4dp"
-            android:background="@drawable/shadow"/>
+        </com.google.android.material.appbar.AppBarLayout>
 
-    </com.google.android.material.bottomnavigation.BottomNavigationView>
+        <androidx.viewpager2.widget.ViewPager2
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:overScrollMode="never"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     <com.lapism.search.widget.MaterialSearchView
         android:id="@+id/material_search_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:stateListAnimator="@null"
-        android:backgroundTint="?attr/colorAccentTransparent"
-        app:search_strokeColor="?attr/colorAccentTransparent"
+        android:backgroundTint="?attr/colorPrimary"
         app:elevation="0dp"
         app:search_navigationIcon="@drawable/magnify"/>
 
-    <view class="androidx.appcompat.app.AlertController$RecycleListView"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:id="@+id/searchResults">
-
-    </view>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+<!--    <RelativeLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent">-->
 
 <!--        <HorizontalScrollView-->
 <!--            android:id="@+id/scrollingTicker"-->
@@ -151,8 +139,8 @@
 <!--            app:labelVisibilityMode="unlabeled"-->
 <!--            app:menu="@menu/bottom_navigation_menu" />-->
 
-    </RelativeLayout>
+<!--    </RelativeLayout>-->
 
-    </RelativeLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

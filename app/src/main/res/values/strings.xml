@@ -23,4 +23,9 @@
     <string name="home">Home</string>
     <string name="order">Order</string>
     <string name="speak">Speak</string>
+    <string name="emergency">Emergency</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="liquidate_all_positions">Liquidate All Positions</string>
+    <string name="cancel_all_orders">Cancel All Orders</string>
 </resources>
