@@ -23,6 +23,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicReference;
@@ -35,7 +36,7 @@ public class StockAdapter extends SparkAdapter {
     public float baseline;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public StockAdapter(AtomicReference<String> ticker) throws PolygonAPIRequestException, AlpacaAPIRequestException {
+    public StockAdapter(AtomicReference<String> ticker, int periodLength, PortfolioPeriodUnit periodUnit, PortfolioTimeFrame timeFrame) throws PolygonAPIRequestException, AlpacaAPIRequestException {
         random = new Random();
         yData = new Vector<>();
         this.ticker = ticker;
@@ -46,6 +47,7 @@ public class StockAdapter extends SparkAdapter {
         AtomicReference<Float> lastClose = new AtomicReference<>((float) 0);
         AtomicReference<ArrayList<Double>> history = new AtomicReference<>(new ArrayList<>());
 
+        // Set baseline values
         Thread thread = new Thread(() -> {
 
             // If you are rendering a stockpage
@@ -60,7 +62,7 @@ public class StockAdapter extends SparkAdapter {
                 yData.add(lastClose.get());
 
             // Else you're on equity stock
-            } else {
+            } else if (periodUnit == PortfolioPeriodUnit.DAY) {
 
                 // Fetch last open day's information
                 ArrayList<Calendar> calendar = null;
@@ -79,9 +81,9 @@ public class StockAdapter extends SparkAdapter {
 
                     // Checks to see if market is closed for today, edge case
                     if (lastOpenDate.equals(LocalDate.now())) {
-                        history.set(alpacaAPI.getPortfolioHistory(1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.ONE_MIN, LocalDate.parse(calendar.get(calendar.size() - 2).getDate()), false).getEquity());
+                        history.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, LocalDate.parse(calendar.get(calendar.size() - 2).getDate()), false).getEquity());
                     } else {
-                        history.set(alpacaAPI.getPortfolioHistory(1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.ONE_MIN, lastOpenDate, false).getEquity());
+                        history.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, lastOpenDate, false).getEquity());
                     }
 
                 } catch (AlpacaAPIRequestException e) {
@@ -90,10 +92,10 @@ public class StockAdapter extends SparkAdapter {
 
                 double temp = history.get().get(history.get().size() - 1);
                 yData.add((float) temp);
+                baseline = yData.get(0);
 
             }
 
-            baseline = yData.get(0);
         });
         thread.start();
 
@@ -167,7 +169,7 @@ public class StockAdapter extends SparkAdapter {
                 e.printStackTrace();
             }
         }
-        for (Bar bar : bars.get(ticker.get())) {
+        for (Bar bar : Objects.requireNonNull(bars.get(ticker.get()))) {
             yData.add(bar.getC().floatValue());
         }
     }
@@ -175,8 +177,8 @@ public class StockAdapter extends SparkAdapter {
     public void smoothGraph() {
         Vector<Float> temp = new Vector<>(yData);
         yData.clear();
-        for (int i = 0; i < temp.size() - 3; i += 3) {
-            yData.add((temp.get(i) + temp.get(i + 1) + temp.get(i + 2)) / 3);
+        for (int i = 0; i < temp.size() - 2; i += 2) {
+            yData.add((temp.get(i) + temp.get(i + 1)) / 2);
         }
         notifyDataSetChanged();
     }

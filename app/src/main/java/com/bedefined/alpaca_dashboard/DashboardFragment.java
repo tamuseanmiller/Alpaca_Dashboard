@@ -58,7 +58,7 @@ import static com.bedefined.alpaca_dashboard.Utils.THEME_LIGHT;
 public class DashboardFragment extends Fragment implements RecyclerViewAdapter.ItemClickListener, View.OnClickListener {
 
     private SparkView sparkView;
-    private StockAdapter adapter;
+    private StockAdapter selectedAdapter;
     private RecyclerView recyclerView;
     private RecyclerView recyclerOrders;
     public TickerView tickerView;
@@ -78,6 +78,11 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
     private MaterialButton oneYear;
     private MaterialButton selectedButton;
     private AtomicInteger posOrNegColorLight;
+    private StockAdapter oneDayAdapter;
+    private StockAdapter oneWeekAdapter;
+    private StockAdapter oneMonthAdapter;
+    private StockAdapter threeMonthAdapter;
+    private StockAdapter oneYearAdapter;
 
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -103,6 +108,12 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
 
         // Initializations
         ticker = new AtomicReference<>("NOTICKER");
+        TypedValue typedValue = new TypedValue();
+        requireActivity().getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
+        AtomicInteger posColorLight = new AtomicInteger(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
+        requireActivity().getTheme().resolveAttribute(R.attr.color_negative_light, typedValue, true);
+        AtomicInteger negColorLight = new AtomicInteger(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
+        negColorLight.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
         PolygonAPI polygonAPI = new PolygonAPI();
         AlpacaAPI alpacaAPI = new AlpacaAPI();
 
@@ -118,12 +129,29 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
         oneYear = mView.findViewById(R.id.oneYear);
         selectedButton = oneDay;
 
-        // Set colors on click, for toggle
-        TypedValue typedValue = new TypedValue();
-        requireActivity().getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
-        AtomicInteger posColorLight = new AtomicInteger(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
-        requireActivity().getTheme().resolveAttribute(R.attr.color_negative_light, typedValue, true);
-        AtomicInteger negColorLight = new AtomicInteger(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
+        // The sparkline graph data
+        sparkView = mView.findViewById(R.id.sparkview);
+        try {
+            oneDayAdapter = new StockAdapter(ticker, 1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.ONE_MIN);
+            oneWeekAdapter = new StockAdapter(ticker, 1, PortfolioPeriodUnit.WEEK, PortfolioTimeFrame.ONE_HOUR);
+            oneMonthAdapter = new StockAdapter(ticker, 1, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY);
+            threeMonthAdapter = new StockAdapter(ticker, 3, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY);
+            oneYearAdapter = new StockAdapter(ticker, 1, PortfolioPeriodUnit.YEAR, PortfolioTimeFrame.ONE_DAY);
+            selectedAdapter = oneDayAdapter;
+
+        } catch (PolygonAPIRequestException | AlpacaAPIRequestException e) {
+            e.printStackTrace();
+        }
+        sparkView.setAdapter(selectedAdapter);
+
+        // Initalize all graphs
+        initializeDashboardValues(1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.FIVE_MINUTE, oneDayAdapter);
+        initializeDashboardValues(1, PortfolioPeriodUnit.WEEK, PortfolioTimeFrame.ONE_HOUR, oneWeekAdapter);
+        initializeDashboardValues(1, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY, oneMonthAdapter);
+        initializeDashboardValues(3, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY, threeMonthAdapter);
+        initializeDashboardValues(1, PortfolioPeriodUnit.YEAR, PortfolioTimeFrame.ONE_DAY, oneYearAdapter);
+
+        // Set colors on click, for toggle buttons
         requireActivity().getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
         posOrNegColorLight = new AtomicInteger(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
         requireActivity().getTheme().resolveAttribute(R.attr.colorPrimary, typedValue, true);
@@ -132,26 +160,41 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
             selectedButton.setBackgroundTintList(ColorStateList.valueOf(colorPrimary));
             selectedButton = oneDay;
             selectedButton.setBackgroundTintList(ColorStateList.valueOf(posOrNegColorLight.get()));
+            selectedAdapter = oneDayAdapter;
+            sparkView.setAdapter(selectedAdapter);
+            setDashboardValues();
         });
         oneWeek.setOnClickListener(v -> {
             selectedButton.setBackgroundTintList(ColorStateList.valueOf(colorPrimary));
             selectedButton = oneWeek;
             selectedButton.setBackgroundTintList(ColorStateList.valueOf(posOrNegColorLight.get()));
+            selectedAdapter = oneWeekAdapter;
+            sparkView.setAdapter(selectedAdapter);
+            setDashboardValues();
         });
         oneMonth.setOnClickListener(v -> {
             selectedButton.setBackgroundTintList(ColorStateList.valueOf(colorPrimary));
             selectedButton = oneMonth;
             selectedButton.setBackgroundTintList(ColorStateList.valueOf(posOrNegColorLight.get()));
+            selectedAdapter = oneMonthAdapter;
+            sparkView.setAdapter(selectedAdapter);
+            setDashboardValues();
         });
         threeMonth.setOnClickListener(v -> {
             selectedButton.setBackgroundTintList(ColorStateList.valueOf(colorPrimary));
             selectedButton = threeMonth;
             selectedButton.setBackgroundTintList(ColorStateList.valueOf(posOrNegColorLight.get()));
+            selectedAdapter = threeMonthAdapter;
+            sparkView.setAdapter(selectedAdapter);
+            setDashboardValues();
         });
         oneYear.setOnClickListener(v -> {
             selectedButton.setBackgroundTintList(ColorStateList.valueOf(colorPrimary));
             selectedButton = oneYear;
             selectedButton.setBackgroundTintList(ColorStateList.valueOf(posOrNegColorLight.get()));
+            selectedAdapter = oneYearAdapter;
+            sparkView.setAdapter(selectedAdapter);
+            setDashboardValues();
         });
 
         // Set percent change
@@ -165,15 +208,6 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
         swipeRefresh = mView.findViewById(R.id.refresh);
         swipeRefresh.setTranslationZ(100);
         swipeRefresh.bringToFront();
-
-        // The sparkline graph itself
-        sparkView = mView.findViewById(R.id.sparkview);
-        try {
-            adapter = new StockAdapter(ticker);
-        } catch (PolygonAPIRequestException | AlpacaAPIRequestException e) {
-            e.printStackTrace();
-        }
-        sparkView.setAdapter(adapter);
 
         getActivity().getTheme().resolveAttribute(R.attr.colorPrimaryLight, typedValue, true);
         AtomicInteger color = new AtomicInteger(ContextCompat.getColor(getActivity(), typedValue.resourceId));
@@ -196,11 +230,11 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
 ////                    System.out.println(numEquity);
 ////                    e.printStackTrace();
 ////                }
-//                float temp = (floatNumEquity - adapter.baseline);
-//                System.out.println(temp / adapter.baseline);
-//                float percentageChange = (floatNumEquity - adapter.baseline) / adapter.baseline;
+//                float temp = (floatNumEquity - selectedAdapter.baseline);
+//                System.out.println(temp / selectedAdapter.baseline);
+//                float percentageChange = (floatNumEquity - selectedAdapter.baseline) / selectedAdapter.baseline;
 //
-//                if (floatNumEquity > adapter.baseline) {
+//                if (floatNumEquity > selectedAdapter.baseline) {
 //                    arrow.setColorFilter(getColor(R.color.color_positive));
 //                    arrow.setBackgroundDrawable(getResources().getActivity().getDrawable(R.drawable.arrow_top_right));
 //                    percentChange.setText("+" + String.valueOf(percentageChange));
@@ -227,31 +261,9 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
 
         if (marketStatus.equals("open")) {
 
-            Thread t2 = new Thread(() -> {
+//            initializeDashboardValues(1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.ONE_MIN, selectedAdapter);
 
-                // Gather old portfolio data
-                ArrayList<Double> history = new ArrayList<>();
-                try {
-                    history = alpacaAPI.getPortfolioHistory(1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.FIVE_MINUTE, LocalDate.now(), true).getEquity();
-
-                } catch (AlpacaAPIRequestException e) {
-                    e.printStackTrace();
-                }
-
-                // Add data to chart
-                if (history.get(0) != null) {
-                    for (Double i : history) {
-                        if (i != null) {
-                            adapter.addVal(Float.parseFloat(String.valueOf(i)));
-                        }
-                    }
-                }
-
-            });
-            t2.start();
-
-            // Create thread for updating equity
-            Thread t1 = new Thread(() -> {
+            Thread t3 = new Thread(() -> {
 
                 // Run forever to get the new equities
                 while (true) {
@@ -270,87 +282,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
                         String finalCurrentValue = currentValue;
                         getActivity().runOnUiThread(() -> {
                             tickerView.setText("$" + formatter.format(amount));
-                            adapter.addVal(Float.parseFloat(finalCurrentValue));
-
-                            // Fetch portfolio value
-                            String portVal = null;
-                            try {
-                                portVal = alpacaAPI.getAccount().getPortfolioValue();
-                                cash = alpacaAPI.getAccount().getCash();
-                            } catch (AlpacaAPIRequestException e) {
-                                e.printStackTrace();
-                            }
-
-                            // Set percent change and update colors
-                            if (portVal != null && cash != null) {
-
-                                float holdingVal = Float.parseFloat(portVal) - Float.parseFloat(cash);
-
-                                float oldVal = adapter.getValue(0) - holdingVal;
-                                float newVal = adapter.getValue(adapter.getCount() - 1) - holdingVal;
-                                float percentageChange = (newVal - oldVal) / oldVal * 100;
-                                float profitLoss = adapter.getValue(adapter.getCount() - 1) - adapter.getValue(0);
-
-                                requireActivity().getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
-                                posColorLight.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
-                                requireActivity().getTheme().resolveAttribute(R.attr.color_negative_light, typedValue, true);
-                                negColorLight.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
-
-                                // Set colors
-                                if (percentageChange >= 0) {
-                                    percentChange.setText(String.format("+$%.2f (%.2f%%)", profitLoss, percentageChange));
-
-                                    requireActivity().getTheme().resolveAttribute(R.attr.color_positive, typedValue, true);
-                                    color.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
-                                    percentChange.setTextColor(color.get());
-                                    percentChange.setBackgroundTintList(ColorStateList.valueOf(posColorLight.get()));
-                                    Drawable upArrow = ContextCompat.getDrawable(requireActivity(), R.drawable.arrow_top_right);
-                                    upArrow.setTint(color.get());
-                                    percentChange.setCompoundDrawablesWithIntrinsicBounds(null, null, upArrow, null);
-                                    sparkView.setLineColor(color.get());
-                                    selectedButton.setBackgroundTintList(ColorStateList.valueOf(posColorLight.get()));
-                                    oneDay.setTextColor(color.get());
-                                    oneWeek.setTextColor(color.get());
-                                    oneMonth.setTextColor(color.get());
-                                    threeMonth.setTextColor(color.get());
-                                    oneYear.setTextColor(color.get());
-                                    oneDay.setRippleColor(ColorStateList.valueOf(color.get()));
-                                    oneWeek.setRippleColor(ColorStateList.valueOf(color.get()));
-                                    oneMonth.setRippleColor(ColorStateList.valueOf(color.get()));
-                                    threeMonth.setRippleColor(ColorStateList.valueOf(color.get()));
-                                    oneYear.setRippleColor(ColorStateList.valueOf(color.get()));
-
-                                    requireActivity().getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
-                                    posOrNegColorLight.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
-
-                                } else {
-                                    percentChange.setText(String.format("-$%.2f (%.2f%%)", Math.abs(profitLoss), percentageChange));
-
-                                    requireActivity().getTheme().resolveAttribute(R.attr.color_negative, typedValue, true);
-                                    color.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
-                                    percentChange.setTextColor(color.get());
-                                    percentChange.setBackgroundTintList(ColorStateList.valueOf(negColorLight.get()));
-                                    Drawable downArrow = ContextCompat.getDrawable(requireActivity(), R.drawable.arrow_bottom_right);
-                                    downArrow.setTint(color.get());
-                                    percentChange.setCompoundDrawablesWithIntrinsicBounds(null, null, downArrow, null);
-                                    sparkView.setLineColor(color.get());
-                                    selectedButton.setBackgroundTintList(ColorStateList.valueOf(negColorLight.get()));
-                                    oneDay.setTextColor(color.get());
-                                    oneWeek.setTextColor(color.get());
-                                    oneMonth.setTextColor(color.get());
-                                    threeMonth.setTextColor(color.get());
-                                    oneYear.setTextColor(color.get());
-                                    oneDay.setRippleColor(ColorStateList.valueOf(color.get()));
-                                    oneWeek.setRippleColor(ColorStateList.valueOf(color.get()));
-                                    oneMonth.setRippleColor(ColorStateList.valueOf(color.get()));
-                                    threeMonth.setRippleColor(ColorStateList.valueOf(color.get()));
-                                    oneYear.setRippleColor(ColorStateList.valueOf(color.get()));
-
-                                    requireActivity().getTheme().resolveAttribute(R.attr.color_negative_light, typedValue, true);
-                                    posOrNegColorLight.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
-                                }
-                            }
-
+//                            selectedAdapter.addVal(Float.parseFloat(finalCurrentValue));
                         });
                         Thread.sleep(60000 * 5);
 
@@ -359,7 +291,10 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
                     }
                 }
             });
-            t1.start();
+            t3.start();
+
+            setDashboardValues();
+
         } else {
 
             // Fetch last open day's information
@@ -397,82 +332,29 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
                 if (history.get(0) != null) {
                     for (Double i : history) {
                         if (i != null) {
-                            adapter.addVal(Float.parseFloat(String.valueOf(i)));
+                            selectedAdapter.addVal(Float.parseFloat(String.valueOf(i)));
                         }
                     }
                 }
 
                 float holdingVal = Float.parseFloat(portVal) - Float.parseFloat(cash);
 
-                float oldVal = adapter.getValue(0) - holdingVal;
-                float newVal = adapter.getValue(adapter.getCount() - 1) - holdingVal;
+                float oldVal = selectedAdapter.getValue(0) - holdingVal;
+                float newVal = selectedAdapter.getValue(selectedAdapter.getCount() - 1) - holdingVal;
                 float percentageChange = (newVal - oldVal) / oldVal * 100;
-                float profitLoss = adapter.getValue(adapter.getCount() - 1) - adapter.getValue(0);
+                float profitLoss = selectedAdapter.getValue(selectedAdapter.getCount() - 1) - selectedAdapter.getValue(0);
 
-                requireActivity().getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
-                posColorLight.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
-                requireActivity().getTheme().resolveAttribute(R.attr.color_negative_light, typedValue, true);
-                negColorLight.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
+                if (selectedAdapter.getCount() != 0) {
 
-                if (adapter.getCount() != 0) {
-
-                    double amount = Double.parseDouble(String.valueOf(adapter.getValue(adapter.getCount() - 1)));
+                    double amount = Double.parseDouble(String.valueOf(selectedAdapter.getValue(selectedAdapter.getCount() - 1)));
                     DecimalFormat formatter = new DecimalFormat("#,###.00");
                     tickerView.setText("$" + formatter.format(amount));
 
-                    if (adapter.getValue(adapter.getCount() - 1) >= adapter.baseline) {
-
-                        percentChange.setText(String.format("+$%.2f (%.2f%%)", profitLoss, percentageChange));
-
-                        requireActivity().getTheme().resolveAttribute(R.attr.color_positive, typedValue, true);
-                        color.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
-                        percentChange.setTextColor(color.get());
-                        percentChange.setBackgroundTintList(ColorStateList.valueOf(posColorLight.get()));
-                        Drawable upArrow = ContextCompat.getDrawable(requireActivity(), R.drawable.arrow_top_right);
-                        upArrow.setTint(color.get());
-                        percentChange.setCompoundDrawablesWithIntrinsicBounds(null, null, upArrow, null);
-                        sparkView.setLineColor(color.get());
-                        percentChange.setForegroundTintList(ColorStateList.valueOf(color.get()));
-                        selectedButton.setBackgroundTintList(ColorStateList.valueOf(posColorLight.get()));
-                        oneDay.setTextColor(color.get());
-                        oneWeek.setTextColor(color.get());
-                        oneMonth.setTextColor(color.get());
-                        threeMonth.setTextColor(color.get());
-                        oneYear.setTextColor(color.get());
-                        oneDay.setRippleColor(ColorStateList.valueOf(color.get()));
-                        oneWeek.setRippleColor(ColorStateList.valueOf(color.get()));
-                        oneMonth.setRippleColor(ColorStateList.valueOf(color.get()));
-                        threeMonth.setRippleColor(ColorStateList.valueOf(color.get()));
-                        oneYear.setRippleColor(ColorStateList.valueOf(color.get()));
-
-                        requireActivity().getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
-                        posOrNegColorLight.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
+                    if (selectedAdapter.getValue(selectedAdapter.getCount() - 1) >= selectedAdapter.baseline) {
+                        setDashboardColors(true, profitLoss, percentageChange);
 
                     } else {
-                        percentChange.setText(String.format("-$%.2f (%.2f%%)", Math.abs(profitLoss), percentageChange));
-
-                        requireActivity().getTheme().resolveAttribute(R.attr.color_negative, typedValue, true);
-                        color.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
-                        percentChange.setTextColor(color.get());
-                        percentChange.setBackgroundTintList(ColorStateList.valueOf(negColorLight.get()));
-                        Drawable downArrow = ContextCompat.getDrawable(requireActivity(), R.drawable.arrow_bottom_right);
-                        downArrow.setTint(color.get());
-                        percentChange.setCompoundDrawablesWithIntrinsicBounds(null, null, downArrow, null);
-                        sparkView.setLineColor(color.get());
-                        selectedButton.setBackgroundTintList(ColorStateList.valueOf(negColorLight.get()));
-                        oneDay.setTextColor(color.get());
-                        oneWeek.setTextColor(color.get());
-                        oneMonth.setTextColor(color.get());
-                        threeMonth.setTextColor(color.get());
-                        oneYear.setTextColor(color.get());
-                        oneDay.setRippleColor(ColorStateList.valueOf(color.get()));
-                        oneWeek.setRippleColor(ColorStateList.valueOf(color.get()));
-                        oneMonth.setRippleColor(ColorStateList.valueOf(color.get()));
-                        threeMonth.setRippleColor(ColorStateList.valueOf(color.get()));
-                        oneYear.setRippleColor(ColorStateList.valueOf(color.get()));
-
-                        requireActivity().getTheme().resolveAttribute(R.attr.color_negative_light, typedValue, true);
-                        posOrNegColorLight.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
+                        setDashboardColors(false, profitLoss, percentageChange);
                     }
                 }
             }
@@ -676,6 +558,154 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
             Utils.changeToTheme(getActivity(), Utils.THEME_LIGHT);
         }
 
+    }
+
+    public void setDashboardColors(boolean pos, float profitLoss, float percentageChange) {
+
+        TypedValue typedValue = new TypedValue();
+        requireActivity().getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
+        AtomicInteger posColorLight = new AtomicInteger(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
+        requireActivity().getTheme().resolveAttribute(R.attr.color_negative_light, typedValue, true);
+        AtomicInteger negColorLight = new AtomicInteger(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
+
+        if (pos) {
+            percentChange.setText(String.format("+$%.2f (%.2f%%)", profitLoss, percentageChange));
+
+            requireActivity().getTheme().resolveAttribute(R.attr.color_positive, typedValue, true);
+            int color = ContextCompat.getColor(requireActivity(), typedValue.resourceId);
+            percentChange.setTextColor(color);
+            percentChange.setBackgroundTintList(ColorStateList.valueOf(posColorLight.get()));
+            Drawable upArrow = ContextCompat.getDrawable(requireActivity(), R.drawable.arrow_top_right);
+            upArrow.setTint(color);
+            percentChange.setCompoundDrawablesWithIntrinsicBounds(null, null, upArrow, null);
+            sparkView.setLineColor(color);
+            selectedButton.setBackgroundTintList(ColorStateList.valueOf(posColorLight.get()));
+            oneDay.setTextColor(color);
+            oneWeek.setTextColor(color);
+            oneMonth.setTextColor(color);
+            threeMonth.setTextColor(color);
+            oneYear.setTextColor(color);
+            oneDay.setRippleColor(ColorStateList.valueOf(color));
+            oneWeek.setRippleColor(ColorStateList.valueOf(color));
+            oneMonth.setRippleColor(ColorStateList.valueOf(color));
+            threeMonth.setRippleColor(ColorStateList.valueOf(color));
+            oneYear.setRippleColor(ColorStateList.valueOf(color));
+
+            requireActivity().getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
+            posOrNegColorLight.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
+
+        } else {
+            percentChange.setText(String.format("-$%.2f (%.2f%%)", Math.abs(profitLoss), percentageChange));
+
+            requireActivity().getTheme().resolveAttribute(R.attr.color_negative, typedValue, true);
+            int color = ContextCompat.getColor(requireActivity(), typedValue.resourceId);
+            percentChange.setTextColor(color);
+            percentChange.setBackgroundTintList(ColorStateList.valueOf(negColorLight.get()));
+            Drawable downArrow = ContextCompat.getDrawable(requireActivity(), R.drawable.arrow_bottom_right);
+            downArrow.setTint(color);
+            percentChange.setCompoundDrawablesWithIntrinsicBounds(null, null, downArrow, null);
+            sparkView.setLineColor(color);
+            selectedButton.setBackgroundTintList(ColorStateList.valueOf(negColorLight.get()));
+            oneDay.setTextColor(color);
+            oneWeek.setTextColor(color);
+            oneMonth.setTextColor(color);
+            threeMonth.setTextColor(color);
+            oneYear.setTextColor(color);
+            oneDay.setRippleColor(ColorStateList.valueOf(color));
+            oneWeek.setRippleColor(ColorStateList.valueOf(color));
+            oneMonth.setRippleColor(ColorStateList.valueOf(color));
+            threeMonth.setRippleColor(ColorStateList.valueOf(color));
+            oneYear.setRippleColor(ColorStateList.valueOf(color));
+
+            requireActivity().getTheme().resolveAttribute(R.attr.color_negative_light, typedValue, true);
+            posOrNegColorLight.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
+        }
+    }
+
+    public void initializeDashboardValues(int periodLength, PortfolioPeriodUnit periodUnit, PortfolioTimeFrame timeFrame, StockAdapter selectedAdapterInitial) {
+
+        AlpacaAPI alpacaAPI = new AlpacaAPI();
+
+        Thread t2 = new Thread(() -> {
+
+            // Gather old portfolio data
+            ArrayList<Double> history = new ArrayList<>();
+            try {
+                history = alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, LocalDate.now(), true).getEquity();
+
+            } catch (AlpacaAPIRequestException e) {
+                e.printStackTrace();
+            }
+
+            // Add data to chart
+            if (history.get(0) != null) {
+                for (Double i : history) {
+                    if (i != null) {
+                        selectedAdapterInitial.addVal(Float.parseFloat(String.valueOf(i)));
+                    }
+                }
+            }
+
+            if (periodUnit == PortfolioPeriodUnit.YEAR) {
+                selectedAdapterInitial.smoothGraph();
+            }
+
+        });
+        t2.start();
+    }
+
+    public void setDashboardValues() {
+        AlpacaAPI alpacaAPI = new AlpacaAPI();
+
+        // Create thread for updating equity
+        Thread t1 = new Thread(() -> {
+
+            // Run forever to get the new equities
+            while (true) {
+                try {
+
+                    // Fetch portfolio value
+                    String portVal = null;
+                    try {
+                        portVal = alpacaAPI.getAccount().getPortfolioValue();
+                        cash = alpacaAPI.getAccount().getCash();
+                    } catch (AlpacaAPIRequestException e) {
+                        e.printStackTrace();
+                    }
+
+                    String finalPortVal = portVal;
+                    getActivity().runOnUiThread(() -> {
+
+                        // Set percent change and update colors
+                        if (finalPortVal != null && cash != null) {
+
+                            float holdingVal = Float.parseFloat(finalPortVal) - Float.parseFloat(cash);
+
+                            float oldVal = selectedAdapter.getValue(0) - holdingVal;
+                            float newVal = selectedAdapter.getValue(selectedAdapter.getCount() - 1) - holdingVal;
+                            float percentageChange = (newVal - oldVal) / oldVal * 100;
+                            float profitLoss = selectedAdapter.getValue(selectedAdapter.getCount() - 1) - selectedAdapter.getValue(0);
+
+                            // Set colors
+                            if (percentageChange >= 0) {
+
+                                setDashboardColors(true, profitLoss, percentageChange);
+
+                            } else {
+
+                                setDashboardColors(false, profitLoss, percentageChange);
+                            }
+                        }
+
+                    });
+                    Thread.sleep(60000 * 5);
+
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        t1.start();
     }
 
 }

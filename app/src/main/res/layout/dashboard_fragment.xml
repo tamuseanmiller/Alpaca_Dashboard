@@ -60,7 +60,8 @@
                     android:id="@+id/scrollID"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:elevation="10dp">
+                    android:elevation="10dp"
+                    android:fillViewport="true">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -161,86 +162,6 @@
                                 app:spark_scrubEnabled="true"
                                 android:elevation="3dp"
                                 tools:ignore="RtlSymmetry" />
-
-                            <!--<com.google.android.material.chip.ChipGroup
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                app:chipSpacingHorizontal="10dp">
-
-                                <com.google.android.flexbox.FlexboxLayout
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    app:flexDirection="row"
-                                    app:justifyContent="space_around">
-
-                                    <com.google.android.material.chip.Chip
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        app:checkedIconTint="?attr/color_positive"
-                                        android:checkable="true"
-                                        android:checked="true"
-                                        android:backgroundTint="?attr/colorPrimary"
-                                        app:chipStrokeColor="?attr/colorAccentTransparent"
-                                        app:chipCornerRadius="15dp"
-                                        app:chipStrokeWidth="0dp"
-                                        android:id="@+id/oneDay"
-                                        android:text="1D"/>
-
-                                    <com.google.android.material.chip.Chip
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        app:checkedIconTint="?attr/color_positive"
-                                        android:checkable="true"
-                                        android:checked="false"
-                                        android:backgroundTint="?attr/colorPrimary"
-                                        app:chipStrokeColor="?attr/colorAccentTransparent"
-                                        app:chipCornerRadius="15dp"
-                                        app:chipStrokeWidth="0dp"
-                                        android:id="@+id/oneWeek"
-                                        android:text="1W"/>
-
-                                    <com.google.android.material.chip.Chip
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        app:checkedIconTint="?attr/color_positive"
-                                        android:checkable="true"
-                                        android:checked="false"
-                                        android:backgroundTint="?attr/colorPrimary"
-                                        app:chipStrokeColor="?attr/colorAccentTransparent"
-                                        app:chipCornerRadius="15dp"
-                                        app:chipStrokeWidth="0dp"
-                                        android:id="@+id/oneMonth"
-                                        android:text="1M"/>
-
-                                    <com.google.android.material.chip.Chip
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        app:checkedIconTint="?attr/color_positive"
-                                        android:checkable="true"
-                                        android:checked="false"
-                                        android:backgroundTint="?attr/colorPrimary"
-                                        app:chipStrokeColor="?attr/colorAccentTransparent"
-                                        app:chipCornerRadius="15dp"
-                                        app:chipStrokeWidth="0dp"
-                                        android:id="@+id/threeMonths"
-                                        android:text="3M"/>
-
-                                    <com.google.android.material.chip.Chip
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        app:checkedIconTint="?attr/color_positive"
-                                        android:checkable="true"
-                                        android:checked="false"
-                                        android:backgroundTint="?attr/colorPrimary"
-                                        app:chipStrokeColor="?attr/colorAccentTransparent"
-                                        app:chipCornerRadius="15dp"
-                                        app:chipStrokeWidth="0dp"
-                                        android:id="@+id/oneYear"
-                                        android:text="1Y"/>
-
-                                </com.google.android.flexbox.FlexboxLayout>
-
-                            </com.google.android.material.chip.ChipGroup>-->
 
                                 <LinearLayout
                                     android:layout_width="match_parent"

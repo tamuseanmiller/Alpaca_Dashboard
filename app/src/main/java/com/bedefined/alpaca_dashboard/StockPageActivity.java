@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.robinhood.spark.SparkView;
 import com.robinhood.spark.animation.LineSparkAnimator;
@@ -43,27 +44,39 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import net.jacobpeterson.alpaca.AlpacaAPI;
+import net.jacobpeterson.alpaca.enums.BarsTimeFrame;
 import net.jacobpeterson.alpaca.enums.Direction;
 import net.jacobpeterson.alpaca.enums.OrderStatus;
+import net.jacobpeterson.alpaca.enums.PortfolioPeriodUnit;
+import net.jacobpeterson.alpaca.enums.PortfolioTimeFrame;
 import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
+import net.jacobpeterson.domain.alpaca.bar.Bar;
+import net.jacobpeterson.domain.alpaca.calendar.Calendar;
 import net.jacobpeterson.domain.alpaca.order.Order;
 import net.jacobpeterson.polygon.PolygonAPI;
 import net.jacobpeterson.polygon.rest.exception.PolygonAPIRequestException;
 
 import java.text.DecimalFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.cabriole.decorator.LinearMarginDecoration;
 
+import static com.bedefined.alpaca_dashboard.DashboardFragment.ticker;
+
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class StockPageActivity extends AppCompatActivity implements RecyclerViewAdapterStocks.ItemClickListener {
 
     private SparkView sparkViewStock;
-    private StockAdapter adapterStock;
+    private StockAdapter selectedAdapterStock;
     private RecyclerView recyclerOrdersStock;
     public TickerView tickerViewStock;
     private RecyclerViewAdapterOrders recycleAdapterOrders;
@@ -73,6 +86,18 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
     private SwipeRefreshLayout swipeRefreshStock;
     private FloatingActionButton fab;
     private TextView numPos;
+    private MaterialButton oneDayStock;
+    private MaterialButton oneWeekStock;
+    private MaterialButton oneMonthStock;
+    private MaterialButton threeMonthStock;
+    private MaterialButton oneYearStock;
+    private MaterialButton selectedButton;
+    private AtomicInteger posOrNegColorLight;
+    private StockAdapter oneDayStockAdapter;
+    private StockAdapter oneWeekStockAdapter;
+    private StockAdapter oneMonthStockAdapter;
+    private StockAdapter threeMonthStockAdapter;
+    private StockAdapter oneYearStockAdapter;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -88,7 +113,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
 
         // Set title
         TextView totalEquity = findViewById(R.id.stockTradedStock);
-        totalEquity.setText(DashboardFragment.ticker.get());
+        totalEquity.setText(ticker.get());
 
         // Set percent change
         percentChangeStock = findViewById(R.id.percentChangeStock);
@@ -132,7 +157,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             numPos = findViewById(R.id.numberOfStocks);
             String numPosition = null;
             try {
-                numPosition = alpacaAPI.getOpenPositionBySymbol(DashboardFragment.ticker.get()).getQty();
+                numPosition = alpacaAPI.getOpenPositionBySymbol(ticker.get()).getQty();
                 String finalNumPosition = numPosition;
                 runOnUiThread(() -> numPos.setText(finalNumPosition + " shares owned"));
             } catch (AlpacaAPIRequestException e) {
@@ -154,24 +179,101 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
         Thread t2 = new Thread(() -> {
 
             // The sparkline graph itself
+            // Set button group for timeframe
+            oneDayStock = findViewById(R.id.oneDayStock);
+            oneWeekStock = findViewById(R.id.oneWeekStock);
+            oneMonthStock = findViewById(R.id.oneMonthStock);
+            threeMonthStock = findViewById(R.id.threeMonthsStock);
+            oneYearStock = findViewById(R.id.oneYearStock);
+            selectedButton = oneDayStock;
+
+            // The sparkline graph data
             sparkViewStock = findViewById(R.id.sparkviewStock);
-            LineSparkAnimator lineSparkAnimator = new LineSparkAnimator();
-            sparkViewStock.setSparkAnimator(lineSparkAnimator);
             try {
-                adapterStock = new StockAdapter(DashboardFragment.ticker);
+                oneDayStockAdapter = new StockAdapter(ticker, 1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.ONE_MIN);
+                oneWeekStockAdapter = new StockAdapter(ticker, 1, PortfolioPeriodUnit.WEEK, PortfolioTimeFrame.ONE_HOUR);
+                oneMonthStockAdapter = new StockAdapter(ticker, 1, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY);
+                threeMonthStockAdapter = new StockAdapter(ticker, 3, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY);
+                oneYearStockAdapter = new StockAdapter(ticker, 1, PortfolioPeriodUnit.YEAR, PortfolioTimeFrame.ONE_DAY);
+                selectedAdapterStock = oneDayStockAdapter;
+
+            } catch (PolygonAPIRequestException | AlpacaAPIRequestException e) {
+                e.printStackTrace();
+            }
+            sparkViewStock.setAdapter(selectedAdapterStock);
+
+            // Initalize all graphs
+            try {
+                initializeDashboardValues(1, ZonedDateTime.now().minusDays(1), BarsTimeFrame.FIVE_MINUTE, oneDayStockAdapter);
+                initializeDashboardValues(1, ZonedDateTime.now().minusWeeks(1), BarsTimeFrame.FIFTEEN_MINUTE, oneWeekStockAdapter);
+                initializeDashboardValues(1, ZonedDateTime.now().minusMonths(1), BarsTimeFrame.ONE_DAY, oneMonthStockAdapter);
+                initializeDashboardValues(3, ZonedDateTime.now().minusMonths(3), BarsTimeFrame.ONE_DAY, threeMonthStockAdapter);
+                initializeDashboardValues(1, ZonedDateTime.now().minusYears(1), BarsTimeFrame.ONE_DAY, oneYearStockAdapter);
+            } catch (AlpacaAPIRequestException e) {
+                e.printStackTrace();
+            }
+
+            // Set colors on click, for toggle buttons
+            TypedValue typedValue = new TypedValue();
+            getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
+            posOrNegColorLight = new AtomicInteger(ContextCompat.getColor(this, typedValue.resourceId));
+            getTheme().resolveAttribute(R.attr.colorPrimary, typedValue, true);
+            int colorPrimary = ContextCompat.getColor(this, typedValue.resourceId);
+            oneDayStock.setOnClickListener(v -> {
+                selectedButton.setBackgroundTintList(ColorStateList.valueOf(colorPrimary));
+                selectedButton = oneDayStock;
+                selectedButton.setBackgroundTintList(ColorStateList.valueOf(posOrNegColorLight.get()));
+                selectedAdapterStock = oneDayStockAdapter;
+                sparkViewStock.setAdapter(selectedAdapterStock);
+//                setDashboardValues();
+            });
+            oneWeekStock.setOnClickListener(v -> {
+                selectedButton.setBackgroundTintList(ColorStateList.valueOf(colorPrimary));
+                selectedButton = oneWeekStock;
+                selectedButton.setBackgroundTintList(ColorStateList.valueOf(posOrNegColorLight.get()));
+                selectedAdapterStock = oneWeekStockAdapter;
+                sparkViewStock.setAdapter(selectedAdapterStock);
+//                setDashboardValues();
+            });
+            oneMonthStock.setOnClickListener(v -> {
+                selectedButton.setBackgroundTintList(ColorStateList.valueOf(colorPrimary));
+                selectedButton = oneMonthStock;
+                selectedButton.setBackgroundTintList(ColorStateList.valueOf(posOrNegColorLight.get()));
+                selectedAdapterStock = oneMonthStockAdapter;
+                sparkViewStock.setAdapter(selectedAdapterStock);
+//                setDashboardValues();
+            });
+            threeMonthStock.setOnClickListener(v -> {
+                selectedButton.setBackgroundTintList(ColorStateList.valueOf(colorPrimary));
+                selectedButton = threeMonthStock;
+                selectedButton.setBackgroundTintList(ColorStateList.valueOf(posOrNegColorLight.get()));
+                selectedAdapterStock = threeMonthStockAdapter;
+                sparkViewStock.setAdapter(selectedAdapterStock);
+//                setDashboardValues();
+            });
+            oneYearStock.setOnClickListener(v -> {
+                selectedButton.setBackgroundTintList(ColorStateList.valueOf(colorPrimary));
+                selectedButton = oneYearStock;
+                selectedButton.setBackgroundTintList(ColorStateList.valueOf(posOrNegColorLight.get()));
+                selectedAdapterStock = oneYearStockAdapter;
+                sparkViewStock.setAdapter(selectedAdapterStock);
+//                setDashboardValues();
+            });
+            try {
+                selectedAdapterStock = new StockAdapter(ticker, 0, null, null);
             } catch (PolygonAPIRequestException | AlpacaAPIRequestException e) {
                 e.printStackTrace();
             }
             try {
-                adapterStock.initializeStock();
+                selectedAdapterStock.initializeStock();
             } catch (AlpacaAPIRequestException e) {
                 e.printStackTrace();
             }
 
             // Add last value
             float lastPrice = 0;
-            if (adapterStock.getCount() > 1) {
-                lastPrice = adapterStock.getValue(adapterStock.getCount() - 1);
+            if (selectedAdapterStock.getCount() > 1) {
+                lastPrice = selectedAdapterStock.getValue(selectedAdapterStock.getCount() - 1);
             }
             AtomicReference<Double> amount = new AtomicReference<>(Double.parseDouble(String.valueOf(lastPrice)));
             DecimalFormat formatter = new DecimalFormat("#,###.00");
@@ -179,15 +281,14 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             runOnUiThread(() -> {
 
                 tickerViewStock.setText("$" + formatter.format(amount.get()));
-                sparkViewStock.setAdapter(adapterStock);
+                sparkViewStock.setAdapter(selectedAdapterStock);
 
                 // Set Line and Ticker color
-                float oldVal = adapterStock.getValue(0);
-                float newVal = adapterStock.getValue(adapterStock.getCount() - 1);
+                float oldVal = selectedAdapterStock.getValue(0);
+                float newVal = selectedAdapterStock.getValue(selectedAdapterStock.getCount() - 1);
                 float percentageChange = (newVal - oldVal) / oldVal * 100;
-                float profitLoss = adapterStock.getValue(adapterStock.getCount() - 1) - adapterStock.getValue(0);
+                float profitLoss = selectedAdapterStock.getValue(selectedAdapterStock.getCount() - 1) - selectedAdapterStock.getValue(0);
 
-                TypedValue typedValue = new TypedValue();
                 getTheme().resolveAttribute(R.attr.color_negative, typedValue, true);
                 int negColor = ContextCompat.getColor(this, typedValue.resourceId);
                 getTheme().resolveAttribute(R.attr.color_positive, typedValue, true);
@@ -198,9 +299,9 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 getTheme().resolveAttribute(R.attr.color_negative_light, typedValue, true);
                 int negColorLight = ContextCompat.getColor(this, typedValue.resourceId);
 
-                if (adapterStock.getCount() != 0) {
+                if (selectedAdapterStock.getCount() != 0) {
 
-                    if (adapterStock.getValue(adapterStock.getCount() - 1) >= adapterStock.baseline) {
+                    if (selectedAdapterStock.getValue(selectedAdapterStock.getCount() - 1) >= selectedAdapterStock.baseline) {
 
                         percentChangeStock.setText(String.format("+$%.2f (%.2f%%)", profitLoss, percentageChange));
 
@@ -258,20 +359,21 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
 
             // Stream live data for a stock
             MainActivity vars = new MainActivity();
-            vars.streamStockData(polygonAPI, DashboardFragment.ticker, tickerViewStock);
+            vars.streamStockData(polygonAPI, ticker, tickerViewStock);
 
             Thread t4 = new Thread(() -> {
 
                 while (true) {
                     float askingPrice = 0;
                     try {
-                        askingPrice = polygonAPI.getLastQuote(DashboardFragment.ticker.get()).getLast().getAskprice().floatValue();
+                        askingPrice = polygonAPI.getLastQuote(ticker.get()).getLast().getAskprice().floatValue();
 
                     } catch (PolygonAPIRequestException e) {
                         e.printStackTrace();
                     }
 
-                    adapterStock.addVal(askingPrice);
+                    float finalAskingPrice = askingPrice;
+                    runOnUiThread(() -> selectedAdapterStock.addVal(finalAskingPrice));
 
                     // Fetch colors
                     TypedValue typedValue = new TypedValue();
@@ -284,10 +386,10 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                     getTheme().resolveAttribute(R.attr.color_negative_light, typedValue, true);
                     int negColorLight = ContextCompat.getColor(this, typedValue.resourceId);
 
-                    float oldVal = adapterStock.getValue(0);
-                    float newVal = adapterStock.getValue(adapterStock.getCount() - 1);
+                    float oldVal = selectedAdapterStock.getValue(0);
+                    float newVal = selectedAdapterStock.getValue(selectedAdapterStock.getCount() - 1);
                     float percentageChange = (newVal - oldVal) / oldVal * 100;
-                    float profitLoss = adapterStock.getValue(adapterStock.getCount() - 1) - adapterStock.getValue(0);
+                    float profitLoss = selectedAdapterStock.getValue(selectedAdapterStock.getCount() - 1) - selectedAdapterStock.getValue(0);
 
                     runOnUiThread(() -> {
 
@@ -337,7 +439,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 e.printStackTrace();
             }
             for (int i = 0; i < ordersStock.size(); i++) {
-                if (ordersStock.get(i).getSymbol().equals(DashboardFragment.ticker.get())) {
+                if (ordersStock.get(i).getSymbol().equals(ticker.get())) {
                     order.add(ordersStock.get(i));
                 }
             }
@@ -381,7 +483,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             // Set number of stocks textview
             String numPosition = null;
             try {
-                numPosition = alpacaAPI.getOpenPositionBySymbol(DashboardFragment.ticker.get()).getQty();
+                numPosition = alpacaAPI.getOpenPositionBySymbol(ticker.get()).getQty();
                 String finalNumPosition = numPosition;
                 runOnUiThread(() -> numPos.setText(finalNumPosition + " shares owned"));
             } catch (AlpacaAPIRequestException e) {
@@ -393,6 +495,57 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             swipeRefreshStock.setRefreshing(false);
         });
         thread2.start();
+    }
+
+    public void initializeDashboardValues(int periodLength, ZonedDateTime datetime, BarsTimeFrame timeFrame, StockAdapter selectedAdapterInitial) throws AlpacaAPIRequestException {
+
+        // Requests bars and adds to graph
+        AlpacaAPI alpacaAPI = new AlpacaAPI();
+        PolygonAPI polygonAPI = new PolygonAPI();
+        Map<String, ArrayList<Bar>> bars = null;
+
+        // Check if market is open
+        String marketStatus = null;
+        try {
+            marketStatus = polygonAPI.getMarketStatus().getMarket();
+        } catch (PolygonAPIRequestException e) {
+            e.printStackTrace();
+        }
+
+        if (marketStatus.equals("open")) {
+
+            // Fetch todays bars
+            try {
+                bars = alpacaAPI.getBars(timeFrame, ticker.get(), 1000, datetime, null,
+                        ZonedDateTime.of(LocalDateTime.of(LocalDate.now(), LocalTime.of(5, 30)), ZoneId.of("UTC-6")), null);
+
+            } catch (AlpacaAPIRequestException e) {
+                e.printStackTrace();
+            }
+
+        } else {
+
+            // Fetch last open day's information
+            ArrayList<Calendar> calendar = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(1), LocalDate.now());
+            LocalDate lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 1).getDate());
+            LocalTime lastOpenTime = LocalTime.parse(calendar.get(calendar.size() - 1).getClose());
+            LocalTime lastOpenTimeStart = LocalTime.parse(calendar.get(calendar.size() - 1).getOpen());
+
+            try {
+                bars = alpacaAPI.getBars(BarsTimeFrame.FIVE_MINUTE, ticker.get(), 1000, null, null,
+                        ZonedDateTime.of(lastOpenDate, lastOpenTimeStart, ZoneId.of("UTC-4")),
+                        ZonedDateTime.of(lastOpenDate, lastOpenTime, ZoneId.of("UTC-4")));
+
+            } catch (AlpacaAPIRequestException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (bars != null) {
+            for (Bar bar : Objects.requireNonNull(bars.get(ticker.get()))) {
+                selectedAdapterInitial.addVal(bar.getC().floatValue());
+            }
+        }
     }
 
     @Override
