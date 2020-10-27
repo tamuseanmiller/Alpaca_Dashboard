@@ -135,7 +135,7 @@
                         <com.google.android.material.card.MaterialCardView
                             android:id="@+id/sparkCard"
                             android:layout_width="match_parent"
-                            android:layout_height="500dp"
+                            android:layout_height="550dp"
                             android:backgroundTint="?attr/colorPrimary"
                             android:clipChildren="true"
                             android:elevation="0dp"
@@ -144,6 +144,11 @@
                             app:strokeWidth="1dp"
                             app:strokeColor="?attr/colorAccentTransparent"
                             app:cardPreventCornerOverlap="false">
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical">
 
                             <com.robinhood.spark.SparkView
                                 android:id="@+id/sparkview"
@@ -156,6 +161,172 @@
                                 app:spark_scrubEnabled="true"
                                 android:elevation="3dp"
                                 tools:ignore="RtlSymmetry" />
+
+                            <!--<com.google.android.material.chip.ChipGroup
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:chipSpacingHorizontal="10dp">
+
+                                <com.google.android.flexbox.FlexboxLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    app:flexDirection="row"
+                                    app:justifyContent="space_around">
+
+                                    <com.google.android.material.chip.Chip
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        app:checkedIconTint="?attr/color_positive"
+                                        android:checkable="true"
+                                        android:checked="true"
+                                        android:backgroundTint="?attr/colorPrimary"
+                                        app:chipStrokeColor="?attr/colorAccentTransparent"
+                                        app:chipCornerRadius="15dp"
+                                        app:chipStrokeWidth="0dp"
+                                        android:id="@+id/oneDay"
+                                        android:text="1D"/>
+
+                                    <com.google.android.material.chip.Chip
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        app:checkedIconTint="?attr/color_positive"
+                                        android:checkable="true"
+                                        android:checked="false"
+                                        android:backgroundTint="?attr/colorPrimary"
+                                        app:chipStrokeColor="?attr/colorAccentTransparent"
+                                        app:chipCornerRadius="15dp"
+                                        app:chipStrokeWidth="0dp"
+                                        android:id="@+id/oneWeek"
+                                        android:text="1W"/>
+
+                                    <com.google.android.material.chip.Chip
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        app:checkedIconTint="?attr/color_positive"
+                                        android:checkable="true"
+                                        android:checked="false"
+                                        android:backgroundTint="?attr/colorPrimary"
+                                        app:chipStrokeColor="?attr/colorAccentTransparent"
+                                        app:chipCornerRadius="15dp"
+                                        app:chipStrokeWidth="0dp"
+                                        android:id="@+id/oneMonth"
+                                        android:text="1M"/>
+
+                                    <com.google.android.material.chip.Chip
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        app:checkedIconTint="?attr/color_positive"
+                                        android:checkable="true"
+                                        android:checked="false"
+                                        android:backgroundTint="?attr/colorPrimary"
+                                        app:chipStrokeColor="?attr/colorAccentTransparent"
+                                        app:chipCornerRadius="15dp"
+                                        app:chipStrokeWidth="0dp"
+                                        android:id="@+id/threeMonths"
+                                        android:text="3M"/>
+
+                                    <com.google.android.material.chip.Chip
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        app:checkedIconTint="?attr/color_positive"
+                                        android:checkable="true"
+                                        android:checked="false"
+                                        android:backgroundTint="?attr/colorPrimary"
+                                        app:chipStrokeColor="?attr/colorAccentTransparent"
+                                        app:chipCornerRadius="15dp"
+                                        app:chipStrokeWidth="0dp"
+                                        android:id="@+id/oneYear"
+                                        android:text="1Y"/>
+
+                                </com.google.android.flexbox.FlexboxLayout>
+
+                            </com.google.android.material.chip.ChipGroup>-->
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:paddingStart="10dp"
+                                    android:paddingEnd="10dp"
+                                    android:orientation="horizontal">
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/oneDay"
+                                        android:layout_width="0dp"
+                                        android:layout_weight="1"
+                                        android:layout_height="wrap_content"
+                                        android:backgroundTint="?attr/color_positive_light"
+                                        android:stateListAnimator="@null"
+                                        android:gravity="center"
+                                        app:layout_gravity="fill_horizontal"
+                                        android:text="1D"
+                                        android:textColor="?attr/color_positive"
+                                        android:textSize="10sp"
+                                        app:cornerRadius="15dp"
+                                        app:rippleColor="?attr/color_positive" />
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/oneWeek"
+                                        android:layout_width="0dp"
+                                        android:layout_weight="1"
+                                        android:layout_height="wrap_content"
+                                        android:backgroundTint="?attr/colorPrimary"
+                                        android:stateListAnimator="@null"
+                                        android:gravity="center"
+                                        app:layout_gravity="fill_horizontal"
+                                        android:text="1W"
+                                        android:textColor="?attr/color_positive"
+                                        android:textSize="10sp"
+                                        app:cornerRadius="15dp"
+                                        app:rippleColor="?attr/color_positive" />
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/oneMonth"
+                                        android:layout_width="0dp"
+                                        android:layout_weight="1"
+                                        android:layout_height="wrap_content"
+                                        android:backgroundTint="?attr/colorPrimary"
+                                        android:stateListAnimator="@null"
+                                        android:gravity="center"
+                                        app:layout_gravity="fill_horizontal"
+                                        android:text="1M"
+                                        android:textColor="?attr/color_positive"
+                                        android:textSize="10sp"
+                                        app:cornerRadius="15dp"
+                                        app:rippleColor="?attr/color_positive" />
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/threeMonths"
+                                        android:layout_width="0dp"
+                                        android:layout_weight="1"
+                                        android:layout_height="wrap_content"
+                                        android:backgroundTint="?attr/colorPrimary"
+                                        android:stateListAnimator="@null"
+                                        android:gravity="center"
+                                        app:layout_gravity="fill_horizontal"
+                                        android:text="3M"
+                                        android:textColor="?attr/color_positive"
+                                        android:textSize="10sp"
+                                        app:cornerRadius="15dp"
+                                        app:rippleColor="?attr/color_positive" />
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/oneYear"
+                                        android:layout_width="0dp"
+                                        android:layout_weight="1"
+                                        android:layout_height="wrap_content"
+                                        android:backgroundTint="?attr/colorPrimary"
+                                        android:stateListAnimator="@null"
+                                        android:gravity="center"
+                                        app:layout_gravity="fill_horizontal"
+                                        android:text="1Y"
+                                        android:textColor="?attr/color_positive"
+                                        android:textSize="10sp"
+                                        app:cornerRadius="15dp"
+                                        app:rippleColor="?attr/color_positive" />
+
+                                </LinearLayout>
+
+                            </LinearLayout>
 
                         </com.google.android.material.card.MaterialCardView>
 

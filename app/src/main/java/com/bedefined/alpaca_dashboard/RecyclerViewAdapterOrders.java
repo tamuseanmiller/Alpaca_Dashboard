@@ -63,22 +63,44 @@ public class RecyclerViewAdapterOrders extends RecyclerView.Adapter<RecyclerView
 //        holder.timeClosed.setText(mData.get(position).getFilledAt().getMonth().getValue() + "/" + mData.get(position).getFilledAt().getDayOfMonth() + "/" + mData.get(position).getFilledAt().getYear() /*+ "\n" + mData.get(position).getFilledAt().getHour() + ":" + mData.get(position).getFilledAt().getMinute()*/);
 
         // Fetches 12hour hour:minute format including am/pm
-        int hourTemp = mData.get(position).getFilledAt().getHour();
-        String hour = "";
-        String minute = String.valueOf(mData.get(position).getFilledAt().getMinute());
-        if (Integer.parseInt(minute) < 10) {
-            minute = "0" + minute;
+        if (mData.get(position).getFilledAt() != null) {
+            int hourTemp = mData.get(position).getFilledAt().getHour();
+            String hour = "";
+            String minute = String.valueOf(mData.get(position).getFilledAt().getMinute());
+            if (Integer.parseInt(minute) < 10) {
+                minute = "0" + minute;
+            }
+            minute += "am";
+            if (hourTemp > 12) {
+                hourTemp -= 12;
+                minute = minute.substring(0, minute.length() - 2);
+                minute += "pm";
+            }
+            hour = String.valueOf(hourTemp);
+            holder.timeClosed.setText(hour + ":" + minute);
+            holder.price.setText("$" + mData.get(position).getFilledAvgPrice());
+            holder.pricePlaced.setText(mData.get(position).getSide() + " " + mData.get(position).getQty());
+        } else {
+
+            int hourTemp = mData.get(position).getCanceledAt().getHour();
+            String hour = "";
+            String minute = String.valueOf(mData.get(position).getCanceledAt().getMinute());
+            if (Integer.parseInt(minute) < 10) {
+                minute = "0" + minute;
+            }
+            minute += "am";
+            if (hourTemp > 12) {
+                hourTemp -= 12;
+                minute = minute.substring(0, minute.length() - 2);
+                minute += "pm";
+            }
+
+            hour = String.valueOf(hourTemp);
+            holder.timeClosed.setText(hour + ":" + minute);
+            holder.price.setText("Cancelled");
+            holder.pricePlaced.setText("Cancelled");
         }
-        minute += "am";
-        if (hourTemp > 12) {
-            hourTemp -= 12;
-            minute = minute.substring(0, minute.length() - 2);
-            minute += "pm";
-        }
-        hour = String.valueOf(hourTemp);
-        holder.timeClosed.setText(hour + ":" + minute);
-        holder.price.setText("$" + mData.get(position).getFilledAvgPrice());
-        holder.pricePlaced.setText(mData.get(position).getSide() + " " + mData.get(position).getQty());
+
     }
 
     // total number of rows
@@ -90,7 +112,7 @@ public class RecyclerViewAdapterOrders extends RecyclerView.Adapter<RecyclerView
 
     // stores and recycles views as they are scrolled off screen
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-//        TextView shrQty;
+        //        TextView shrQty;
         Button pricePlaced;
         TextView stockName;
         TextView price;

@@ -24,6 +24,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.google.android.material.button.MaterialButton;
 import com.robinhood.spark.SparkView;
 import com.robinhood.ticker.TickerUtils;
 import com.robinhood.ticker.TickerView;
@@ -70,6 +71,13 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
     private SwipeRefreshLayout swipeRefresh;
     private ImageButton themeChange;
     private ArrayList<Order> orders;
+    private MaterialButton oneDay;
+    private MaterialButton oneWeek;
+    private MaterialButton oneMonth;
+    private MaterialButton threeMonth;
+    private MaterialButton oneYear;
+    private MaterialButton selectedButton;
+    private AtomicInteger posOrNegColorLight;
 
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -102,6 +110,50 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
         TextView totalEquity = mView.findViewById(R.id.stockTraded);
         totalEquity.setText("Total Equity");
 
+        // Set button group for timeframe
+        oneDay = mView.findViewById(R.id.oneDay);
+        oneWeek = mView.findViewById(R.id.oneWeek);
+        oneMonth = mView.findViewById(R.id.oneMonth);
+        threeMonth = mView.findViewById(R.id.threeMonths);
+        oneYear = mView.findViewById(R.id.oneYear);
+        selectedButton = oneDay;
+
+        // Set colors on click, for toggle
+        TypedValue typedValue = new TypedValue();
+        requireActivity().getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
+        AtomicInteger posColorLight = new AtomicInteger(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
+        requireActivity().getTheme().resolveAttribute(R.attr.color_negative_light, typedValue, true);
+        AtomicInteger negColorLight = new AtomicInteger(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
+        requireActivity().getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
+        posOrNegColorLight = new AtomicInteger(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
+        requireActivity().getTheme().resolveAttribute(R.attr.colorPrimary, typedValue, true);
+        int colorPrimary = ContextCompat.getColor(requireActivity(), typedValue.resourceId);
+        oneDay.setOnClickListener(v -> {
+            selectedButton.setBackgroundTintList(ColorStateList.valueOf(colorPrimary));
+            selectedButton = oneDay;
+            selectedButton.setBackgroundTintList(ColorStateList.valueOf(posOrNegColorLight.get()));
+        });
+        oneWeek.setOnClickListener(v -> {
+            selectedButton.setBackgroundTintList(ColorStateList.valueOf(colorPrimary));
+            selectedButton = oneWeek;
+            selectedButton.setBackgroundTintList(ColorStateList.valueOf(posOrNegColorLight.get()));
+        });
+        oneMonth.setOnClickListener(v -> {
+            selectedButton.setBackgroundTintList(ColorStateList.valueOf(colorPrimary));
+            selectedButton = oneMonth;
+            selectedButton.setBackgroundTintList(ColorStateList.valueOf(posOrNegColorLight.get()));
+        });
+        threeMonth.setOnClickListener(v -> {
+            selectedButton.setBackgroundTintList(ColorStateList.valueOf(colorPrimary));
+            selectedButton = threeMonth;
+            selectedButton.setBackgroundTintList(ColorStateList.valueOf(posOrNegColorLight.get()));
+        });
+        oneYear.setOnClickListener(v -> {
+            selectedButton.setBackgroundTintList(ColorStateList.valueOf(colorPrimary));
+            selectedButton = oneYear;
+            selectedButton.setBackgroundTintList(ColorStateList.valueOf(posOrNegColorLight.get()));
+        });
+
         // Set percent change
         percentChange = mView.findViewById(R.id.percentChange);
 
@@ -123,7 +175,6 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
         }
         sparkView.setAdapter(adapter);
 
-        TypedValue typedValue = new TypedValue();
         getActivity().getTheme().resolveAttribute(R.attr.colorPrimaryLight, typedValue, true);
         AtomicInteger color = new AtomicInteger(ContextCompat.getColor(getActivity(), typedValue.resourceId));
 
@@ -241,9 +292,9 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
                                 float profitLoss = adapter.getValue(adapter.getCount() - 1) - adapter.getValue(0);
 
                                 requireActivity().getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
-                                int posColorLight = ContextCompat.getColor(requireActivity(), typedValue.resourceId);
+                                posColorLight.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
                                 requireActivity().getTheme().resolveAttribute(R.attr.color_negative_light, typedValue, true);
-                                int negColorLight = ContextCompat.getColor(requireActivity(), typedValue.resourceId);
+                                negColorLight.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
 
                                 // Set colors
                                 if (percentageChange >= 0) {
@@ -252,11 +303,25 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
                                     requireActivity().getTheme().resolveAttribute(R.attr.color_positive, typedValue, true);
                                     color.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
                                     percentChange.setTextColor(color.get());
-                                    percentChange.setBackgroundTintList(ColorStateList.valueOf(posColorLight));
+                                    percentChange.setBackgroundTintList(ColorStateList.valueOf(posColorLight.get()));
                                     Drawable upArrow = ContextCompat.getDrawable(requireActivity(), R.drawable.arrow_top_right);
                                     upArrow.setTint(color.get());
                                     percentChange.setCompoundDrawablesWithIntrinsicBounds(null, null, upArrow, null);
                                     sparkView.setLineColor(color.get());
+                                    selectedButton.setBackgroundTintList(ColorStateList.valueOf(posColorLight.get()));
+                                    oneDay.setTextColor(color.get());
+                                    oneWeek.setTextColor(color.get());
+                                    oneMonth.setTextColor(color.get());
+                                    threeMonth.setTextColor(color.get());
+                                    oneYear.setTextColor(color.get());
+                                    oneDay.setRippleColor(ColorStateList.valueOf(color.get()));
+                                    oneWeek.setRippleColor(ColorStateList.valueOf(color.get()));
+                                    oneMonth.setRippleColor(ColorStateList.valueOf(color.get()));
+                                    threeMonth.setRippleColor(ColorStateList.valueOf(color.get()));
+                                    oneYear.setRippleColor(ColorStateList.valueOf(color.get()));
+
+                                    requireActivity().getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
+                                    posOrNegColorLight.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
 
                                 } else {
                                     percentChange.setText(String.format("-$%.2f (%.2f%%)", Math.abs(profitLoss), percentageChange));
@@ -264,11 +329,25 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
                                     requireActivity().getTheme().resolveAttribute(R.attr.color_negative, typedValue, true);
                                     color.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
                                     percentChange.setTextColor(color.get());
-                                    percentChange.setBackgroundTintList(ColorStateList.valueOf(negColorLight));
+                                    percentChange.setBackgroundTintList(ColorStateList.valueOf(negColorLight.get()));
                                     Drawable downArrow = ContextCompat.getDrawable(requireActivity(), R.drawable.arrow_bottom_right);
                                     downArrow.setTint(color.get());
                                     percentChange.setCompoundDrawablesWithIntrinsicBounds(null, null, downArrow, null);
                                     sparkView.setLineColor(color.get());
+                                    selectedButton.setBackgroundTintList(ColorStateList.valueOf(negColorLight.get()));
+                                    oneDay.setTextColor(color.get());
+                                    oneWeek.setTextColor(color.get());
+                                    oneMonth.setTextColor(color.get());
+                                    threeMonth.setTextColor(color.get());
+                                    oneYear.setTextColor(color.get());
+                                    oneDay.setRippleColor(ColorStateList.valueOf(color.get()));
+                                    oneWeek.setRippleColor(ColorStateList.valueOf(color.get()));
+                                    oneMonth.setRippleColor(ColorStateList.valueOf(color.get()));
+                                    threeMonth.setRippleColor(ColorStateList.valueOf(color.get()));
+                                    oneYear.setRippleColor(ColorStateList.valueOf(color.get()));
+
+                                    requireActivity().getTheme().resolveAttribute(R.attr.color_negative_light, typedValue, true);
+                                    posOrNegColorLight.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
                                 }
                             }
 
@@ -331,9 +410,9 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
                 float profitLoss = adapter.getValue(adapter.getCount() - 1) - adapter.getValue(0);
 
                 requireActivity().getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
-                int posColorLight = ContextCompat.getColor(requireActivity(), typedValue.resourceId);
+                posColorLight.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
                 requireActivity().getTheme().resolveAttribute(R.attr.color_negative_light, typedValue, true);
-                int negColorLight = ContextCompat.getColor(requireActivity(), typedValue.resourceId);
+                negColorLight.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
 
                 if (adapter.getCount() != 0) {
 
@@ -348,33 +427,101 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
                         requireActivity().getTheme().resolveAttribute(R.attr.color_positive, typedValue, true);
                         color.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
                         percentChange.setTextColor(color.get());
-                        percentChange.setBackgroundTintList(ColorStateList.valueOf(posColorLight));
+                        percentChange.setBackgroundTintList(ColorStateList.valueOf(posColorLight.get()));
                         Drawable upArrow = ContextCompat.getDrawable(requireActivity(), R.drawable.arrow_top_right);
                         upArrow.setTint(color.get());
                         percentChange.setCompoundDrawablesWithIntrinsicBounds(null, null, upArrow, null);
                         sparkView.setLineColor(color.get());
                         percentChange.setForegroundTintList(ColorStateList.valueOf(color.get()));
+                        selectedButton.setBackgroundTintList(ColorStateList.valueOf(posColorLight.get()));
+                        oneDay.setTextColor(color.get());
+                        oneWeek.setTextColor(color.get());
+                        oneMonth.setTextColor(color.get());
+                        threeMonth.setTextColor(color.get());
+                        oneYear.setTextColor(color.get());
+                        oneDay.setRippleColor(ColorStateList.valueOf(color.get()));
+                        oneWeek.setRippleColor(ColorStateList.valueOf(color.get()));
+                        oneMonth.setRippleColor(ColorStateList.valueOf(color.get()));
+                        threeMonth.setRippleColor(ColorStateList.valueOf(color.get()));
+                        oneYear.setRippleColor(ColorStateList.valueOf(color.get()));
+
+                        requireActivity().getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
+                        posOrNegColorLight.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
+
                     } else {
                         percentChange.setText(String.format("-$%.2f (%.2f%%)", Math.abs(profitLoss), percentageChange));
 
                         requireActivity().getTheme().resolveAttribute(R.attr.color_negative, typedValue, true);
                         color.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
                         percentChange.setTextColor(color.get());
-                        percentChange.setBackgroundTintList(ColorStateList.valueOf(negColorLight));
+                        percentChange.setBackgroundTintList(ColorStateList.valueOf(negColorLight.get()));
                         Drawable downArrow = ContextCompat.getDrawable(requireActivity(), R.drawable.arrow_bottom_right);
                         downArrow.setTint(color.get());
                         percentChange.setCompoundDrawablesWithIntrinsicBounds(null, null, downArrow, null);
                         sparkView.setLineColor(color.get());
+                        selectedButton.setBackgroundTintList(ColorStateList.valueOf(negColorLight.get()));
+                        oneDay.setTextColor(color.get());
+                        oneWeek.setTextColor(color.get());
+                        oneMonth.setTextColor(color.get());
+                        threeMonth.setTextColor(color.get());
+                        oneYear.setTextColor(color.get());
+                        oneDay.setRippleColor(ColorStateList.valueOf(color.get()));
+                        oneWeek.setRippleColor(ColorStateList.valueOf(color.get()));
+                        oneMonth.setRippleColor(ColorStateList.valueOf(color.get()));
+                        threeMonth.setRippleColor(ColorStateList.valueOf(color.get()));
+                        oneYear.setRippleColor(ColorStateList.valueOf(color.get()));
+
+                        requireActivity().getTheme().resolveAttribute(R.attr.color_negative_light, typedValue, true);
+                        posOrNegColorLight.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
                     }
                 }
             }
         }
 
-        // Fetch the Recycler View
         recyclerView = mView.findViewById(R.id.recyclerStocks);
         recyclerOrders = mView.findViewById(R.id.orders);
-//        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-//        recyclerView.addItemDecoration(LinearDividerDecoration.create(color, 10, 10, 10, 10, 10, LinearLayoutManager.VERTICAL, false, null));
+
+        // Threads for getting recycler data
+        Thread thread = new Thread(() -> {
+
+            // Fetch current positions
+            ArrayList<Position> positions = new ArrayList<>();
+            try {
+                positions = alpacaAPI.getOpenPositions();
+            } catch (AlpacaAPIRequestException e) {
+                e.printStackTrace();
+            }
+
+            ArrayList<String> stocks = new ArrayList<>();
+            for (Position i : positions) {
+                stocks.add(i.getSymbol());
+            }
+
+            // Fetch the Recycler View
+            recycleAdapter = new RecyclerViewAdapter(getActivity(), stocks);
+            recycleAdapter.setClickListener(this);
+            requireActivity().runOnUiThread(() -> recyclerView.setAdapter(recycleAdapter));
+
+        });
+        thread.start();
+
+        Thread thread2 = new Thread(() -> {
+
+            // Fetch curent orders
+            orders = new ArrayList<>();
+            try {
+                orders = alpacaAPI.getOrders(OrderStatus.CLOSED, 10, null, ZonedDateTime.now().plusDays(1), Direction.DESCENDING, false);
+            } catch (AlpacaAPIRequestException e) {
+                e.printStackTrace();
+            }
+
+            recycleAdapterOrders = new RecyclerViewAdapterOrders(getActivity(), orders);
+            requireActivity().runOnUiThread(() -> {
+                recyclerOrders.setAdapter(recycleAdapterOrders);
+            });
+
+        });
+        thread2.start();
 
         ColumnProvider col = () -> 3;
         recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
@@ -382,10 +529,10 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
 
         recyclerOrders.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerOrders.addItemDecoration(LinearMarginDecoration.create(0, LinearLayoutManager.VERTICAL, false, null));
-        onRefresh();
+//        onRefresh();
 
 
-//        // Set Recycle Adapter
+        // Set Recycle Adapter
 //        recycleAdapter = new RecyclerViewAdapter(getActivity(), stocks);
 //        recycleAdapter.setClickListener(getActivity());
 //        recyclerView.setAdapter(recycleAdapter);
@@ -492,8 +639,6 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
             }
 
             // Set Recycle Adapter for positions
-            recycleAdapter = new RecyclerViewAdapter(getActivity(), stocks);
-            recycleAdapter.setClickListener(this);
             requireActivity().runOnUiThread(() -> recyclerView.setAdapter(recycleAdapter));
         });
         thread.start();
@@ -511,7 +656,6 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
             }
 
             // Set Recycle Adapter for orders
-            recycleAdapterOrders = new RecyclerViewAdapterOrders(getActivity(), orders);
             requireActivity().runOnUiThread(() -> recyclerOrders.setAdapter(recycleAdapterOrders));
             swipeRefresh.setRefreshing(false);
         });

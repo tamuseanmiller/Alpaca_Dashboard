@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:elevation="0dp"
+    android:elevation="10000dp"
     app:icon="@drawable/arrow_top_right"
     android:id="@+id/containerFrag"
     android:background="?attr/colorPrimary"

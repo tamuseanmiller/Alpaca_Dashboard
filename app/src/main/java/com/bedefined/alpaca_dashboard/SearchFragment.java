@@ -16,11 +16,21 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 import com.lapism.search.internal.SearchLayout;
 import com.lapism.search.util.SearchUtils;
 import com.lapism.search.widget.MaterialSearchView;
 
 import net.jacobpeterson.alpaca.AlpacaAPI;
+import net.jacobpeterson.domain.polygon.tickers.TickersResponse;
+import net.jacobpeterson.domain.polygon.tickers.ticker.Ticker;
+import net.jacobpeterson.polygon.PolygonAPI;
+import net.jacobpeterson.polygon.enums.Market;
+import net.jacobpeterson.polygon.enums.StockType;
+import net.jacobpeterson.polygon.enums.TickerSort;
+import net.jacobpeterson.polygon.rest.exception.PolygonAPIRequestException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,6 +41,7 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class SearchFragment extends Fragment implements SearchLayout.OnQueryTextListener, SearchableAdapter.ItemClickListener {
 
@@ -45,6 +56,20 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
 
         materialSearch = mView.findViewById(R.id.material_search_view);
         materialSearch.setAdapterLayoutManager(new LinearLayoutManager(getActivity()));
+
+//        MainActivity.myRef.child("alpaca/assets").orderByChild("symbol").startAt("E").endAt("E\uf8ff").addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public
+//            void onDataChange(@NonNull DataSnapshot snapshot) {
+//                HashMap<String, String> map = (HashMap<String, String>)snapshot.getValue();
+//                System.out.println(map.get("-MKWv-ueiyE7YwtnR8LN"));
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError error) {
+//
+//            }
+//        });
 
         // Set themes
         TypedValue typedValue = new TypedValue();
@@ -93,6 +118,55 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
     @Override
     public boolean onQueryTextChange(@NonNull CharSequence charSequence) {
 
+        AlpacaAPI alpacaAPI = new AlpacaAPI();
+
+        URL url = null;
+        try {
+            url = new URL("https://financialmodelingprep.com/api/v3/search?query=" + charSequence + "&limit=30&exchange=NASDAQ&apikey=" + Properties.getAPIKey());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"))) {
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        JSONArray json = null;
+        ArrayList<String> tickerResults = new ArrayList<>();
+        try {
+            json = new JSONArray(sb.toString());
+            for (int i = 0; i < json.length(); i++) {
+                JSONObject jsonobject = json.getJSONObject(i);
+                String id = jsonobject.getString("symbol");
+                String title = jsonobject.getString("name");
+                tickerResults.add(id + " : " + title);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        searchableAdapter = new SearchableAdapter(tickerResults);
+        searchableAdapter.setClickListener(this);
+        materialSearch.setAdapter(searchableAdapter);
+
+//        PolygonAPI polygonAPI = new PolygonAPI();
+//        ArrayList<Ticker> tickers = null;
+//        try {
+//            tickers = polygonAPI.getTickers(TickerSort.TYPE_ASCENDING, StockType.COMMON_STOCKS, Market.STOCKS, "us", charSequence.toString(), 10, 1, true).getResults();
+//        } catch (PolygonAPIRequestException e) {
+//            e.printStackTrace();
+//        }
+//        if (tickers != null) {
+//            searchableAdapter = new SearchableAdapter(tickers);
+//            searchableAdapter.setClickListener(this);
+//            materialSearch.setAdapter(searchableAdapter);
+//        }
         return false;
     }
 
@@ -122,10 +196,10 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
         ArrayList<String> tickerResults = new ArrayList<>();
         try {
             json = new JSONArray(sb.toString());
-            for(int i=0; i < json.length(); i++) {
+            for (int i = 0; i < json.length(); i++) {
                 JSONObject jsonobject = json.getJSONObject(i);
-                String id       = jsonobject.getString("symbol");
-                String title    = jsonobject.getString("name");
+                String id = jsonobject.getString("symbol");
+                String title = jsonobject.getString("name");
                 tickerResults.add(id + " : " + title);
             }
         } catch (JSONException e) {
@@ -141,8 +215,8 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
 
     @Override
     public void onItemClick(View view, int position) {
-            DashboardFragment.ticker.set(searchableAdapter.getItem(position).substring(0, searchableAdapter.getItem(position).indexOf(':') - 1));
-            Intent intentMain = new Intent(getActivity(), StockPageActivity.class);
-            requireActivity().startActivity(intentMain, ActivityOptions.makeSceneTransitionAnimation(getActivity()).toBundle());
+        DashboardFragment.ticker.set(searchableAdapter.getItem(position).substring(0, searchableAdapter.getItem(position).indexOf(':') - 1));
+        Intent intentMain = new Intent(getActivity(), StockPageActivity.class);
+        requireActivity().startActivity(intentMain, ActivityOptions.makeSceneTransitionAnimation(getActivity()).toBundle());
     }
 }

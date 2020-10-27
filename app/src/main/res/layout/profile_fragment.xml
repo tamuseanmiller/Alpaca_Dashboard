@@ -11,9 +11,152 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingStart="20dp"
         android:paddingTop="@dimen/activity_vertical_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin">
+        android:paddingEnd="@dimen/activity_horizontal_margin">
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/profileLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingBottom="10dp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="?attr/colorLight"
+            android:text="@string/profile"
+            android:textSize="35sp" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/profileLabel"
+            android:layout_marginStart="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/portValProfile"
+            android:layout_marginTop="20dp"
+            android:text="@string/loading"
+            android:textSize="20sp"
+            android:textColor="?attr/colorLight"/>
+
+        <LinearLayout
+            android:id="@+id/topLayout"
+            android:orientation="horizontal"
+            android:layout_below="@id/portValProfile"
+            android:layout_marginTop="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/labelPortfolio"
+                android:text="@string/portfolio_value"
+                android:layout_marginEnd="5dp"
+                android:textSize="12sp"
+                android:textColor="?attr/colorPrimaryLight"/>
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                app:tint="?attr/color_positive"
+                android:tint="?attr/color_positive"
+                android:layout_marginTop="1dp"
+                android:src="@drawable/circle"
+                android:layout_gravity="center_vertical"
+                android:tintMode="add"/>
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/topLayout"
+            android:layout_marginTop="20dp"
+            android:id="@+id/cashValProfile"
+            android:text="@string/loading"
+            android:textSize="20sp"
+            android:textColor="?attr/colorLight"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/cashValProfile"
+            android:layout_marginTop="5dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/cashValLabel"
+                android:layout_marginEnd="5dp"
+                android:text="@string/cash"
+                android:textSize="12sp"
+                android:textColor="?attr/colorPrimaryLight"/>
+
+                <com.google.android.material.imageview.ShapeableImageView
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:layout_marginTop="1dp"
+                android:layout_gravity="center_vertical"
+                android:tint="?attr/color_negative"
+                android:src="@drawable/circle"
+                android:tintMode="add"/>
+
+        </LinearLayout>
+
+        <com.github.mikephil.charting.charts.PieChart
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginTop="10dp"
+            android:id="@+id/pieChart"
+            android:layout_alignParentEnd="true"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/pieChart"
+            android:layout_marginTop="20dp"
+            android:id="@+id/buyingPower"
+            android:text="@string/loading"
+            android:textSize="20sp"
+            android:textColor="?attr/colorLight"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/buyingPowerLabel"
+            android:layout_marginEnd="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_below="@id/buyingPower"
+            android:text="@string/buying_power"
+            android:textSize="12sp"
+            android:textColor="?attr/colorPrimaryLight"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/buyingPowerLabel"
+            android:layout_marginTop="20dp"
+            android:id="@+id/tradingSince"
+            android:text="@string/loading"
+            android:textSize="20sp"
+            android:textColor="?attr/colorLight"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/tradingSinceLabel"
+            android:layout_marginEnd="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_below="@id/tradingSince"
+            android:text="@string/trading_since"
+            android:textSize="12sp"
+            android:textColor="?attr/colorPrimaryLight"/>
+
+        </RelativeLayout>
 
     </RelativeLayout>
 

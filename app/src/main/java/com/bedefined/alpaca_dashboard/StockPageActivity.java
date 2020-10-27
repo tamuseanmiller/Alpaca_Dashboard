@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
 import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,11 +27,14 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 
 import android.os.StrictMode;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -55,9 +59,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import io.cabriole.decorator.LinearMarginDecoration;
 
-import static com.bedefined.alpaca_dashboard.MainActivity.lastItem;
-import static com.bedefined.alpaca_dashboard.MainActivity.viewPager;
-
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class StockPageActivity extends AppCompatActivity implements RecyclerViewAdapterStocks.ItemClickListener {
 
@@ -67,16 +68,11 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
     public TickerView tickerViewStock;
     private RecyclerViewAdapterOrders recycleAdapterOrders;
     private Button percentChangeStock;
-    private Properties propsStock = new Properties();
-    private ImageButton themeChangeStock;
     private ArrayList<Order> ordersStock;
     private RecyclerViewAdapterOrders recycleAdapterOrdersStock;
     private SwipeRefreshLayout swipeRefreshStock;
     private FloatingActionButton fab;
     private TextView numPos;
-
-    private static final int SWIPE_THRESHOLD = 100;
-    private float _downX;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -103,7 +99,32 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             PlaceOrderFragment dialogFrag = new PlaceOrderFragment();
             dialogFrag.setParentFab(fab);
             dialogFrag.show(getSupportFragmentManager(), dialogFrag.getTag());
+
         });
+
+        // Bottom navigation
+        /*BottomNavigationView bottomNavigation = findViewById(R.id.bottom_navigation);
+        // Create viewpager for bottombar fragments
+        viewPagerStocks = findViewById(R.id.viewPager);
+        viewPagerStocks.setPagingEnabled(false);
+        pagerAdapterStocks = new BottomBarAdapter(getSupportFragmentManager());
+
+        bottomNavigation.bringToFront();
+        bottomNavigation.setOnNavigationItemSelectedListener(this);
+
+        Thread t1 = new Thread(() -> {
+
+            pagerAdapterStocks.addFragments(MainActivity.dashboardFragment);
+            pagerAdapterStocks.addFragments(MainActivity.searchFragment);
+            pagerAdapterStocks.addFragments(MainActivity.profileFragment);
+            pagerAdapterStocks.addFragments(MainActivity.emergencyFragment);
+
+            runOnUiThread(() -> {
+                viewPagerStocks.setAdapter(pagerAdapterStocks);
+                viewPagerStocks.setCurrentItem(0);
+            });
+        });
+        t1.start()*/;
 
         Thread t3 = new Thread(() -> {
 
@@ -126,19 +147,11 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
         swipeRefreshStock.setTranslationZ(100);
         swipeRefreshStock.bringToFront();
 
-//        swipeRefreshStock.setOnTouchListener(new onTouchSwipeListener(StockPageFragment.) {
-//
-//            @Override
-//            public void onSwipeLeft() {
-//                Toast.makeText(StockPageFragment., "left", Toast.LENGTH_SHORT).show();
-//            }
-//        });
-
         // Ticker information
         tickerViewStock = findViewById(R.id.tickerViewStock);
         tickerViewStock.setCharacterLists(TickerUtils.provideNumberList());
 
-        Thread t1 = new Thread(() -> {
+        Thread t2 = new Thread(() -> {
 
             // The sparkline graph itself
             sparkViewStock = findViewById(R.id.sparkviewStock);
@@ -230,7 +243,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             });
 
         });
-        t1.start();
+        t2.start();
 
         // Check if the market is open, stream to ticker
         String marketStatus = null;
@@ -247,7 +260,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             MainActivity vars = new MainActivity();
             vars.streamStockData(polygonAPI, DashboardFragment.ticker, tickerViewStock);
 
-            Thread t2 = new Thread(() -> {
+            Thread t4 = new Thread(() -> {
 
                 while (true) {
                     float askingPrice = 0;
@@ -310,7 +323,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                     }
                 }
             });
-            t2.start();
+            t4.start();
         }
 
         Thread thread = new Thread(() -> {

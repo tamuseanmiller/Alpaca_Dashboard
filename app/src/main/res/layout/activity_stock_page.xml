@@ -7,7 +7,6 @@
     android:layout_height="match_parent"
     android:id="@+id/refreshStock"
     android:tag="stockPage"
-    android:elevation="100dp"
     app:icon="@drawable/arrow_top_right"
     android:background="?attr/colorPrimary"
     android:orientation="vertical"
@@ -30,13 +29,13 @@
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:backgroundTint="?attr/color_positive"
+            app:backgroundTint="?attr/color_positive"
             android:id="@+id/placeOrder"
             android:src="@drawable/plus"
             android:elevation="2dp"
             app:borderWidth="0dp"
             android:layout_alignParentEnd="true"
-            android:layout_marginEnd="40dp"
+            android:layout_marginEnd="10dp"
             android:layout_above="@id/fabCard"
             android:layout_marginBottom="-30dp"
             app:fab_stroke_visible="false"
@@ -53,7 +52,25 @@
             android:layout_marginStart="20dp"
             android:textSize="10sp"
             android:layout_alignParentBottom="true"
-            android:layout_marginBottom="60dp"/>
+            android:layout_marginBottom="30dp"/>
+
+        <!--<com.bedefined.alpaca_dashboard.NoSwipePager
+            android:id="@+id/viewPager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottom_navigation"
+            style="@style/Widget.MaterialComponents.BottomNavigationView.Colored"
+            android:backgroundTint="?attr/colorPrimary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:elevation="1dp"
+            android:elevation="0dp"
+            app:labelVisibilityMode="unlabeled"
+            app:itemIconTint="@drawable/bottom_navigation_selector"
+            app:menu="@menu/bottom_navigation_menu"
+            android:layout_alignParentBottom="true"/>-->
 
 <!--        <com.google.android.material.bottomnavigation.BottomNavigationView-->
 <!--            android:id="@+id/bottom_navigation_stocks"-->
@@ -72,7 +89,7 @@
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            android:layout_height="90dp"
+            android:layout_height="60dp"
             app:cardCornerRadius="0dp"
             android:id="@+id/fabCard"
             android:layout_gravity="bottom"

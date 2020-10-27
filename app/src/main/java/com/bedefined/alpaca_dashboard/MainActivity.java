@@ -11,6 +11,8 @@ import android.os.StrictMode;
 import android.view.MenuItem;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.robinhood.ticker.TickerView;
 
 import net.jacobpeterson.alpaca.AlpacaAPI;
@@ -37,9 +39,10 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public static ProfileFragment profileFragment;
     private BottomNavigationView bottomNavigation;
     public static NoSwipePager viewPager;
-    private EmergencyFragment emergencyFragment;
+    public static EmergencyFragment emergencyFragment;
     public static int lastItem = 0;
     public static BottomBarAdapter pagerAdapter;
+    public static DatabaseReference myRef;
 
     // Streams ticker data from polygon
     public void streamStockData(PolygonAPI polygonAPI, AtomicReference<String> ticker, TickerView tickerV) {
@@ -109,6 +112,11 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Write a message to the database
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        myRef = database.getReference();
+
+        // Create viewpager for bottombar fragments
         viewPager = findViewById(R.id.viewPager);
         viewPager.setPagingEnabled(false);
         pagerAdapter = new BottomBarAdapter(getSupportFragmentManager());
@@ -119,19 +127,19 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         Thread t1 = new Thread(() -> {
 
-        dashboardFragment = new DashboardFragment();
-        searchFragment = new SearchFragment();
-        profileFragment = new ProfileFragment();
-        emergencyFragment = new EmergencyFragment();
-        pagerAdapter.addFragments(dashboardFragment);
-        pagerAdapter.addFragments(searchFragment);
-        pagerAdapter.addFragments(profileFragment);
-        pagerAdapter.addFragments(emergencyFragment);
+            dashboardFragment = new DashboardFragment();
+            searchFragment = new SearchFragment();
+            profileFragment = new ProfileFragment();
+            emergencyFragment = new EmergencyFragment();
+            pagerAdapter.addFragments(dashboardFragment);
+            pagerAdapter.addFragments(searchFragment);
+            pagerAdapter.addFragments(profileFragment);
+            pagerAdapter.addFragments(emergencyFragment);
 
-        runOnUiThread(() -> {
-            viewPager.setAdapter(pagerAdapter);
-            viewPager.setCurrentItem(0);
-        });
+            runOnUiThread(() -> {
+                viewPager.setAdapter(pagerAdapter);
+                viewPager.setCurrentItem(0);
+            });
         });
         t1.start();
 
@@ -147,7 +155,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
 //        super.onCreate(savedInstanceState);
     }
-
 
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -173,6 +180,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             case R.id.profile_page:
                 lastItem = viewPager.getCurrentItem();
                 viewPager.setCurrentItem(2);
+                profileFragment.animateWhenCalled();
                 return true;
 
             case R.id.emergency_page:
@@ -188,9 +196,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         // If at dashboard go to home, other wise go back to last fragment
         if (viewPager.getCurrentItem() != 0) {
-            viewPager.setCurrentItem(lastItem,false);
+            viewPager.setCurrentItem(lastItem, false);
 
-        } else{
+        } else {
             finish();
         }
 

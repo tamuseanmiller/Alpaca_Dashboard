@@ -33,7 +33,6 @@ public class StockAdapter extends SparkAdapter {
     private final Random random;
     private final AtomicReference<String> ticker;
     public float baseline;
-    Properties props = new Properties();
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public StockAdapter(AtomicReference<String> ticker) throws PolygonAPIRequestException, AlpacaAPIRequestException {
@@ -41,6 +40,62 @@ public class StockAdapter extends SparkAdapter {
         yData = new Vector<>();
         this.ticker = ticker;
         baseline = 0;
+
+        PolygonAPI polygonAPI = new PolygonAPI();
+        AlpacaAPI alpacaAPI = new AlpacaAPI();
+        AtomicReference<Float> lastClose = new AtomicReference<>((float) 0);
+        AtomicReference<ArrayList<Double>> history = new AtomicReference<>(new ArrayList<>());
+
+        Thread thread = new Thread(() -> {
+
+            // If you are rendering a stockpage
+            if (!ticker.get().equals("NOTICKER")) {
+                try {
+                    lastClose.set(polygonAPI.getPreviousClose(String.valueOf(ticker), false).getResults().get(0).getC().floatValue());
+                } catch (PolygonAPIRequestException e) {
+                    e.printStackTrace();
+                }
+
+                baseline = lastClose.get();
+                yData.add(lastClose.get());
+
+            // Else you're on equity stock
+            } else {
+
+                // Fetch last open day's information
+                ArrayList<Calendar> calendar = null;
+                try {
+                    calendar = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(1), LocalDate.now());
+                } catch (AlpacaAPIRequestException e) {
+                    e.printStackTrace();
+                }
+                assert calendar != null;
+                LocalDate lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 1).getDate());
+
+
+                // Gather old portfolio data
+                history.set(new ArrayList<>());
+                try {
+
+                    // Checks to see if market is closed for today, edge case
+                    if (lastOpenDate.equals(LocalDate.now())) {
+                        history.set(alpacaAPI.getPortfolioHistory(1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.ONE_MIN, LocalDate.parse(calendar.get(calendar.size() - 2).getDate()), false).getEquity());
+                    } else {
+                        history.set(alpacaAPI.getPortfolioHistory(1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.ONE_MIN, lastOpenDate, false).getEquity());
+                    }
+
+                } catch (AlpacaAPIRequestException e) {
+                    e.printStackTrace();
+                }
+
+                double temp = history.get().get(history.get().size() - 1);
+                yData.add((float) temp);
+
+            }
+
+            baseline = yData.get(0);
+        });
+        thread.start();
 
 //        Thread thread = new Thread(() -> {
 //            AlpacaAPI alpacaAPI = new AlpacaAPI();
@@ -202,35 +257,7 @@ public class StockAdapter extends SparkAdapter {
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public float getBaseLine() {
-
-        PolygonAPI polygonAPI = new PolygonAPI();
-        AtomicReference<Float> lastClose = new AtomicReference<>((float) 0);
-//        AlpacaAPI alpacaAPI = new AlpacaAPI();
-//        try {
-//            alpacaAPI.getPortfolioHistory(1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.ONE_MIN, LocalDate.now(), false);
-//        } catch (AlpacaAPIRequestException e) {
-//            e.printStackTrace();
-//        }
-
-        Thread thread = new Thread(() -> {
-
-        if (!ticker.get().equals("NOTICKER")) {
-            try {
-                lastClose.set(polygonAPI.getPreviousClose(String.valueOf(ticker), false).getResults().get(0).getC().floatValue());
-            } catch (PolygonAPIRequestException e) {
-                e.printStackTrace();
-            }
-        }
-        });
-        thread.start();
-
-        if (lastClose.get() != 0.0) {
-            baseline = lastClose.get();
-            return lastClose.get();
-        }
-        baseline = yData.get(0);
         return yData.get(0);
-
     }
 }
 

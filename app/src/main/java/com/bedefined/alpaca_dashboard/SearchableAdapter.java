@@ -1,34 +1,24 @@
 package com.bedefined.alpaca_dashboard;
 
-import android.app.ActivityOptions;
-import android.content.Context;
-import android.content.Intent;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.Filter;
-import android.widget.Filterable;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.widget.SearchView;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.w3c.dom.Text;
+import net.jacobpeterson.domain.polygon.tickers.ticker.Ticker;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class SearchableAdapter extends RecyclerView.Adapter<SearchableAdapter.ViewHolder> {
 
-    private final List<String> mValues;
+    private final ArrayList<String> mValues;
     private ItemClickListener mClickListener;
 
-    public SearchableAdapter(List<String> items) {
+    public SearchableAdapter(ArrayList<String> items) {
         mValues = items;
     }
 
@@ -41,6 +31,11 @@ public class SearchableAdapter extends RecyclerView.Adapter<SearchableAdapter.Vi
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
+//        String name = mValues.get(position).getName();
+//        String ticker = mValues.get(position);
+//        holder.stockTicker.setText(ticker);
+//        holder.stockFullName.setText("test");
+
         String fullString = mValues.get(position);
         holder.stockTicker.setText(fullString.substring(0, fullString.indexOf(':') - 1));
         holder.stockFullName.setText(fullString.substring(fullString.indexOf(':') + 2));
