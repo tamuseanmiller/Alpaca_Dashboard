@@ -5,5 +5,10 @@
 
 # Alpaca Dashboard
 
-![Dark and Light Themes](images/dark_light_themes)
-IN PROGRESS
+<img src="images/dashboard.png" alt="drawing" width="200"/><img src="images/dark_light_themes.png" alt="drawing" width="200"/>
+
+<img src="images/place_orders.png" alt="drawing" width="200"/><img src="images/profile.png" alt="drawing" width="200"/>
+
+<img src="images/search.png" alt="drawing" width="200"/><img src="images/stocks_page.png" alt="drawing" width="200"/>
+
+## IN PROGRESS
