@@ -124,6 +124,11 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
+        Utils.startTheme(MainActivity.this, new SharedPreferencesManager(this).retrieveInt("theme", Utils.THEME_DEFAULT));
+
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
         if (new SharedPreferencesManager(this).retrieveString("auth", "NULL").equals("NULL")) {
             try {
                 performAuthentication();
@@ -131,11 +136,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 e.printStackTrace();
             }
         }
-
-        Utils.startTheme(MainActivity.this, new SharedPreferencesManager(this).retrieveInt("theme", Utils.THEME_DEFAULT));
-
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
         // Write a message to the database
         FirebaseDatabase database = FirebaseDatabase.getInstance();

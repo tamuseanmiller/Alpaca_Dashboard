@@ -264,12 +264,10 @@
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/recyclerStocks"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:clickable="true"
-                            android:paddingTop="5dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="5dp"
                             android:paddingStart="-5dp"
-                            android:paddingEnd="-5dp"
-                            android:focusable="true"/>
+                            android:paddingEnd="-5dp"/>
 
                         <androidx.appcompat.widget.AppCompatTextView
                             android:layout_width="match_parent"
@@ -285,11 +283,9 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:id="@+id/orders"
-                            android:clickable="true"
                             android:paddingStart="-5dp"
                             android:paddingEnd="-5dp"
-                            android:paddingBottom="60dp"
-                            android:focusable="true"/>
+                            android:paddingBottom="60dp"/>
 
                     </LinearLayout>
 

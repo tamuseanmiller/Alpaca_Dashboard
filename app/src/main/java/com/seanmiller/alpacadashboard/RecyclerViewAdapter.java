@@ -65,7 +65,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                 e.printStackTrace();
             }
 
-            while(true) {
+            while (true) {
 
                 // Get Amount of shares owned
                 Position shrOwned = null;
@@ -77,11 +77,13 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
                 Position finalShrOwned = shrOwned;
                 mainActivity.runOnUiThread(() -> {
+                    if (finalShrOwned.getQty() != null) {
 
-                    if (finalShrOwned.getQty().equals("1")) {
-                        holder.sharesOwned.setText(finalShrOwned.getQty() + " share owned");
-                    } else {
-                        holder.sharesOwned.setText(finalShrOwned.getQty() + " shares owned");
+                        if (finalShrOwned.getQty().equals("1")) {
+                            holder.sharesOwned.setText(finalShrOwned.getQty() + " share owned");
+                        } else {
+                            holder.sharesOwned.setText(finalShrOwned.getQty() + " shares owned");
+                        }
                     }
                 });
 

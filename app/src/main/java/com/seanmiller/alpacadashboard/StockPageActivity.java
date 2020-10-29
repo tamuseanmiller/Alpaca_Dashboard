@@ -64,6 +64,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
     private RecyclerViewAdapterOrders recycleAdapterOrders;
     private Button percentChangeStock;
     private ArrayList<Order> ordersStock;
+    private ArrayList<Order> order;
     private RecyclerViewAdapterOrders recycleAdapterOrdersStock;
     private SwipeRefreshLayout swipeRefreshStock;
     private FloatingActionButton fab;
@@ -243,28 +244,22 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 sparkViewStock.setAdapter(selectedAdapterStock);
                 setStockValues();
             });
-            try {
-                selectedAdapterStock = new StockAdapter(ticker, 0, null, null);
-            } catch (PolygonAPIRequestException | AlpacaAPIRequestException e) {
-                e.printStackTrace();
-            }
-            try {
-                selectedAdapterStock.initializeStock();
-            } catch (AlpacaAPIRequestException e) {
-                e.printStackTrace();
-            }
+//            try {
+//                selectedAdapterStock = new StockAdapter(ticker, 0, null, null);
+//            } catch (PolygonAPIRequestException | AlpacaAPIRequestException e) {
+//                e.printStackTrace();
+//            }
+//            try {
+//                selectedAdapterStock.initializeStock();
+//            } catch (AlpacaAPIRequestException e) {
+//                e.printStackTrace();
+//            }
 
-            // Add last value
-            float lastPrice = 0;
-            if (selectedAdapterStock.getCount() > 1) {
-                lastPrice = selectedAdapterStock.getValue(selectedAdapterStock.getCount() - 1);
-            }
-            AtomicReference<Double> amount = new AtomicReference<>(Double.parseDouble(String.valueOf(lastPrice)));
+            AtomicReference<Double> amount = new AtomicReference<>();
             DecimalFormat formatter = new DecimalFormat("#,###.00");
 
             runOnUiThread(() -> {
 
-                tickerViewStock.setText("$" + formatter.format(amount.get()));
                 sparkViewStock.setAdapter(selectedAdapterStock);
 
                 // Scrub for chart
@@ -351,7 +346,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
 
             // Fetch curent orders
             ordersStock = new ArrayList<>();
-            ArrayList<Order> order = new ArrayList();
+            order = new ArrayList();
             try {
                 ordersStock = alpacaAPI.getOrders(OrderStatus.CLOSED, 100, null, ZonedDateTime.now().plusDays(1), Direction.DESCENDING, false);
             } catch (AlpacaAPIRequestException e) {
@@ -394,9 +389,15 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             // Fetch curent orders
             ordersStock = new ArrayList<>();
             try {
-                ordersStock = alpacaAPI.getOrders(OrderStatus.CLOSED, 10, null, ZonedDateTime.now().plusDays(1), Direction.DESCENDING, false);
+                ordersStock = alpacaAPI.getOrders(OrderStatus.CLOSED, 100, null, ZonedDateTime.now().plusDays(1), Direction.DESCENDING, false);
             } catch (AlpacaAPIRequestException e) {
                 e.printStackTrace();
+            }
+            order.clear();
+            for (int i = 0; i < ordersStock.size(); i++) {
+                if (ordersStock.get(i).getSymbol().equals(ticker.get())) {
+                    order.add(ordersStock.get(i));
+                }
             }
 
             // Set number of stocks textview
@@ -411,6 +412,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             }
 
             runOnUiThread(() -> recycleAdapterOrdersStock.notifyDataSetChanged());
+
             swipeRefreshStock.setRefreshing(false);
         });
         thread2.start();
@@ -436,14 +438,28 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
 
             if (marketStatus.equals("open")) {
 
-                // Fetch todays bars
-                try {
-                    bars = alpacaAPI.getBars(timeFrame, ticker.get(), 1000, datetime, null,
-                            ZonedDateTime.of(LocalDateTime.of(LocalDate.now(), LocalTime.of(5, 30)), ZoneId.of("UTC-6")), null);
+                if (datetime == ZonedDateTime.now()) {
+                    // Fetch todays bars
+                    try {
+                        bars = alpacaAPI.getBars(timeFrame, ticker.get(), 1000,
+                                ZonedDateTime.of(LocalDateTime.of(LocalDate.now(), LocalTime.of(5, 30)), ZoneId.of("UTC-4")),
+                                null, null, ZonedDateTime.now());
 
-                } catch (AlpacaAPIRequestException e) {
-                    e.printStackTrace();
+                    } catch (AlpacaAPIRequestException e) {
+                        e.printStackTrace();
+                    }
+
+                } else {
+                    // Fetch todays bars
+                    try {
+                        bars = alpacaAPI.getBars(timeFrame, ticker.get(), 1000,
+                                datetime, ZonedDateTime.now(), null, null);
+
+                    } catch (AlpacaAPIRequestException e) {
+                        e.printStackTrace();
+                    }
                 }
+
 
             } else {
 
@@ -486,7 +502,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             }
 
             if (datetime.getYear() < ZonedDateTime.now().getYear()) {
-                runOnUiThread(() -> selectedAdapterInitial.smoothGraph());
+                runOnUiThread(selectedAdapterInitial::smoothGraph);
             }
         });
         thread.start();
@@ -571,6 +587,10 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 setDashboardColors(false, profitLoss, percentageChange);
             }
         }
+
+        DecimalFormat formatter = new DecimalFormat("$#,###.00");
+        double amount = Double.parseDouble(String.valueOf(newVal));
+        tickerViewStock.setText(formatter.format(amount));
     }
 
     @Override

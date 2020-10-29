@@ -20,14 +20,14 @@ import java.util.concurrent.atomic.AtomicReference;
 public class PlaceOrderFragment extends AAH_FabulousFragment {
 
     // Shows the actual dialog for confirmation of order
-    public void showDialog(TextInputEditText qty, AlpacaAPI alpacaAPI, String side) {
+    public void showDialog(TextInputEditText qty, AlpacaAPI alpacaAPI, OrderSide side) {
         AtomicReference<MaterialAlertDialogBuilder> dialogBuilder = new AtomicReference<>(new MaterialAlertDialogBuilder(requireContext(), R.style.DialogThemePositive));
         dialogBuilder.get().setTitle(side + " Order");
         dialogBuilder.get().setMessage("Are you sure that you want to " + side + " " + qty.getText().toString() + " shares of " + DashboardFragment.ticker + "?");
         dialogBuilder.get().setNeutralButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss());
         dialogBuilder.get().setPositiveButton("Accept", (dialog12, which) -> {
             try {
-                alpacaAPI.requestNewMarketOrder(DashboardFragment.ticker.get(), Integer.valueOf(qty.getText().toString()), OrderSide.BUY, OrderTimeInForce.DAY, null);
+                alpacaAPI.requestNewMarketOrder(DashboardFragment.ticker.get(), Integer.valueOf(qty.getText().toString()), side, OrderTimeInForce.DAY, null);
                 dialogBuilder.set(new MaterialAlertDialogBuilder(requireContext(), R.style.DialogThemePositive));
                 dialogBuilder.get().setTitle(side + " Order");
                 dialogBuilder.get().setMessage("Congrats! Your " + side + " order of " + qty.getText().toString() + " stocks of " + DashboardFragment.ticker + " went through!");
@@ -68,7 +68,7 @@ public class PlaceOrderFragment extends AAH_FabulousFragment {
             }
 
             // Show dialogs for confirmation
-            showDialog(qty, alpacaAPI, "Buy");
+            showDialog(qty, alpacaAPI, OrderSide.BUY);
         });
 
         // If sell is clicked
@@ -85,7 +85,7 @@ public class PlaceOrderFragment extends AAH_FabulousFragment {
             }
 
             // Show dialogs for confirmation
-            showDialog(qty, alpacaAPI, "Sell");
+            showDialog(qty, alpacaAPI, OrderSide.SELL);
 
         });
 

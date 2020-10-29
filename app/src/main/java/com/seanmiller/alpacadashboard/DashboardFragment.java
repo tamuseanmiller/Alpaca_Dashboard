@@ -25,6 +25,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.common.collect.Iterables;
 import com.robinhood.spark.SparkView;
 import com.robinhood.ticker.TickerUtils;
 import com.robinhood.ticker.TickerView;
@@ -35,8 +36,8 @@ import net.jacobpeterson.alpaca.enums.OrderStatus;
 import net.jacobpeterson.alpaca.enums.PortfolioPeriodUnit;
 import net.jacobpeterson.alpaca.enums.PortfolioTimeFrame;
 import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
-import net.jacobpeterson.domain.alpaca.calendar.Calendar;
 import net.jacobpeterson.domain.alpaca.order.Order;
+import net.jacobpeterson.domain.alpaca.portfoliohistory.PortfolioHistory;
 import net.jacobpeterson.domain.alpaca.position.Position;
 import net.jacobpeterson.polygon.PolygonAPI;
 import net.jacobpeterson.polygon.rest.exception.PolygonAPIRequestException;
@@ -83,6 +84,8 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
     private StockAdapter oneMonthAdapter;
     private StockAdapter threeMonthAdapter;
     private StockAdapter oneYearAdapter;
+    private ArrayList<String> stocks;
+    private Thread t1;
 
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -277,11 +280,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
                         double amount = Double.parseDouble(currentValue);
                         DecimalFormat formatter = new DecimalFormat("#,###.00");
 
-                        String finalCurrentValue = currentValue;
-                        getActivity().runOnUiThread(() -> {
-                            tickerView.setText("$" + formatter.format(amount));
-//                            selectedAdapter.addVal(Float.parseFloat(finalCurrentValue));
-                        });
+                        getActivity().runOnUiThread(() -> tickerView.setText("$" + formatter.format(amount)));
                         Thread.sleep(60000 * 5);
 
                     } catch (InterruptedException e) {
@@ -312,6 +311,8 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
                     tickerView.setText("$" + formatter.format(amount));
                 });
 
+                oneDay.callOnClick(); // Call this after initialization has had long enough to finish so that the profit changes
+
             });
             thread.start();
             setDashboardValues();
@@ -332,7 +333,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
                 e.printStackTrace();
             }
 
-            ArrayList<String> stocks = new ArrayList<>();
+            stocks = new ArrayList<>();
             for (Position i : positions) {
                 stocks.add(i.getSymbol());
             }
@@ -473,13 +474,16 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
                 e.printStackTrace();
             }
 
-            ArrayList<String> stocks = new ArrayList<>();
+            ArrayList<String> temp = new ArrayList<>();
             for (Position i : positions) {
-                stocks.add(i.getSymbol());
+                temp.add(i.getSymbol());
             }
+            stocks.clear();
+            stocks.addAll(temp);
 
             // Set Recycle Adapter for positions
-            requireActivity().runOnUiThread(() -> recyclerView.setAdapter(recycleAdapter));
+            requireActivity().runOnUiThread(() -> recycleAdapter.notifyDataSetChanged());
+
         });
         thread.start();
 
@@ -488,15 +492,18 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
             AlpacaAPI alpacaAPI = new AlpacaAPI();
 
             // Fetch curent orders
-            orders = new ArrayList<>();
+            ArrayList<Order> temp = new ArrayList<>();
             try {
-                orders = alpacaAPI.getOrders(OrderStatus.CLOSED, 10, null, ZonedDateTime.now().plusDays(1), Direction.DESCENDING, false);
+                temp = alpacaAPI.getOrders(OrderStatus.CLOSED, 10, null, ZonedDateTime.now().plusDays(1), Direction.DESCENDING, false);
             } catch (AlpacaAPIRequestException e) {
                 e.printStackTrace();
             }
+            orders.clear();
+            orders.addAll(temp);
 
             // Set Recycle Adapter for orders
-            requireActivity().runOnUiThread(() -> recyclerOrders.setAdapter(recycleAdapterOrders));
+            requireActivity().runOnUiThread(() -> recycleAdapterOrders.notifyDataSetChanged());
+
             swipeRefresh.setRefreshing(false);
         });
         thread2.start();
@@ -507,7 +514,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
 
         TypedValue outValue = new TypedValue();
         getActivity().getTheme().resolveAttribute(R.attr.themeName, outValue, true);
-        if ("light".equals(outValue.string)) {
+        if ("light".contentEquals(outValue.string)) {
             new SharedPreferencesManager(getActivity()).storeInt("theme", THEME_DARK);
             Utils.changeToTheme(getActivity(), Utils.THEME_DARK);
 
@@ -589,7 +596,8 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
             // Gather old portfolio data
             ArrayList<Double> history = new ArrayList<>();
             try {
-                history = alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, LocalDate.now(), true).getEquity();
+                PortfolioHistory portVal = alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, LocalDate.now(), true);
+                history = portVal.getEquity();
 
             } catch (AlpacaAPIRequestException e) {
                 e.printStackTrace();
@@ -604,10 +612,17 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
                 }
             }
 
-//            while (selectedAdapterInitial.getCount() >= 100) {
-//                selectedAdapterInitial.smoothGraph();
-//            }
+            // Use data returned to get profit change
+            float oldVal = selectedAdapterInitial.getValue(0);
+            float newVal = selectedAdapterInitial.getValue(selectedAdapterInitial.getCount() - 1);
+            float percentageChange = (newVal - oldVal) / oldVal * 100;
+            float profitLoss = selectedAdapterInitial.getValue(selectedAdapterInitial.getCount() - 1) - selectedAdapterInitial.getValue(0);
 
+            // Sets profit values
+            selectedAdapterInitial.setPercent(percentageChange);
+            selectedAdapterInitial.setProfit(profitLoss);
+
+            // Smooth year graph
             if (periodUnit == PortfolioPeriodUnit.YEAR) {
                 selectedAdapterInitial.smoothGraph();
             }
@@ -618,42 +633,19 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
 
     public void setDashboardValues() {
 
-        AlpacaAPI alpacaAPI = new AlpacaAPI();
+        // Create thread for updating the values on history switch
+        t1 = new Thread(() -> {
 
-        // Create thread for updating equity
-        Thread t1 = new Thread(() -> {
+            requireActivity().runOnUiThread(() -> {
 
-            // Fetch portfolio value
-            String portVal = null;
-            try {
-                portVal = alpacaAPI.getAccount().getPortfolioValue();
-                cash = alpacaAPI.getAccount().getCash();
-            } catch (AlpacaAPIRequestException e) {
-                e.printStackTrace();
-            }
+                // Set colors
+                if (selectedAdapter.getProfit() >= 0) {
 
-            String finalPortVal = portVal;
-            getActivity().runOnUiThread(() -> {
+                    setDashboardColors(true, selectedAdapter.getProfit(), selectedAdapter.getPercent());
 
-                // Set percent change and update colors
-                if (finalPortVal != null && cash != null) {
+                } else {
 
-                    float holdingVal = Float.parseFloat(finalPortVal) - Float.parseFloat(cash);
-
-                    float oldVal = selectedAdapter.getValue(0) - holdingVal;
-                    float newVal = selectedAdapter.getValue(selectedAdapter.getCount() - 1) - holdingVal;
-                    float percentageChange = (newVal - oldVal) / oldVal * 100;
-                    float profitLoss = selectedAdapter.getValue(selectedAdapter.getCount() - 1) - selectedAdapter.getValue(0);
-
-                    // Set colors
-                    if (percentageChange >= 0) {
-
-                        setDashboardColors(true, profitLoss, percentageChange);
-
-                    } else {
-
-                        setDashboardColors(false, profitLoss, percentageChange);
-                    }
+                    setDashboardColors(false, selectedAdapter.getProfit(), selectedAdapter.getPercent());
                 }
 
             });

@@ -34,6 +34,8 @@ public class StockAdapter extends SparkAdapter {
     private final Random random;
     private final AtomicReference<String> ticker;
     public float baseline;
+    private float percent;
+    private float profit;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public StockAdapter(AtomicReference<String> ticker, int periodLength, PortfolioPeriodUnit periodUnit, PortfolioTimeFrame timeFrame) throws PolygonAPIRequestException, AlpacaAPIRequestException {
@@ -135,6 +137,22 @@ public class StockAdapter extends SparkAdapter {
 //            yData.add(i.getC().floatValue());
 //        }
 //        smoothGraph();
+    }
+
+    public float getPercent() {
+        return percent;
+    }
+
+    public void setPercent(float percent) {
+        this.percent = percent;
+    }
+
+    public float getProfit() {
+        return profit;
+    }
+
+    public void setProfit(float profit) {
+        this.profit = profit;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)

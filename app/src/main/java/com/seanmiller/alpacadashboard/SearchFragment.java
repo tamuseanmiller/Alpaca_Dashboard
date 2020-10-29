@@ -11,10 +11,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import android.app.ActivityOptions;
 import android.content.Intent;
 import android.os.Bundle;
+import android.speech.RecognizerIntent;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonArray;
@@ -47,12 +49,17 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import static android.app.Activity.RESULT_OK;
 
 public class SearchFragment extends Fragment implements SearchLayout.OnQueryTextListener, SearchableAdapter.ItemClickListener {
 
+    private static final int SPEECH_REQUEST_CODE = 0;
     private MaterialSearchView materialSearch;
     private SearchableAdapter searchableAdapter;
+
 
     @Nullable
     @Override
@@ -62,20 +69,6 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
 
         materialSearch = mView.findViewById(R.id.material_search_view);
         materialSearch.setAdapterLayoutManager(new LinearLayoutManager(getActivity()));
-
-//        MainActivity.myRef.child("alpaca/assets").orderByChild("symbol").startAt("E").endAt("E\uf8ff").addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public
-//            void onDataChange(@NonNull DataSnapshot snapshot) {
-//                HashMap<String, String> map = (HashMap<String, String>)snapshot.getValue();
-//                System.out.println(map.get("-MKWv-ueiyE7YwtnR8LN"));
-//            }
-//
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError error) {
-//
-//            }
-//        });
 
         // Set themes
         TypedValue typedValue = new TypedValue();
@@ -95,16 +88,15 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
         materialSearch.setElevation(3);
 
         // When microphone is clicked
-        materialSearch.setOnMicClickListener(() -> {
-
-            if (SearchUtils.isVoiceSearchAvailable(getActivity())) {
-                SearchUtils.setVoiceSearch(getActivity(), getString(R.string.speak));
-            }
-        });
+        materialSearch.setOnMicClickListener(this::displaySpeechRecognizer);
 
         // When search is focused
         materialSearch.setOnFocusChangeListener(v -> {
-            materialSearch.setNavigationIconImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.arrow_left));
+            if (materialSearch.hasFocus()) {
+                materialSearch.setNavigationIconImageDrawable(ContextCompat.getDrawable(requireActivity(), R.drawable.arrow_left));
+            } else {
+                materialSearch.setNavigationIconImageDrawable(ContextCompat.getDrawable(requireActivity(), R.drawable.magnify));
+            }
         });
 
         materialSearch.setOnQueryTextListener(this);
@@ -123,43 +115,6 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
 
     @Override
     public boolean onQueryTextChange(@NonNull CharSequence charSequence) {
-
-        /*AlpacaAPI alpacaAPI = new AlpacaAPI();
-
-        URL url = null;
-        try {
-            url = new URL("https://financialmodelingprep.com/api/v3/search?query=" + charSequence + "&limit=30&exchange=NASDAQ&apikey=" + Properties.getAPIKey());
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-
-        StringBuilder sb = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"))) {
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        JSONArray json = null;
-        ArrayList<String> tickerResults = new ArrayList<>();
-        try {
-            json = new JSONArray(sb.toString());
-            for (int i = 0; i < json.length(); i++) {
-                JSONObject jsonobject = json.getJSONObject(i);
-                String id = jsonobject.getString("symbol");
-                String title = jsonobject.getString("name");
-                tickerResults.add(id + " : " + title);
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        searchableAdapter = new SearchableAdapter(tickerResults);
-        searchableAdapter.setClickListener(this);
-        materialSearch.setAdapter(searchableAdapter);*/
 
         Thread thread = new Thread(() -> {
 
@@ -242,10 +197,35 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
         return true;
     }
 
+    // When a search item is chose, go to stock page
     @Override
     public void onItemClick(View view, int position) {
         DashboardFragment.ticker.set(searchableAdapter.getItem(position).getTicker());
         Intent intentMain = new Intent(getActivity(), StockPageActivity.class);
         requireActivity().startActivity(intentMain, ActivityOptions.makeSceneTransitionAnimation(getActivity()).toBundle());
+    }
+
+    // Create an intent that can start the Speech Recognizer activity
+    private void displaySpeechRecognizer() {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+
+        // Start the activity, the intent will be populated with the speech text
+        startActivityForResult(intent, SPEECH_REQUEST_CODE);
+    }
+
+    // To set the text query for microphone
+    @Override
+    public void onActivityResult(int requestCode, int resultCode,
+                                 Intent data) {
+        if (requestCode == SPEECH_REQUEST_CODE && resultCode == RESULT_OK) {
+            List<String> results = data.getStringArrayListExtra(
+                    RecognizerIntent.EXTRA_RESULTS);
+            String spokenText = results.get(0);
+            // Do something with spokenText
+            materialSearch.setTextQuery(spokenText, false);
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 }
