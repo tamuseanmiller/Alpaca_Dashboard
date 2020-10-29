@@ -1,4 +1,4 @@
-package com.bedefined.alpaca_dashboard;
+package com.seanmiller.alpacadashboard;
 
 import android.content.Context;
 import android.content.SharedPreferences;

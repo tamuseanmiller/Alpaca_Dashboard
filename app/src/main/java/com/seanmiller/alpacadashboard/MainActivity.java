@@ -1,10 +1,11 @@
-package com.bedefined.alpaca_dashboard;
+package com.seanmiller.alpacadashboard;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -13,6 +14,10 @@ import android.view.MenuItem;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import com.robinhood.ticker.TickerView;
 
 import net.jacobpeterson.alpaca.AlpacaAPI;
@@ -26,9 +31,20 @@ import net.jacobpeterson.domain.polygon.websocket.quote.QuoteMessage;
 import net.jacobpeterson.polygon.PolygonAPI;
 import net.jacobpeterson.polygon.websocket.listener.PolygonStreamListenerAdapter;
 import net.jacobpeterson.polygon.websocket.message.PolygonStreamMessageType;
+import net.openid.appauth.AuthorizationException;
+import net.openid.appauth.AuthorizationResponse;
+import net.openid.appauth.AuthorizationServiceConfiguration;
+import net.openid.appauth.TokenRequest;
+import net.openid.appauth.TokenResponse;
+
+import org.json.JSONException;
 
 import java.text.DecimalFormat;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static com.seanmiller.alpacadashboard.LoginActivity.authService;
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener /*implements RecyclerViewAdapter.ItemClickListener, View.OnClickListener*/ {
 
@@ -43,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public static int lastItem = 0;
     public static BottomBarAdapter pagerAdapter;
     public static DatabaseReference myRef;
+    public static AuthorizationResponse resp;
 
     // Streams ticker data from polygon
     public void streamStockData(PolygonAPI polygonAPI, AtomicReference<String> ticker, TickerView tickerV) {
@@ -107,6 +124,14 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
+        if (new SharedPreferencesManager(this).retrieveString("auth", "NULL").equals("NULL")) {
+            try {
+                performAuthentication();
+            } catch (UnirestException e) {
+                e.printStackTrace();
+            }
+        }
+
         Utils.startTheme(MainActivity.this, new SharedPreferencesManager(this).retrieveInt("theme", Utils.THEME_DEFAULT));
 
         super.onCreate(savedInstanceState);
@@ -142,18 +167,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             });
         });
         t1.start();
-
-//        FragmentManager manager = getSupportFragmentManager();
-//        FragmentTransaction transaction = manager.beginTransaction();
-//        transaction.add(R.id.containerFrag, searchFragment);
-//        transaction.add(R.id.containerFrag, stockFragment);
-//        transaction.add(R.id.containerFrag, dashboardFragment);
-//        transaction.add(R.id.containerFrag, profileFragment);
-//                    transaction.replace(R.id.containerFrag, fragment, fragment.getClass().getSimpleName());
-//        transaction.addToBackStack(dashboardFragment.getClass().getSimpleName());
-//        transaction.commit();
-
-//        super.onCreate(savedInstanceState);
     }
 
 
@@ -161,9 +174,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-
-//        FragmentManager manager = getSupportFragmentManager();
-//        FragmentTransaction transaction = manager.beginTransaction();
 
         // Switch for each of the fragments
         switch (item.getItemId()) {
@@ -201,6 +211,81 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         } else {
             finish();
         }
+
+    }
+
+    public void performAuthentication() throws UnirestException {
+        AuthorizationServiceConfiguration serviceConfig =
+                new AuthorizationServiceConfiguration(
+                        Uri.parse("https://app.alpaca.markets/oauth/authorize"), // authorindeization endpoint
+                        Uri.parse("https://api.alpaca.markets/oauth/token")); // token endpoint
+
+        // Create Authstate for further reference after authorization
+        AuthStateManager authState = new AuthStateManager(this);
+        resp = AuthorizationResponse.fromIntent(getIntent());
+        AuthorizationException ex = AuthorizationException.fromIntent(getIntent());
+
+        // Build the authorization request
+        TokenRequest.Builder tokenRequestBuilder =
+                new TokenRequest.Builder(
+                        serviceConfig,
+                        Properties.getOAuthID());
+        Map<String, String> secret = new HashMap<>();
+        secret.put("client_secret", Properties.getSecretID());
+
+        // Finish building the token request
+        TokenRequest tokenRequest = tokenRequestBuilder
+                .setGrantType("authorization_code")
+                .setAdditionalParameters(secret)
+                .setAuthorizationCode(resp.authorizationCode)
+                .setRedirectUri(Uri.parse(Properties.getRedirectURI()))
+                .build();
+
+        TokenResponse.Builder tokenResponse = new TokenResponse.Builder(tokenRequest);
+
+        if (resp != null) {
+            // authorization completed
+            authState.updateAfterAuthorization(resp, ex);
+
+        } else {
+            System.out.println("Failed: " + ex);
+            // authorization failed, check ex for more details
+        }
+
+        AtomicReference<String> authenticationResponse = new AtomicReference<>();
+
+        authService.performTokenRequest(tokenRequest, (tokenResponse1, ex1) -> {
+
+            if (tokenResponse1 != null) {
+
+                // exchange succeeded
+                System.out.println("Authentication Done");
+                authState.updateAfterTokenResponse(tokenResponse1, ex1);
+                new SharedPreferencesManager(this).storeString("auth", tokenResponse1.accessToken);
+                authenticationResponse.set(tokenResponse1.accessToken);
+
+                // Authenticate Polygon as well
+                HttpResponse<JsonNode> nodeHttpResponse = null;
+                try {
+                    nodeHttpResponse = Unirest.get("https://api.alpaca.markets/oauth/token")
+                            .header("Authorization", "Bearer " + authenticationResponse).asJson();
+                } catch (UnirestException e) {
+                    e.printStackTrace();
+                }
+
+                // Add to SharedPreferences
+                try {
+                    new SharedPreferencesManager(this).storeString("id", nodeHttpResponse.getBody().getObject().get("id").toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            } else {
+                // authorization failed, check ex for more details
+                System.out.println(ex1);
+            }
+        });
+
 
     }
 

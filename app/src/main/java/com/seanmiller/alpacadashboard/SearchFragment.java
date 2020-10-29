@@ -1,4 +1,4 @@
-package com.bedefined.alpaca_dashboard;
+package com.seanmiller.alpacadashboard;
 
 import org.json.*;
 
@@ -16,15 +16,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.ValueEventListener;
+import com.google.common.collect.ImmutableMap;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.lapism.search.internal.SearchLayout;
 import com.lapism.search.util.SearchUtils;
 import com.lapism.search.widget.MaterialSearchView;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 
 import net.jacobpeterson.alpaca.AlpacaAPI;
-import net.jacobpeterson.domain.polygon.tickers.TickersResponse;
 import net.jacobpeterson.domain.polygon.tickers.ticker.Ticker;
 import net.jacobpeterson.polygon.PolygonAPI;
 import net.jacobpeterson.polygon.enums.Market;
@@ -42,6 +47,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class SearchFragment extends Fragment implements SearchLayout.OnQueryTextListener, SearchableAdapter.ItemClickListener {
 
@@ -118,7 +124,7 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
     @Override
     public boolean onQueryTextChange(@NonNull CharSequence charSequence) {
 
-        AlpacaAPI alpacaAPI = new AlpacaAPI();
+        /*AlpacaAPI alpacaAPI = new AlpacaAPI();
 
         URL url = null;
         try {
@@ -153,69 +159,92 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
 
         searchableAdapter = new SearchableAdapter(tickerResults);
         searchableAdapter.setClickListener(this);
-        materialSearch.setAdapter(searchableAdapter);
+        materialSearch.setAdapter(searchableAdapter);*/
 
-//        PolygonAPI polygonAPI = new PolygonAPI();
-//        ArrayList<Ticker> tickers = null;
-//        try {
-//            tickers = polygonAPI.getTickers(TickerSort.TYPE_ASCENDING, StockType.COMMON_STOCKS, Market.STOCKS, "us", charSequence.toString(), 10, 1, true).getResults();
-//        } catch (PolygonAPIRequestException e) {
-//            e.printStackTrace();
-//        }
-//        if (tickers != null) {
-//            searchableAdapter = new SearchableAdapter(tickers);
-//            searchableAdapter.setClickListener(this);
-//            materialSearch.setAdapter(searchableAdapter);
-//        }
+        Thread thread = new Thread(() -> {
+
+            // Calls yahoo finance api
+            // http://d.yimg.com/aq/autoc?query=y&region=US&lang=en-US&callback=YAHOO.util.ScriptNodeDataSource.callbacks
+            HttpResponse<String> nodeHttpResponse = null;
+            try {
+                nodeHttpResponse = Unirest.get("http://d.yimg.com/aq/autoc")
+                        .queryString("query", charSequence.toString())
+                        .queryString(ImmutableMap.of("region", "US", "lang", "en-US", "callback", "YAHOO.util.ScriptNodeDataSource.callbacks")).asString();
+            } catch (UnirestException e) {
+                e.printStackTrace();
+            }
+
+            // Formats the response into an array
+            if (nodeHttpResponse != null) {
+                String innerJson = nodeHttpResponse.getBody().substring(42, nodeHttpResponse.getBody().length() - 2);
+                JsonParser parse = new JsonParser();
+                JsonObject jsonObject = (JsonObject) parse.parse(innerJson);
+                JsonArray stocks = jsonObject.get("ResultSet").getAsJsonObject().get("Result").getAsJsonArray();
+                ArrayList<Ticker> tickers = new ArrayList<>();
+
+                for (JsonElement i : stocks) {
+                    Ticker t = new Ticker();
+                    t.setName(i.getAsJsonObject().get("name").getAsString());
+                    t.setTicker(i.getAsJsonObject().get("symbol").getAsString());
+                    tickers.add(t);
+                }
+
+                // Sets adapter
+                searchableAdapter = new SearchableAdapter(tickers);
+                searchableAdapter.setClickListener(this);
+                requireActivity().runOnUiThread(() -> materialSearch.setAdapter(searchableAdapter));
+            }
+        });
+        thread.start();
+
         return false;
     }
 
     @Override
     public boolean onQueryTextSubmit(CharSequence charSequence) {
 
-        AlpacaAPI alpacaAPI = new AlpacaAPI();
+        Thread thread = new Thread(() -> {
 
-        URL url = null;
-        try {
-            url = new URL("https://financialmodelingprep.com/api/v3/search?query=" + charSequence + "&limit=30&exchange=NASDAQ&apikey=" + Properties.getAPIKey());
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-
-        StringBuilder sb = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"))) {
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line);
+            // Calls yahoo finance api
+            // http://d.yimg.com/aq/autoc?query=y&region=US&lang=en-US&callback=YAHOO.util.ScriptNodeDataSource.callbacks
+            HttpResponse<String> nodeHttpResponse = null;
+            try {
+                nodeHttpResponse = Unirest.get("http://d.yimg.com/aq/autoc")
+                        .queryString("query", charSequence.toString())
+                        .queryString(ImmutableMap.of("region", "US", "lang", "en-US", "callback", "YAHOO.util.ScriptNodeDataSource.callbacks")).asString();
+            } catch (UnirestException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        JSONArray json = null;
-        ArrayList<String> tickerResults = new ArrayList<>();
-        try {
-            json = new JSONArray(sb.toString());
-            for (int i = 0; i < json.length(); i++) {
-                JSONObject jsonobject = json.getJSONObject(i);
-                String id = jsonobject.getString("symbol");
-                String title = jsonobject.getString("name");
-                tickerResults.add(id + " : " + title);
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
 
-        searchableAdapter = new SearchableAdapter(tickerResults);
-        searchableAdapter.setClickListener(this);
-        materialSearch.setAdapter(searchableAdapter);
+            // Formats the response into an array
+            if (nodeHttpResponse != null) {
+                String innerJson = nodeHttpResponse.getBody().substring(42, nodeHttpResponse.getBody().length() - 2);
+                JsonParser parse = new JsonParser();
+                JsonObject jsonObject = (JsonObject) parse.parse(innerJson);
+                JsonArray stocks = jsonObject.get("ResultSet").getAsJsonObject().get("Result").getAsJsonArray();
+                ArrayList<Ticker> tickers = new ArrayList<>();
+
+                for (JsonElement i : stocks) {
+                    Ticker t = new Ticker();
+                    t.setName(i.getAsJsonObject().get("name").getAsString());
+                    t.setTicker(i.getAsJsonObject().get("symbol").getAsString());
+                    tickers.add(t);
+                }
+
+                // Sets adapter
+                searchableAdapter = new SearchableAdapter(tickers);
+                searchableAdapter.setClickListener(this);
+                requireActivity().runOnUiThread(() -> materialSearch.setAdapter(searchableAdapter));
+            }
+        });
+        thread.start();
 
         return true;
     }
 
     @Override
     public void onItemClick(View view, int position) {
-        DashboardFragment.ticker.set(searchableAdapter.getItem(position).substring(0, searchableAdapter.getItem(position).indexOf(':') - 1));
+        DashboardFragment.ticker.set(searchableAdapter.getItem(position).getTicker());
         Intent intentMain = new Intent(getActivity(), StockPageActivity.class);
         requireActivity().startActivity(intentMain, ActivityOptions.makeSceneTransitionAnimation(getActivity()).toBundle());
     }

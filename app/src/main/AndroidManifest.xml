@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.bedefined.alpaca_dashboard">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.seanmiller.alpacadashboard">
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.APP_BROWSER" />
+            <data android:scheme="https" />
+            <!--            <data android:scheme="https" />-->
+        </intent>
+    </queries>
 
     <application
         android:allowBackup="true"
@@ -9,11 +24,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Alpaca_Dashboard">
-<!--        <fragment android:name=".Search" />-->
-<!--        <fragment-->
-<!--            android:name=".StockPageFragment"-->
-<!--            android:label="@string/title_activity_stock_page"-->
-<!--            android:theme="@style/Theme.Alpaca_Dashboard.NoActionBar" />-->
+        <activity android:name=".LoginActivity"></activity>
         <activity android:name=".SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -21,14 +32,58 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".StockPageActivity"/>
-        <activity android:name=".MainActivity" />
+
+        <activity
+            android:name="net.openid.appauth.RedirectUriReceiverActivity"
+            tools:node="replace">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="alpacadashboard"
+                    android:path="/"
+                    android:host="seanmiller.com" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".MainActivity">
+
+            <!--            <intent-filter>-->
+            <!--                <action android:name="android.intent.action.VIEW" />-->
+
+            <!--                <category android:name="android.intent.category.DEFAULT" />-->
+            <!--                <category android:name="android.intent.category.BROWSABLE" />-->
+
+            <!--                <data-->
+            <!--                    android:host="maptomaindashboard.com"-->
+            <!--                    android:scheme="http" />-->
+            <!--            </intent-filter>-->
+
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.VIEW" />-->
+
+<!--                <category android:name="android.intent.category.DEFAULT" />-->
+<!--                <category android:name="android.intent.category.BROWSABLE" />-->
+
+<!--                <data-->
+<!--                    android:scheme="alpacadashboard"-->
+<!--                    android:path="/"-->
+<!--                    android:host="seanmiller.com" />-->
+<!--            </intent-filter>-->
+        </activity>
+        <activity android:name=".StockPageActivity" />
     </application>
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!--    <uses-permission-->
+    <!--        android:name="android.permission.ACCOUNT_MANAGER"-->
+    <!--        tools:ignore="ProtectedPermissions" />-->
     <uses-permission android:name="android.permission.INTERNET" />
-
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 
 </manifest>

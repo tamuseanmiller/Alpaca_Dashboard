@@ -1,47 +1,28 @@
-package com.bedefined.alpaca_dashboard;
+package com.seanmiller.alpacadashboard;
 
-import android.annotation.SuppressLint;
-import android.app.ActivityOptions;
-import android.content.Intent;
 import android.content.res.ColorStateList;
-import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.robinhood.spark.SparkView;
-import com.robinhood.spark.animation.LineSparkAnimator;
 import com.robinhood.ticker.TickerUtils;
 import com.robinhood.ticker.TickerView;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.viewpager.widget.PagerAdapter;
-import androidx.viewpager.widget.ViewPager;
 
-import android.os.StrictMode;
 import android.util.TypedValue;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import net.jacobpeterson.alpaca.AlpacaAPI;
 import net.jacobpeterson.alpaca.enums.BarsTimeFrame;
@@ -56,6 +37,7 @@ import net.jacobpeterson.domain.alpaca.order.Order;
 import net.jacobpeterson.polygon.PolygonAPI;
 import net.jacobpeterson.polygon.rest.exception.PolygonAPIRequestException;
 
+import java.lang.reflect.Type;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -70,7 +52,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import io.cabriole.decorator.LinearMarginDecoration;
 
-import static com.bedefined.alpaca_dashboard.DashboardFragment.ticker;
+import static com.seanmiller.alpacadashboard.DashboardFragment.ticker;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class StockPageActivity extends AppCompatActivity implements RecyclerViewAdapterStocks.ItemClickListener {
@@ -149,7 +131,8 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 viewPagerStocks.setCurrentItem(0);
             });
         });
-        t1.start()*/;
+        t1.start()*/
+        ;
 
         Thread t3 = new Thread(() -> {
 
@@ -184,6 +167,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             oneWeekStock = findViewById(R.id.oneWeekStock);
             oneMonthStock = findViewById(R.id.oneMonthStock);
             threeMonthStock = findViewById(R.id.threeMonthsStock);
+            oneYearStock = findViewById(R.id.oneYearStock);
             oneYearStock = findViewById(R.id.oneYearStock);
             selectedButton = oneDayStock;
 
@@ -225,7 +209,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 selectedButton.setBackgroundTintList(ColorStateList.valueOf(posOrNegColorLight.get()));
                 selectedAdapterStock = oneDayStockAdapter;
                 sparkViewStock.setAdapter(selectedAdapterStock);
-//                setDashboardValues();
+                setStockValues();
             });
             oneWeekStock.setOnClickListener(v -> {
                 selectedButton.setBackgroundTintList(ColorStateList.valueOf(colorPrimary));
@@ -233,7 +217,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 selectedButton.setBackgroundTintList(ColorStateList.valueOf(posOrNegColorLight.get()));
                 selectedAdapterStock = oneWeekStockAdapter;
                 sparkViewStock.setAdapter(selectedAdapterStock);
-//                setDashboardValues();
+                setStockValues();
             });
             oneMonthStock.setOnClickListener(v -> {
                 selectedButton.setBackgroundTintList(ColorStateList.valueOf(colorPrimary));
@@ -241,7 +225,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 selectedButton.setBackgroundTintList(ColorStateList.valueOf(posOrNegColorLight.get()));
                 selectedAdapterStock = oneMonthStockAdapter;
                 sparkViewStock.setAdapter(selectedAdapterStock);
-//                setDashboardValues();
+                setStockValues();
             });
             threeMonthStock.setOnClickListener(v -> {
                 selectedButton.setBackgroundTintList(ColorStateList.valueOf(colorPrimary));
@@ -249,7 +233,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 selectedButton.setBackgroundTintList(ColorStateList.valueOf(posOrNegColorLight.get()));
                 selectedAdapterStock = threeMonthStockAdapter;
                 sparkViewStock.setAdapter(selectedAdapterStock);
-//                setDashboardValues();
+                setStockValues();
             });
             oneYearStock.setOnClickListener(v -> {
                 selectedButton.setBackgroundTintList(ColorStateList.valueOf(colorPrimary));
@@ -257,7 +241,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 selectedButton.setBackgroundTintList(ColorStateList.valueOf(posOrNegColorLight.get()));
                 selectedAdapterStock = oneYearStockAdapter;
                 sparkViewStock.setAdapter(selectedAdapterStock);
-//                setDashboardValues();
+                setStockValues();
             });
             try {
                 selectedAdapterStock = new StockAdapter(ticker, 0, null, null);
@@ -282,46 +266,6 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
 
                 tickerViewStock.setText("$" + formatter.format(amount.get()));
                 sparkViewStock.setAdapter(selectedAdapterStock);
-
-                // Set Line and Ticker color
-                float oldVal = selectedAdapterStock.getValue(0);
-                float newVal = selectedAdapterStock.getValue(selectedAdapterStock.getCount() - 1);
-                float percentageChange = (newVal - oldVal) / oldVal * 100;
-                float profitLoss = selectedAdapterStock.getValue(selectedAdapterStock.getCount() - 1) - selectedAdapterStock.getValue(0);
-
-                getTheme().resolveAttribute(R.attr.color_negative, typedValue, true);
-                int negColor = ContextCompat.getColor(this, typedValue.resourceId);
-                getTheme().resolveAttribute(R.attr.color_positive, typedValue, true);
-                int posColor = ContextCompat.getColor(this, typedValue.resourceId);
-
-                getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
-                int posColorLight = ContextCompat.getColor(this, typedValue.resourceId);
-                getTheme().resolveAttribute(R.attr.color_negative_light, typedValue, true);
-                int negColorLight = ContextCompat.getColor(this, typedValue.resourceId);
-
-                if (selectedAdapterStock.getCount() != 0) {
-
-                    if (selectedAdapterStock.getValue(selectedAdapterStock.getCount() - 1) >= selectedAdapterStock.baseline) {
-
-                        percentChangeStock.setText(String.format("+$%.2f (%.2f%%)", profitLoss, percentageChange));
-
-                        percentChangeStock.setTextColor(posColor);
-                        percentChangeStock.setBackgroundTintList(ColorStateList.valueOf(posColorLight));
-                        Drawable upArrow = percentChangeStock.getContext().getResources().getDrawable(R.drawable.arrow_top_right);
-                        upArrow.setTint(posColor);
-                        percentChangeStock.setCompoundDrawablesWithIntrinsicBounds(null, null, upArrow, null);
-                        sparkViewStock.setLineColor(posColor);
-                    } else {
-                        percentChangeStock.setText(String.format("-$%.2f (%.2f%%)", Math.abs(profitLoss), percentageChange));
-
-                        percentChangeStock.setTextColor(negColor);
-                        percentChangeStock.setBackgroundTintList(ColorStateList.valueOf(negColorLight));
-                        Drawable downArrow = percentChangeStock.getContext().getResources().getDrawable(R.drawable.arrow_bottom_right);
-                        downArrow.setTint(negColor);
-                        percentChangeStock.setCompoundDrawablesWithIntrinsicBounds(null, null, downArrow, null);
-                        sparkViewStock.setLineColor(negColor);
-                    }
-                }
 
                 // Scrub for chart
                 getTheme().resolveAttribute(R.attr.colorPrimaryLight, typedValue, true);
@@ -375,48 +319,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                     float finalAskingPrice = askingPrice;
                     runOnUiThread(() -> selectedAdapterStock.addVal(finalAskingPrice));
 
-                    // Fetch colors
-                    TypedValue typedValue = new TypedValue();
-                    getTheme().resolveAttribute(R.attr.color_negative, typedValue, true);
-                    int negColor = ContextCompat.getColor(this, typedValue.resourceId);
-                    getTheme().resolveAttribute(R.attr.color_positive, typedValue, true);
-                    int posColor = ContextCompat.getColor(this, typedValue.resourceId);
-                    getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
-                    int posColorLight = ContextCompat.getColor(this, typedValue.resourceId);
-                    getTheme().resolveAttribute(R.attr.color_negative_light, typedValue, true);
-                    int negColorLight = ContextCompat.getColor(this, typedValue.resourceId);
-
-                    float oldVal = selectedAdapterStock.getValue(0);
-                    float newVal = selectedAdapterStock.getValue(selectedAdapterStock.getCount() - 1);
-                    float percentageChange = (newVal - oldVal) / oldVal * 100;
-                    float profitLoss = selectedAdapterStock.getValue(selectedAdapterStock.getCount() - 1) - selectedAdapterStock.getValue(0);
-
-                    runOnUiThread(() -> {
-
-                        // Set colors
-                        if (newVal >= oldVal) {
-                            percentChangeStock.setText(String.format("+$%.2f (%.2f%%)", profitLoss, percentageChange));
-
-                            percentChangeStock.setTextColor(posColor);
-                            percentChangeStock.setBackgroundTintList(ColorStateList.valueOf(posColorLight));
-                            Drawable upArrow = percentChangeStock.getContext().getResources().getDrawable(R.drawable.arrow_top_right);
-                            upArrow.setTint(posColor);
-                            percentChangeStock.setCompoundDrawablesWithIntrinsicBounds(null, null, upArrow, null);
-                            sparkViewStock.setLineColor(posColor);
-
-                        } else {
-                            percentChangeStock.setText(String.format("-$%.2f (%.2f%%)", Math.abs(profitLoss), percentageChange));
-
-                            percentChangeStock.setTextColor(negColor);
-                            percentChangeStock.setBackgroundTintList(ColorStateList.valueOf(negColorLight));
-                            Drawable downArrow = percentChangeStock.getContext().getResources().getDrawable(R.drawable.arrow_bottom_right);
-                            downArrow.setTint(negColor);
-                            percentChangeStock.setCompoundDrawablesWithIntrinsicBounds(null, null, downArrow, null);
-                            sparkViewStock.setLineColor(negColor);
-                        }
-
-                    });
-
+                    runOnUiThread(this::setStockValues);
 
                     try {
                         Thread.sleep(60000);
@@ -426,6 +329,22 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 }
             });
             t4.start();
+        } else {
+
+            Thread t5 = new Thread(() -> {
+                float askingPrice = 0;
+                try {
+                    askingPrice = polygonAPI.getLastQuote(ticker.get()).getLast().getAskprice().floatValue();
+
+                } catch (PolygonAPIRequestException e) {
+                    e.printStackTrace();
+                }
+
+                float finalAskingPrice = askingPrice;
+                runOnUiThread(() -> selectedAdapterStock.addVal(finalAskingPrice));
+                runOnUiThread(this::setStockValues);
+            });
+            t5.start();
         }
 
         Thread thread = new Thread(() -> {
@@ -502,48 +421,154 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
         // Requests bars and adds to graph
         AlpacaAPI alpacaAPI = new AlpacaAPI();
         PolygonAPI polygonAPI = new PolygonAPI();
-        Map<String, ArrayList<Bar>> bars = null;
 
-        // Check if market is open
-        String marketStatus = null;
-        try {
-            marketStatus = polygonAPI.getMarketStatus().getMarket();
-        } catch (PolygonAPIRequestException e) {
-            e.printStackTrace();
-        }
+        Thread thread = new Thread(() -> {
 
-        if (marketStatus.equals("open")) {
+            Map<String, ArrayList<Bar>> bars = null;
 
-            // Fetch todays bars
+            // Check if market is open
+            String marketStatus = null;
             try {
-                bars = alpacaAPI.getBars(timeFrame, ticker.get(), 1000, datetime, null,
-                        ZonedDateTime.of(LocalDateTime.of(LocalDate.now(), LocalTime.of(5, 30)), ZoneId.of("UTC-6")), null);
-
-            } catch (AlpacaAPIRequestException e) {
+                marketStatus = polygonAPI.getMarketStatus().getMarket();
+            } catch (PolygonAPIRequestException e) {
                 e.printStackTrace();
             }
+
+            if (marketStatus.equals("open")) {
+
+                // Fetch todays bars
+                try {
+                    bars = alpacaAPI.getBars(timeFrame, ticker.get(), 1000, datetime, null,
+                            ZonedDateTime.of(LocalDateTime.of(LocalDate.now(), LocalTime.of(5, 30)), ZoneId.of("UTC-6")), null);
+
+                } catch (AlpacaAPIRequestException e) {
+                    e.printStackTrace();
+                }
+
+            } else {
+
+                if (datetime == ZonedDateTime.now()) {
+
+                    // Fetch last open day's information
+                    ArrayList<Calendar> calendar = null;
+                    try {
+                        calendar = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(1), LocalDate.now());
+                    } catch (AlpacaAPIRequestException e) {
+                        e.printStackTrace();
+                    }
+                    LocalDate lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 1).getDate());
+                    LocalTime lastOpenTime = LocalTime.parse(calendar.get(calendar.size() - 1).getClose());
+                    LocalTime lastOpenTimeStart = LocalTime.parse(calendar.get(calendar.size() - 1).getOpen());
+
+                    try {
+                        bars = alpacaAPI.getBars(BarsTimeFrame.FIVE_MINUTE, ticker.get(), 1000, null, null,
+                                ZonedDateTime.of(lastOpenDate, lastOpenTimeStart, ZoneId.of("UTC-4")),
+                                ZonedDateTime.of(lastOpenDate, lastOpenTime, ZoneId.of("UTC-4")));
+
+                    } catch (AlpacaAPIRequestException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+
+                    try {
+                        bars = alpacaAPI.getBars(timeFrame, ticker.get(), 1000, datetime, null, null, ZonedDateTime.now());
+
+                    } catch (AlpacaAPIRequestException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            if (bars != null) {
+                for (Bar bar : Objects.requireNonNull(bars.get(ticker.get()))) {
+                    runOnUiThread(() -> selectedAdapterInitial.addVal(bar.getC().floatValue()));
+                }
+            }
+
+            if (datetime.getYear() < ZonedDateTime.now().getYear()) {
+                runOnUiThread(() -> selectedAdapterInitial.smoothGraph());
+            }
+        });
+        thread.start();
+    }
+
+    public void setDashboardColors(boolean pos, float profitLoss, float percentageChange) {
+
+        TypedValue typedValue = new TypedValue();
+        getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
+        AtomicInteger posColorLight = new AtomicInteger(ContextCompat.getColor(this, typedValue.resourceId));
+        getTheme().resolveAttribute(R.attr.color_negative_light, typedValue, true);
+        AtomicInteger negColorLight = new AtomicInteger(ContextCompat.getColor(this, typedValue.resourceId));
+
+        if (pos) {
+            percentChangeStock.setText(String.format("+$%.2f (%.2f%%)", profitLoss, percentageChange));
+
+            getTheme().resolveAttribute(R.attr.color_positive, typedValue, true);
+            int color = ContextCompat.getColor(this, typedValue.resourceId);
+            percentChangeStock.setTextColor(color);
+            percentChangeStock.setBackgroundTintList(ColorStateList.valueOf(posColorLight.get()));
+            Drawable upArrow = ContextCompat.getDrawable(this, R.drawable.arrow_top_right);
+            upArrow.setTint(color);
+            percentChangeStock.setCompoundDrawablesWithIntrinsicBounds(null, null, upArrow, null);
+            sparkViewStock.setLineColor(color);
+            selectedButton.setBackgroundTintList(ColorStateList.valueOf(posColorLight.get()));
+            oneDayStock.setTextColor(color);
+            oneWeekStock.setTextColor(color);
+            oneMonthStock.setTextColor(color);
+            threeMonthStock.setTextColor(color);
+            oneYearStock.setTextColor(color);
+            oneDayStock.setRippleColor(ColorStateList.valueOf(color));
+            oneWeekStock.setRippleColor(ColorStateList.valueOf(color));
+            oneMonthStock.setRippleColor(ColorStateList.valueOf(color));
+            threeMonthStock.setRippleColor(ColorStateList.valueOf(color));
+            oneYearStock.setRippleColor(ColorStateList.valueOf(color));
+
+            getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
+            posOrNegColorLight.set(ContextCompat.getColor(this, typedValue.resourceId));
 
         } else {
+            percentChangeStock.setText(String.format("-$%.2f (%.2f%%)", Math.abs(profitLoss), percentageChange));
 
-            // Fetch last open day's information
-            ArrayList<Calendar> calendar = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(1), LocalDate.now());
-            LocalDate lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 1).getDate());
-            LocalTime lastOpenTime = LocalTime.parse(calendar.get(calendar.size() - 1).getClose());
-            LocalTime lastOpenTimeStart = LocalTime.parse(calendar.get(calendar.size() - 1).getOpen());
+            getTheme().resolveAttribute(R.attr.color_negative, typedValue, true);
+            int color = ContextCompat.getColor(this, typedValue.resourceId);
+            percentChangeStock.setTextColor(color);
+            percentChangeStock.setBackgroundTintList(ColorStateList.valueOf(negColorLight.get()));
+            Drawable downArrow = ContextCompat.getDrawable(this, R.drawable.arrow_bottom_right);
+            downArrow.setTint(color);
+            percentChangeStock.setCompoundDrawablesWithIntrinsicBounds(null, null, downArrow, null);
+            sparkViewStock.setLineColor(color);
+            selectedButton.setBackgroundTintList(ColorStateList.valueOf(negColorLight.get()));
+            oneDayStock.setTextColor(color);
+            oneWeekStock.setTextColor(color);
+            oneMonthStock.setTextColor(color);
+            threeMonthStock.setTextColor(color);
+            oneYearStock.setTextColor(color);
+            oneDayStock.setRippleColor(ColorStateList.valueOf(color));
+            oneWeekStock.setRippleColor(ColorStateList.valueOf(color));
+            oneMonthStock.setRippleColor(ColorStateList.valueOf(color));
+            threeMonthStock.setRippleColor(ColorStateList.valueOf(color));
+            oneYearStock.setRippleColor(ColorStateList.valueOf(color));
 
-            try {
-                bars = alpacaAPI.getBars(BarsTimeFrame.FIVE_MINUTE, ticker.get(), 1000, null, null,
-                        ZonedDateTime.of(lastOpenDate, lastOpenTimeStart, ZoneId.of("UTC-4")),
-                        ZonedDateTime.of(lastOpenDate, lastOpenTime, ZoneId.of("UTC-4")));
-
-            } catch (AlpacaAPIRequestException e) {
-                e.printStackTrace();
-            }
+            getTheme().resolveAttribute(R.attr.color_negative_light, typedValue, true);
+            posOrNegColorLight.set(ContextCompat.getColor(this, typedValue.resourceId));
         }
+    }
 
-        if (bars != null) {
-            for (Bar bar : Objects.requireNonNull(bars.get(ticker.get()))) {
-                selectedAdapterInitial.addVal(bar.getC().floatValue());
+    public void setStockValues() {
+
+        // Set Line and Ticker Info
+        float oldVal = selectedAdapterStock.getValue(0);
+        float newVal = selectedAdapterStock.getValue(selectedAdapterStock.getCount() - 1);
+        float percentageChange = (newVal - oldVal) / oldVal * 100;
+        float profitLoss = selectedAdapterStock.getValue(selectedAdapterStock.getCount() - 1) - selectedAdapterStock.getValue(0);
+
+        if (selectedAdapterStock.getCount() != 0) {
+
+            if (profitLoss >= 0) {
+                setDashboardColors(true, profitLoss, percentageChange);
+
+            } else {
+                setDashboardColors(false, profitLoss, percentageChange);
             }
         }
     }

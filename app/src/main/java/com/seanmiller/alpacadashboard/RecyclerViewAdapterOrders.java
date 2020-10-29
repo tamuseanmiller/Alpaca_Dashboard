@@ -1,7 +1,6 @@
-package com.bedefined.alpaca_dashboard;
+package com.seanmiller.alpacadashboard;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,25 +12,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
 
-import net.jacobpeterson.alpaca.AlpacaAPI;
-import net.jacobpeterson.alpaca.enums.OrderStatus;
-import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
-import net.jacobpeterson.alpaca.websocket.listener.AlpacaStreamListenerAdapter;
-import net.jacobpeterson.alpaca.websocket.message.AlpacaStreamMessageType;
 import net.jacobpeterson.domain.alpaca.order.Order;
-import net.jacobpeterson.domain.alpaca.websocket.AlpacaStreamMessage;
-import net.jacobpeterson.domain.alpaca.websocket.account.AccountUpdateMessage;
-import net.jacobpeterson.domain.alpaca.websocket.trade.TradeUpdateMessage;
-import net.jacobpeterson.domain.polygon.lastquote.LastQuoteResponse;
-import net.jacobpeterson.domain.polygon.websocket.PolygonStreamMessage;
-import net.jacobpeterson.domain.polygon.websocket.quote.QuoteMessage;
-import net.jacobpeterson.polygon.PolygonAPI;
-import net.jacobpeterson.polygon.rest.exception.PolygonAPIRequestException;
-import net.jacobpeterson.polygon.websocket.listener.PolygonStreamListenerAdapter;
-import net.jacobpeterson.polygon.websocket.message.PolygonStreamMessageType;
 
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 public class RecyclerViewAdapterOrders extends RecyclerView.Adapter<RecyclerViewAdapterOrders.ViewHolder> {

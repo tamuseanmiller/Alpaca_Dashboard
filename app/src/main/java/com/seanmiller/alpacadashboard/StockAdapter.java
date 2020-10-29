@@ -1,4 +1,4 @@
-package com.bedefined.alpaca_dashboard;
+package com.seanmiller.alpacadashboard;
 
 import android.os.Build;
 
@@ -50,30 +50,42 @@ public class StockAdapter extends SparkAdapter {
         // Set baseline values
         Thread thread = new Thread(() -> {
 
+            // Fetch last open day's information
+            ArrayList<Calendar> calendar = null;
+            try {
+                calendar = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(1), LocalDate.now());
+            } catch (AlpacaAPIRequestException e) {
+                e.printStackTrace();
+            }
+            assert calendar != null;
+            LocalDate lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 1).getDate());
+            LocalTime lastOpenTime = LocalTime.parse(calendar.get(calendar.size() - 1).getOpen());
+
             // If you are rendering a stockpage
             if (!ticker.get().equals("NOTICKER")) {
-                try {
-                    lastClose.set(polygonAPI.getPreviousClose(String.valueOf(ticker), false).getResults().get(0).getC().floatValue());
-                } catch (PolygonAPIRequestException e) {
-                    e.printStackTrace();
-                }
 
-                baseline = lastClose.get();
-                yData.add(lastClose.get());
+                if (periodUnit == PortfolioPeriodUnit.DAY) {
+                    try {
+                        lastClose.set(polygonAPI.getPreviousClose(String.valueOf(ticker), false).getResults().get(0).getC().floatValue());
+                    } catch (PolygonAPIRequestException e) {
+                        e.printStackTrace();
+                    }
+
+                    baseline = lastClose.get();
+                    yData.add(lastClose.get());
+
+                } /*else {
+                    try {
+                        lastClose.set(Objects.requireNonNull(alpacaAPI.getBars(BarsTimeFrame.ONE_DAY, ticker.get(), 2, ZonedDateTime.of(lastOpenDate, lastOpenTime, ZoneId.of("UTC-6")), null, null, null).get(ticker.get())).get(0).getC().floatValue());
+                    } catch (AlpacaAPIRequestException e) {
+                        e.printStackTrace();
+                    }
+                    baseline = lastClose.get();
+                    yData.add(lastClose.get());
+                }*/
 
             // Else you're on equity stock
             } else if (periodUnit == PortfolioPeriodUnit.DAY) {
-
-                // Fetch last open day's information
-                ArrayList<Calendar> calendar = null;
-                try {
-                    calendar = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(1), LocalDate.now());
-                } catch (AlpacaAPIRequestException e) {
-                    e.printStackTrace();
-                }
-                assert calendar != null;
-                LocalDate lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 1).getDate());
-
 
                 // Gather old portfolio data
                 history.set(new ArrayList<>());

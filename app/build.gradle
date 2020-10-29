@@ -5,6 +5,10 @@ apply plugin: 'com.google.gms.google-services'
 android {
     compileSdkVersion 30
 
+    lintOptions {
+        abortOnError false
+    }
+
     packagingOptions {
         exclude 'META-INF/DEPENDENCIES'
         exclude 'META-INF/LICENSE'
@@ -18,11 +22,14 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.bedefined.alpaca_dashboard"
+        applicationId "com.seanmiller.alpacadashboard"
         minSdkVersion 26
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
+        android.defaultConfig.manifestPlaceholders = [
+                'appAuthRedirectScheme': 'alpacadashboard'
+        ]
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -68,4 +75,9 @@ dependencies {
     implementation "androidx.viewpager2:viewpager2:1.0.0"
     implementation 'com.google.firebase:firebase-analytics'
     implementation 'com.google.android:flexbox:2.0.1'
+    implementation 'net.openid:appauth:0.7.1'
+    implementation "com.squareup.okhttp3:okhttp:4.9.0"
+    implementation "com.mashape.unirest:unirest-java:1.4.8"
+    implementation "com.google.guava:guava:30.0-jre"
+    implementation 'com.google.code.gson:gson:2.8.6'
 }

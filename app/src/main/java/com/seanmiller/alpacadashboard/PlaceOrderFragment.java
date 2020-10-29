@@ -1,4 +1,4 @@
-package com.bedefined.alpaca_dashboard;
+package com.seanmiller.alpacadashboard;
 
 import android.app.Dialog;
 import android.view.View;
@@ -8,7 +8,6 @@ import android.widget.TextView;
 import com.allattentionhere.fabulousfilter.AAH_FabulousFragment;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 
 import net.jacobpeterson.alpaca.AlpacaAPI;

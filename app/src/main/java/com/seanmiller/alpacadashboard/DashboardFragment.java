@@ -1,4 +1,4 @@
-package com.bedefined.alpaca_dashboard;
+package com.seanmiller.alpacadashboard;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -52,8 +52,8 @@ import io.cabriole.decorator.ColumnProvider;
 import io.cabriole.decorator.GridMarginDecoration;
 import io.cabriole.decorator.LinearMarginDecoration;
 
-import static com.bedefined.alpaca_dashboard.Utils.THEME_DARK;
-import static com.bedefined.alpaca_dashboard.Utils.THEME_LIGHT;
+import static com.seanmiller.alpacadashboard.Utils.THEME_DARK;
+import static com.seanmiller.alpacadashboard.Utils.THEME_LIGHT;
 
 public class DashboardFragment extends Fragment implements RecyclerViewAdapter.ItemClickListener, View.OnClickListener {
 
@@ -97,12 +97,12 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
         themeChange = mView.findViewById(R.id.themeChange);
         themeChange.setOnClickListener(this);
         TypedValue outValue = new TypedValue();
-        getActivity().getTheme().resolveAttribute(R.attr.themeName, outValue, true);
+        requireActivity().getTheme().resolveAttribute(R.attr.themeName, outValue, true);
         if ("light".equals(outValue.string)) {
-            Drawable lightTheme = getActivity().getDrawable(R.drawable.brightness_6);
+            Drawable lightTheme = ContextCompat.getDrawable(requireActivity(), R.drawable.brightness_6);
             themeChange.setImageDrawable(lightTheme);
         } else {
-            Drawable darkTheme = getActivity().getDrawable(R.drawable.brightness_4);
+            Drawable darkTheme = ContextCompat.getDrawable(requireActivity(), R.drawable.brightness_4);
             themeChange.setImageDrawable(darkTheme);
         }
 
@@ -261,8 +261,6 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
 
         if (marketStatus.equals("open")) {
 
-//            initializeDashboardValues(1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.ONE_MIN, selectedAdapter);
-
             Thread t3 = new Thread(() -> {
 
                 // Run forever to get the new equities
@@ -297,67 +295,27 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
 
         } else {
 
-            // Fetch last open day's information
-            ArrayList<Calendar> calendar = null;
-            try {
-                calendar = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(1), LocalDate.now());
-            } catch (AlpacaAPIRequestException e) {
-                e.printStackTrace();
-            }
-            assert calendar != null;
-            LocalDate lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 1).getDate());
+            Thread thread = new Thread(() -> {
 
-            // Gather old portfolio data
-            ArrayList<Double> history = new ArrayList<>();
-            try {
-                history = alpacaAPI.getPortfolioHistory(1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.FIVE_MINUTE, lastOpenDate, true).getEquity();
-
-            } catch (AlpacaAPIRequestException e) {
-                e.printStackTrace();
-            }
-
-            // Fetch portfolio value
-            String portVal = null;
-            try {
-                portVal = alpacaAPI.getAccount().getPortfolioValue();
-                cash = alpacaAPI.getAccount().getCash();
-            } catch (AlpacaAPIRequestException e) {
-                e.printStackTrace();
-            }
-
-            // Set percent change and update colors
-            if (portVal != null && cash != null) {
-
-                // Add data to chart
-                if (history.get(0) != null) {
-                    for (Double i : history) {
-                        if (i != null) {
-                            selectedAdapter.addVal(Float.parseFloat(String.valueOf(i)));
-                        }
-                    }
+                String currentValue = null;
+                try {
+                    currentValue = alpacaAPI.getAccount().getPortfolioValue();
+                } catch (AlpacaAPIRequestException e) {
+                    e.printStackTrace();
                 }
 
-                float holdingVal = Float.parseFloat(portVal) - Float.parseFloat(cash);
+                // Format amount
+                double amount = Double.parseDouble(currentValue);
+                DecimalFormat formatter = new DecimalFormat("#,###.00");
 
-                float oldVal = selectedAdapter.getValue(0) - holdingVal;
-                float newVal = selectedAdapter.getValue(selectedAdapter.getCount() - 1) - holdingVal;
-                float percentageChange = (newVal - oldVal) / oldVal * 100;
-                float profitLoss = selectedAdapter.getValue(selectedAdapter.getCount() - 1) - selectedAdapter.getValue(0);
-
-                if (selectedAdapter.getCount() != 0) {
-
-                    double amount = Double.parseDouble(String.valueOf(selectedAdapter.getValue(selectedAdapter.getCount() - 1)));
-                    DecimalFormat formatter = new DecimalFormat("#,###.00");
+                getActivity().runOnUiThread(() -> {
                     tickerView.setText("$" + formatter.format(amount));
+                });
 
-                    if (selectedAdapter.getValue(selectedAdapter.getCount() - 1) >= selectedAdapter.baseline) {
-                        setDashboardColors(true, profitLoss, percentageChange);
+            });
+            thread.start();
+            setDashboardValues();
 
-                    } else {
-                        setDashboardColors(false, profitLoss, percentageChange);
-                    }
-                }
-            }
         }
 
         recyclerView = mView.findViewById(R.id.recyclerStocks);
@@ -638,13 +596,17 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
             }
 
             // Add data to chart
-            if (history.get(0) != null) {
+            if (history.size() != 0) {
                 for (Double i : history) {
                     if (i != null) {
                         selectedAdapterInitial.addVal(Float.parseFloat(String.valueOf(i)));
                     }
                 }
             }
+
+//            while (selectedAdapterInitial.getCount() >= 100) {
+//                selectedAdapterInitial.smoothGraph();
+//            }
 
             if (periodUnit == PortfolioPeriodUnit.YEAR) {
                 selectedAdapterInitial.smoothGraph();
@@ -655,55 +617,47 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
     }
 
     public void setDashboardValues() {
+
         AlpacaAPI alpacaAPI = new AlpacaAPI();
 
         // Create thread for updating equity
         Thread t1 = new Thread(() -> {
 
-            // Run forever to get the new equities
-            while (true) {
-                try {
-
-                    // Fetch portfolio value
-                    String portVal = null;
-                    try {
-                        portVal = alpacaAPI.getAccount().getPortfolioValue();
-                        cash = alpacaAPI.getAccount().getCash();
-                    } catch (AlpacaAPIRequestException e) {
-                        e.printStackTrace();
-                    }
-
-                    String finalPortVal = portVal;
-                    getActivity().runOnUiThread(() -> {
-
-                        // Set percent change and update colors
-                        if (finalPortVal != null && cash != null) {
-
-                            float holdingVal = Float.parseFloat(finalPortVal) - Float.parseFloat(cash);
-
-                            float oldVal = selectedAdapter.getValue(0) - holdingVal;
-                            float newVal = selectedAdapter.getValue(selectedAdapter.getCount() - 1) - holdingVal;
-                            float percentageChange = (newVal - oldVal) / oldVal * 100;
-                            float profitLoss = selectedAdapter.getValue(selectedAdapter.getCount() - 1) - selectedAdapter.getValue(0);
-
-                            // Set colors
-                            if (percentageChange >= 0) {
-
-                                setDashboardColors(true, profitLoss, percentageChange);
-
-                            } else {
-
-                                setDashboardColors(false, profitLoss, percentageChange);
-                            }
-                        }
-
-                    });
-                    Thread.sleep(60000 * 5);
-
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+            // Fetch portfolio value
+            String portVal = null;
+            try {
+                portVal = alpacaAPI.getAccount().getPortfolioValue();
+                cash = alpacaAPI.getAccount().getCash();
+            } catch (AlpacaAPIRequestException e) {
+                e.printStackTrace();
             }
+
+            String finalPortVal = portVal;
+            getActivity().runOnUiThread(() -> {
+
+                // Set percent change and update colors
+                if (finalPortVal != null && cash != null) {
+
+                    float holdingVal = Float.parseFloat(finalPortVal) - Float.parseFloat(cash);
+
+                    float oldVal = selectedAdapter.getValue(0) - holdingVal;
+                    float newVal = selectedAdapter.getValue(selectedAdapter.getCount() - 1) - holdingVal;
+                    float percentageChange = (newVal - oldVal) / oldVal * 100;
+                    float profitLoss = selectedAdapter.getValue(selectedAdapter.getCount() - 1) - selectedAdapter.getValue(0);
+
+                    // Set colors
+                    if (percentageChange >= 0) {
+
+                        setDashboardColors(true, profitLoss, percentageChange);
+
+                    } else {
+
+                        setDashboardColors(false, profitLoss, percentageChange);
+                    }
+                }
+
+            });
+
         });
         t1.start();
     }
