@@ -1,4 +1,4 @@
-package com.bedefined.alpaca_dashboard;
+package com.seanmiller.alpacadashboard;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,10 +15,10 @@ import java.util.ArrayList;
 
 public class SearchableAdapter extends RecyclerView.Adapter<SearchableAdapter.ViewHolder> {
 
-    private final ArrayList<String> mValues;
+    private final ArrayList<Ticker> mValues;
     private ItemClickListener mClickListener;
 
-    public SearchableAdapter(ArrayList<String> items) {
+    public SearchableAdapter(ArrayList<Ticker> items) {
         mValues = items;
     }
 
@@ -36,9 +36,9 @@ public class SearchableAdapter extends RecyclerView.Adapter<SearchableAdapter.Vi
 //        holder.stockTicker.setText(ticker);
 //        holder.stockFullName.setText("test");
 
-        String fullString = mValues.get(position);
-        holder.stockTicker.setText(fullString.substring(0, fullString.indexOf(':') - 1));
-        holder.stockFullName.setText(fullString.substring(fullString.indexOf(':') + 2));
+//        String fullString = mValues.get(position);
+        holder.stockTicker.setText(mValues.get(position).getTicker());
+        holder.stockFullName.setText(mValues.get(position).getName());
 
     }
 
@@ -80,7 +80,7 @@ public class SearchableAdapter extends RecyclerView.Adapter<SearchableAdapter.Vi
     }
 
     // convenience method for getting data at click position
-    String getItem(int id) {
+    Ticker getItem(int id) {
         return mValues.get(id);
     }
 
