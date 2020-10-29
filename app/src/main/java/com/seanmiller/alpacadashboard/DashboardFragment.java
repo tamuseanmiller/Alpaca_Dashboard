@@ -221,37 +221,13 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
 
         sparkView.setScrubListener(value -> {
 
-            // Format to add commas
+            // Format to add commas, scrub for ticker price
             if (value != null) {
-
                 double amount = Double.parseDouble(String.valueOf(value));
                 DecimalFormat formatter = new DecimalFormat("#,###.00");
-//                float floatNumEquity = (float) value;
-////                try {
-////                    floatNumEquity = Float.parseFloat(value);
-////                } catch (NumberFormatException e) {
-////                    System.out.println(numEquity);
-////                    e.printStackTrace();
-////                }
-//                float temp = (floatNumEquity - selectedAdapter.baseline);
-//                System.out.println(temp / selectedAdapter.baseline);
-//                float percentageChange = (floatNumEquity - selectedAdapter.baseline) / selectedAdapter.baseline;
-//
-//                if (floatNumEquity > selectedAdapter.baseline) {
-//                    arrow.setColorFilter(getColor(R.color.color_positive));
-//                    arrow.setBackgroundDrawable(getResources().getActivity().getDrawable(R.drawable.arrow_top_right));
-//                    percentChange.setText("+" + String.valueOf(percentageChange));
-//
-//                } else {
-//                    arrow.setColorFilter(getColor(R.color.color_negative));
-//                    arrow.setBackgroundResource(R.drawable.arrow_bottom_right);
-//                    percentChange.setText(String.valueOf(percentageChange));
-//                }
-
                 tickerView.setText("$" + formatter.format(amount));
 
             }
-
         });
 
         String marketStatus = null;
@@ -311,11 +287,9 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
                     tickerView.setText("$" + formatter.format(amount));
                 });
 
-                oneDay.callOnClick(); // Call this after initialization has had long enough to finish so that the profit changes
-
+                setDashboardValues();
             });
             thread.start();
-            setDashboardValues();
 
         }
 
@@ -370,13 +344,6 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
 
         recyclerOrders.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerOrders.addItemDecoration(LinearMarginDecoration.create(0, LinearLayoutManager.VERTICAL, false, null));
-//        onRefresh();
-
-
-        // Set Recycle Adapter
-//        recycleAdapter = new RecyclerViewAdapter(getActivity(), stocks);
-//        recycleAdapter.setClickListener(getActivity());
-//        recyclerView.setAdapter(recycleAdapter);
 
         // Swipe to refresh recycler data
         swipeRefresh.setOnRefreshListener(() -> {
@@ -384,6 +351,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
             onRefresh();
             swipeRefresh.setNestedScrollingEnabled(false);
         });
+
         return mView;
     }
 
@@ -393,33 +361,6 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
     public void onItemClick(View view, int position) {
 
         ticker.set(recycleAdapter.getItem(position));
-//        MainActivity.viewPager.findViewWithTag(MainActivity.dashboardFragment);
-//        requireActivity().getSupportFragmentManager().beginTransaction().remove(MainActivity.stockFragment).commit();
-//        MainActivity.dashboardFragment = new DashboardFragment();
-//        MainActivity.pagerAdapter.addFragments(MainActivity.dashboardFragment);
-//        MainActivity.pagerAdapter.notifyDataSetChanged();
-//        MainActivity.pagerAdapter.notifyAll();
-//        MainActivity.viewPager.setAdapter(MainActivity.pagerAdapter);
-//        FragmentTransaction transaction = requireActivity().getSupportFragmentManager().beginTransaction();
-//        transaction.remove(MainActivity.dashboardFragment);
-//        transaction.add(MainActivity.dashboardFragment, ticker.get());
-//        DashboardFragment temp = new DashboardFragment();
-//        MainActivity.dashboardFragment = temp;
-//        transaction.replace(R.id.containerFrag, MainActivity.dashboardFragment, MainActivity.dashboardFragment.getClass().getSimpleName());
-//        transaction.addToBackStack(MainActivity.dashboardFragment.getClass().getSimpleName());
-//        transaction.commit();
-//        MainActivity.pagerAdapter.notifyDataSetChanged();
-//        MainActivity.lastItem = viewPager.getCurrentItem();
-//        viewPager.setCurrentItem(4, false);
-
-//        FragmentManager manager = requireActivity().getSupportFragmentManager();
-//        FragmentTransaction transaction = manager.beginTransaction();
-//        transaction.show(MainActivity.dashboardFragment).commit();
-//        transaction.add(R.id.containerFrag, MainActivity.dashboardFragment);
-//        transaction.replace(R.id.containerFrag, MainActivity.dashboardFragment, MainActivity.dashboardFragment.getClass().getSimpleName());
-//        transaction.addToBackStack(MainActivity.dashboardFragment.getClass().getSimpleName());
-//        transaction.commit();
-
         Intent intentMain = new Intent(getActivity(), StockPageActivity.class);
         requireActivity().startActivity(intentMain, ActivityOptions.makeSceneTransitionAnimation(getActivity()).toBundle());
     }

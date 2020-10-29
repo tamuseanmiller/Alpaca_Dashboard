@@ -112,31 +112,6 @@ public class StockAdapter extends SparkAdapter {
 
         });
         thread.start();
-
-//        Thread thread = new Thread(() -> {
-//            AlpacaAPI alpacaAPI = new AlpacaAPI();
-//            Map<String, ArrayList<Bar>> bars = null;
-//            try {
-//                bars = alpacaAPI.getBars(BarsTimeFrame.FIFTEEN_MINUTE, ticker.get(), 30, null, null, null, ZonedDateTime.now());
-//            } catch (AlpacaAPIRequestException e) {
-//                e.printStackTrace();
-//            }
-//            for (Bar bar : bars.get(ticker.get())) {
-//                yData.add(bar.getC().floatValue());
-//            }
-//        });
-//        thread.start();
-
-        // Get The days data and add it to yData
-//        ArrayList<Aggregate> aggregates = new ArrayList<>();
-//        PolygonAPI polygonAPI = new PolygonAPI();
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            aggregates = polygonAPI.getAggregates(String.valueOf(ticker), 1, Timespan.HOUR, LocalDate.now(), LocalDate.now(), false).getResults();
-//        }
-//        for (Aggregate i : aggregates) {
-//            yData.add(i.getC().floatValue());
-//        }
-//        smoothGraph();
     }
 
     public float getPercent() {
@@ -153,55 +128,6 @@ public class StockAdapter extends SparkAdapter {
 
     public void setProfit(float profit) {
         this.profit = profit;
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    public void initializeStock() throws AlpacaAPIRequestException {
-
-        // Requests bars and adds to graph
-        AlpacaAPI alpacaAPI = new AlpacaAPI();
-        PolygonAPI polygonAPI = new PolygonAPI();
-        Map<String, ArrayList<Bar>> bars = null;
-
-        // Check if market is open
-        String marketStatus = null;
-        try {
-            marketStatus = polygonAPI.getMarketStatus().getMarket();
-        } catch (PolygonAPIRequestException e) {
-            e.printStackTrace();
-        }
-
-        if (marketStatus.equals("open")) {
-
-            // Fetch todays bars
-            try {
-                bars = alpacaAPI.getBars(BarsTimeFrame.FIVE_MINUTE, ticker.get(), 1000, null, null,
-                        ZonedDateTime.of(LocalDateTime.of(LocalDate.now(), LocalTime.of(5, 30)), ZoneId.of("UTC-6")), null);
-
-            } catch (AlpacaAPIRequestException e) {
-                e.printStackTrace();
-            }
-
-        } else {
-
-            // Fetch last open day's information
-            ArrayList<Calendar> calendar = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(1), LocalDate.now());
-            LocalDate lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 1).getDate());
-            LocalTime lastOpenTime = LocalTime.parse(calendar.get(calendar.size() - 1).getClose());
-            LocalTime lastOpenTimeStart = LocalTime.parse(calendar.get(calendar.size() - 1).getOpen());
-
-            try {
-                bars = alpacaAPI.getBars(BarsTimeFrame.FIVE_MINUTE, ticker.get(), 1000, null, null,
-                        ZonedDateTime.of(lastOpenDate, lastOpenTimeStart, ZoneId.of("UTC-4")),
-                        ZonedDateTime.of(lastOpenDate, lastOpenTime, ZoneId.of("UTC-4")));
-
-            } catch (AlpacaAPIRequestException e) {
-                e.printStackTrace();
-            }
-        }
-        for (Bar bar : Objects.requireNonNull(bars.get(ticker.get()))) {
-            yData.add(bar.getC().floatValue());
-        }
     }
 
     public void smoothGraph() {

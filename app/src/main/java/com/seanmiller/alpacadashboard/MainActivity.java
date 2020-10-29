@@ -46,7 +46,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static com.seanmiller.alpacadashboard.LoginActivity.authService;
 
-public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener /*implements RecyclerViewAdapter.ItemClickListener, View.OnClickListener*/ {
+public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
 
     public static AtomicReference<String> ticker;
     private Properties props = new Properties();

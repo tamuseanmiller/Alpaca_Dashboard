@@ -32,6 +32,7 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
+        // If already authenticated
         if (!new SharedPreferencesManager(this).retrieveString("auth", "NULL").equals("NULL")) {
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
@@ -42,6 +43,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        // On authenticate click
         MaterialButton button_login = findViewById(R.id.button_login);
         button_login.setOnClickListener(v -> {
             authenticate();

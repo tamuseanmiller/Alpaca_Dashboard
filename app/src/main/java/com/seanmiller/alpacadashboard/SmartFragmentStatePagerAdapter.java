@@ -16,6 +16,7 @@ import androidx.fragment.app.FragmentStatePagerAdapter;
    Usage involves extending from SmartFragmentStatePagerAdapter as you would any other PagerAdapter.
 */
 public abstract class SmartFragmentStatePagerAdapter extends FragmentStatePagerAdapter {
+
     // Sparse array to keep track of registered fragments in memory
     private final SparseArray<Fragment> registeredFragments = new SparseArray<Fragment>();
 
@@ -26,14 +27,7 @@ public abstract class SmartFragmentStatePagerAdapter extends FragmentStatePagerA
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public int getItemPosition(Object object) {
-//        if (object instanceof DashboardFragment) {
-//        // Create a new method notifyUpdate() in your fragment
-//        // it will get call when you invoke
-//        // notifyDatasetChaged();
-//            ((DashboardFragment) object).notifyUpdate();
-//            return POSITION_NONE;
-//        }
-        //don't return POSITION_NONE, avoid fragment recreation.
+
         return super.getItemPosition(object);
     }
 
@@ -60,6 +54,8 @@ public abstract class SmartFragmentStatePagerAdapter extends FragmentStatePagerA
 //        }
 //        registeredFragments.remove(position);
 //        super.destroyItem(container, position, object);
+
+        // THIS WAS MAKING WEIRD THINGS HAPPEN
     }
 
     // Returns the fragment for the position (if instantiated)

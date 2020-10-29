@@ -29,33 +29,6 @@
                 android:paddingTop="@dimen/activity_vertical_margin"
                 android:paddingRight="@dimen/activity_horizontal_margin">
 
-                <!--        <com.google.android.material.floatingactionbutton.FloatingActionButton-->
-                <!--            android:layout_width="50dp"-->
-                <!--            android:layout_height="wrap_content"-->
-                <!--            android:layout_alignParentBottom="true"-->
-                <!--            android:id="@+id/placeOrder"-->
-                <!--            android:layout_alignParentEnd="true"-->
-                <!--            android:src="@drawable/plus"-->
-                <!--            app:tint="?attr/color_positive_light"-->
-                <!--            android:layout_marginBottom="10dp"-->
-                <!--            app:elevation="1000dp"-->
-                <!--            android:layout_above="@id/scrollID"-->
-                <!--            android:contentDescription="@string/places_orders" />-->
-
-                <!--        <com.google.android.material.button.MaterialButton-->
-                <!--            android:layout_width="wrap_content"-->
-                <!--            android:layout_height="wrap_content"-->
-                <!--            android:translationY="-60dp"-->
-                <!--            android:backgroundTint="?attr/color_positive_light"-->
-                <!--            app:elevation="1000dp"-->
-                <!--            app:cornerRadius="15dp"-->
-                <!--            android:layout_above="@id/bottom_navigation"-->
-                <!--            android:textColor="?attr/color_positive"-->
-                <!--            android:layout_alignParentBottom="true"-->
-                <!--            android:id="@+id/placeOrderButton"-->
-                <!--            android:layout_alignParentEnd="true"-->
-                <!--            android:text="@string/order" />-->
-
                 <androidx.core.widget.NestedScrollView
                     android:id="@+id/scrollID"
                     android:layout_width="match_parent"

@@ -86,6 +86,8 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
         materialSearch.setNavigationIconColorFilter(colorLight);
         materialSearch.setTextHint("Stock Ticker");
         materialSearch.setElevation(3);
+        materialSearch.setClearIconColorFilter(colorLight);
+        materialSearch.setMicIconColorFilter(colorLight);
 
         // When microphone is clicked
         materialSearch.setOnMicClickListener(this::displaySpeechRecognizer);

@@ -580,6 +580,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
 
         if (selectedAdapterStock.getCount() != 0) {
 
+            // If positive
             if (profitLoss >= 0) {
                 setDashboardColors(true, profitLoss, percentageChange);
 
