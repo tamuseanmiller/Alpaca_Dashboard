@@ -5,6 +5,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -225,6 +226,18 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         resp = AuthorizationResponse.fromIntent(getIntent());
         AuthorizationException ex = AuthorizationException.fromIntent(getIntent());
 
+        if (resp != null) {
+            // authorization completed
+            authState.updateAfterAuthorization(resp, ex);
+
+        } else {
+            System.out.println("Failed: " + ex);
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+            // authorization failed, check ex for more details
+        }
+
         // Build the authorization request
         TokenRequest.Builder tokenRequestBuilder =
                 new TokenRequest.Builder(
@@ -241,16 +254,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 .setRedirectUri(Uri.parse(Properties.getRedirectURI()))
                 .build();
 
-        TokenResponse.Builder tokenResponse = new TokenResponse.Builder(tokenRequest);
-
-        if (resp != null) {
-            // authorization completed
-            authState.updateAfterAuthorization(resp, ex);
-
-        } else {
-            System.out.println("Failed: " + ex);
-            // authorization failed, check ex for more details
-        }
 
         AtomicReference<String> authenticationResponse = new AtomicReference<>();
 

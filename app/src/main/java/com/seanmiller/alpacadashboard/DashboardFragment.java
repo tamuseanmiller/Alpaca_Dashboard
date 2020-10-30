@@ -212,7 +212,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
         swipeRefresh.setTranslationZ(100);
         swipeRefresh.bringToFront();
 
-        getActivity().getTheme().resolveAttribute(R.attr.colorPrimaryLight, typedValue, true);
+        requireActivity().getTheme().resolveAttribute(R.attr.colorPrimaryLight, typedValue, true);
         AtomicInteger color = new AtomicInteger(ContextCompat.getColor(getActivity(), typedValue.resourceId));
 
         // Scrub for chart
@@ -266,7 +266,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
             });
             t3.start();
 
-            setDashboardValues();
+//            setDashboardValues();
 
         } else {
 
@@ -287,7 +287,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
                     tickerView.setText("$" + formatter.format(amount));
                 });
 
-                setDashboardValues();
+//                setDashboardValues();
             });
             thread.start();
 
@@ -567,6 +567,8 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
             if (periodUnit == PortfolioPeriodUnit.YEAR) {
                 selectedAdapterInitial.smoothGraph();
             }
+
+            setDashboardValues(); // Set here to allow ample time for instantiation
 
         });
         t2.start();

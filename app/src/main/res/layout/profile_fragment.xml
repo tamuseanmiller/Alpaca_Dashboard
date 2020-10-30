@@ -15,6 +15,29 @@
         android:paddingTop="@dimen/activity_vertical_margin"
         android:paddingEnd="@dimen/activity_horizontal_margin">
 
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/topRow">
+
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:src="@drawable/cog"
+            android:layout_margin="10dp"
+            android:layout_marginEnd="10dp"
+            android:id="@+id/settingsGear"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:backgroundTint="?attr/colorPrimary"
+            android:stateListAnimator="@null"
+            android:layout_centerVertical="true"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            app:tint="?attr/colorPrimaryLight"
+            tools:ignore="RtlSymmetry"
+            android:focusable="true" />
+
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/profileLabel"
             android:layout_width="wrap_content"
@@ -25,10 +48,12 @@
             android:text="@string/profile"
             android:textSize="35sp" />
 
+    </RelativeLayout>
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/profileLabel"
+            android:layout_below="@id/topRow"
             android:layout_marginStart="10dp">
 
         <TextView
@@ -155,6 +180,20 @@
             android:text="@string/trading_since"
             android:textSize="12sp"
             android:textColor="?attr/colorPrimaryLight"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/logout"
+                android:clickable="true"
+                android:focusable="true"
+                android:textColor="?attr/colorLight"
+                android:layout_below="@id/tradingSinceLabel"
+                android:layout_marginTop="40dp"
+                app:cornerRadius="15dp"
+                android:text="@string/log_out"
+                android:stateListAnimator="@null"
+                android:backgroundTint="@color/yellow"/>
 
         </RelativeLayout>
 

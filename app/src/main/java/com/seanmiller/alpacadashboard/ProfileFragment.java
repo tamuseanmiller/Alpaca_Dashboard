@@ -3,13 +3,16 @@ package com.seanmiller.alpacadashboard;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.IntentCompat;
 import androidx.fragment.app.Fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.animation.Easing;
@@ -18,6 +21,8 @@ import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.formatter.PercentFormatter;
+import com.google.android.material.button.MaterialButton;
+import com.mikepenz.aboutlibraries.LibsBuilder;
 
 import net.jacobpeterson.alpaca.AlpacaAPI;
 import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
@@ -123,6 +128,27 @@ public class ProfileFragment extends Fragment {
                 tradingSince.setText(account.getCreatedAt().toLocalDate().toString());
                 buyingPower.setText(formatter.format(buyingPowerVal));
             });
+        });
+
+        // Settings
+        ImageButton settings = mView.findViewById(R.id.settingsGear);
+        settings.setOnClickListener(v -> {
+            LibsBuilder libsBuilder = new LibsBuilder();
+            libsBuilder.withLicenseShown(true);
+            libsBuilder.supportFragment();
+            libsBuilder.withAboutAppName("Alpaca Dashboard");
+            libsBuilder.withEdgeToEdge(true);
+            libsBuilder.start(requireActivity());
+        });
+
+        // Logout
+        MaterialButton logout = mView.findViewById(R.id.logout);
+        logout.setOnClickListener(v -> {
+            new SharedPreferencesManager(getActivity()).storeString("auth", "NULL");
+            new SharedPreferencesManager(getActivity()).storeString("id", "NULL");
+            Intent intent = new Intent(getActivity(), LoginActivity.class);
+            startActivity(intent);
+            requireActivity().finish();
         });
 
         return mView;

@@ -337,9 +337,9 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
 
                 float finalAskingPrice = askingPrice;
                 runOnUiThread(() -> selectedAdapterStock.addVal(finalAskingPrice));
-                runOnUiThread(this::setStockValues);
+//                runOnUiThread(this::setStockValues);
             });
-            t5.start();
+//            t5.start();
         }
 
         Thread thread = new Thread(() -> {
@@ -366,7 +366,6 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 recyclerOrdersStock.addItemDecoration(LinearMarginDecoration.create(0, LinearLayoutManager.VERTICAL, false, null));
                 recyclerOrdersStock.setAdapter(recycleAdapterOrdersStock);
             });
-
 
         });
         thread.start();
@@ -504,6 +503,8 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             if (datetime.getYear() < ZonedDateTime.now().getYear()) {
                 runOnUiThread(selectedAdapterInitial::smoothGraph);
             }
+
+            runOnUiThread(this::setStockValues); // Set here to allow ample time for instantiation
         });
         thread.start();
     }

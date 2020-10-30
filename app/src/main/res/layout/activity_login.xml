@@ -10,6 +10,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
+        app:cornerRadius="15dp"
+        android:stateListAnimator="@null"
         android:text="Authenticate"
         android:textColor="?attr/colorLight"
         android:backgroundTint="@color/yellow"
