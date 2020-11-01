@@ -50,4 +50,5 @@
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
     <string name="description">Dashboard for all things Alpaca!</string>
     <string name="log_out">Log Out</string>
+    <string name="statistics">Statistics</string>
 </resources>

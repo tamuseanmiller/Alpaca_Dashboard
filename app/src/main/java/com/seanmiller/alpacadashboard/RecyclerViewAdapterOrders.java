@@ -62,8 +62,8 @@ public class RecyclerViewAdapterOrders extends RecyclerView.Adapter<RecyclerView
             holder.timeClosed.setText(hour + ":" + minute);
             holder.price.setText("$" + mData.get(position).getFilledAvgPrice());
             holder.pricePlaced.setText(mData.get(position).getSide() + " " + mData.get(position).getQty());
-        } else {
 
+        } else {
             int hourTemp = mData.get(position).getCanceledAt().getHour();
             String hour = "";
             String minute = String.valueOf(mData.get(position).getCanceledAt().getMinute());

@@ -24,7 +24,7 @@
         <item name="boxStrokeColor">@color/colorAccentTransparent</item>
         <item name="boxStrokeWidth">1dp</item>
 
-<!--         Status bar color.-->
+        <!--         Status bar color.-->
         <item name="android:statusBarColor" tools:targetApi="l">@color/colorPrimary</item>
         <!-- Customize your theme here. -->
     </style>
@@ -46,14 +46,14 @@
         <item name="colorControlActivated">@color/colorPrimaryLight_light</item>
         <item name="search_radius">15</item>
         <item name="search_strokeColor">@color/colorAccentTransparent_light</item>
-<!--        <item name="aboutLibrariesStyle">@style/CustomAboutLibrariesStyle</item>-->
+        <!--        <item name="aboutLibrariesStyle">@style/CustomAboutLibrariesStyle</item>-->
         <item name="aboutLibrariesCardBackground">@color/colorPrimary_light</item>
 
 
         <item name="boxStrokeColor">@color/colorAccentTransparent_light</item>
         <item name="boxStrokeWidth">1dp</item>
 
-<!--         Status bar color.-->
+        <!--         Status bar color.-->
         <item name="android:statusBarColor" tools:targetApi="l">@color/colorPrimary_light</item>
         <!-- Customize your theme here. -->
     </style>
@@ -61,13 +61,13 @@
     <style name="CustomAboutLibrariesStyle" parent="">
         <!-- AboutLibraries specific values -->
         <item name="aboutLibrariesCardBackground">?attr/colorPrimary</item>
-<!--        <item name="aboutLibrariesDescriptionTitle">?attr/colorAccentLight</item>-->
+        <!--        <item name="aboutLibrariesDescriptionTitle">?attr/colorAccentLight</item>-->
         <item name="aboutLibrariesDescriptionText">?android:textColorSecondary</item>
         <item name="aboutLibrariesDescriptionDivider">?attr/colorAccentTransparent</item>
         <item name="aboutLibrariesOpenSourceTitle">?android:textColorPrimary</item>
         <item name="aboutLibrariesOpenSourceText">?android:textColorSecondary</item>
         <item name="aboutLibrariesSpecialButtonText">?android:textColorPrimary</item>
-<!--        <item name="aboutLibrariesOpenSourceDivider">@color/opensource_divider</item>-->
+        <!--        <item name="aboutLibrariesOpenSourceDivider">@color/opensource_divider</item>-->
     </style>
 
     <style name="LoginTextInputLayoutStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
@@ -77,14 +77,14 @@
 
     <style name="DialogThemePositive" parent="Theme.MaterialComponents.DayNight.Dialog.Alert">
         <item name="colorPrimary">?attr/color_positive</item>
-<!--        <item name="colorSurface">?attr/colorLight</item>-->
-<!--        <item name="colorOnSurface">?attr/colorLight</item>-->
+        <!--        <item name="colorSurface">?attr/colorLight</item>-->
+        <!--        <item name="colorOnSurface">?attr/colorLight</item>-->
     </style>
 
     <style name="DialogThemeNegative" parent="Theme.MaterialComponents.DayNight.Dialog.Alert">
         <item name="colorPrimary">?attr/color_negative</item>
-<!--        <item name="colorSurface">?attr/color_positive</item>-->
-<!--        <item name="colorOnSurface">?attr/colorLight</item>-->
+        <!--        <item name="colorSurface">?attr/color_positive</item>-->
+        <!--        <item name="colorOnSurface">?attr/colorLight</item>-->
     </style>
 
     <style name="Theme.Alpaca_Dashboard.NoActionBar" parent="Theme.MaterialComponents.Light.NoActionBar">
@@ -96,8 +96,8 @@
 
     <style name="Theme.Alpaca_Dashboard.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
-    <style name="roundedImageViewRounded">
-        <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">50%</item>
+    <style name="SplashScreenTheme" parent="Theme.Alpaca_Dashboard.Light">
+
+        <item name="android:windowBackground">@drawable/splash_screen_background</item>
     </style>
 </resources>

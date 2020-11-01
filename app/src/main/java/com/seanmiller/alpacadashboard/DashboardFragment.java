@@ -470,6 +470,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
             ArrayList<Order> temp = new ArrayList<>();
             try {
                 temp = alpacaAPI.getOrders(OrderStatus.CLOSED, 10, null, ZonedDateTime.now().plusDays(1), Direction.DESCENDING, false);
+
             } catch (AlpacaAPIRequestException e) {
                 e.printStackTrace();
             }

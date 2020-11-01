@@ -3,6 +3,7 @@
     app:swipeRefreshLayoutProgressSpinnerBackgroundColor="?attr/color_positive"
     android:layout_height="match_parent"
     android:layout_width="match_parent"
+    android:background="?attr/colorPrimary"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
@@ -267,6 +268,55 @@
                         android:id="@+id/orderLinear"
                         android:orientation="vertical"
                         app:layout_constraintTop_toBottomOf="@id/sparkCardStock">
+
+                        <androidx.appcompat.widget.AppCompatTextView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:paddingBottom="10dp"
+                            android:paddingTop="20dp"
+                            android:fontFamily="sans-serif-medium"
+                            android:textColor="?attr/colorLight"
+                            android:textSize="25sp"
+                            android:text="@string/statistics"/>
+
+<!--                        <com.google.android.material.card.MaterialCardView-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="match_parent"-->
+<!--                            android:backgroundTint="?attr/colorPrimary"-->
+<!--                            android:clipChildren="true"-->
+<!--                            android:elevation="0dp"-->
+<!--                            app:cardCornerRadius="15dp"-->
+<!--                            app:cardElevation="0dp"-->
+<!--                            app:strokeWidth="1dp"-->
+<!--                            app:contentPaddingLeft="20dp"-->
+<!--                            app:contentPaddingBottom="10dp"-->
+<!--                            app:contentPaddingTop="10dp"-->
+<!--                            app:strokeColor="?attr/colorAccentTransparent"-->
+<!--                            app:cardPreventCornerOverlap="false">-->
+
+<!--                            <LinearLayout-->
+<!--                                android:layout_width="match_parent"-->
+<!--                                android:layout_height="match_parent"-->
+<!--                                android:orientation="vertical">-->
+
+<!--                            <androidx.appcompat.widget.AppCompatTextView-->
+<!--                                android:layout_width="wrap_content"-->
+<!--                                android:layout_height="wrap_content"-->
+<!--                                android:textSize="14sp"-->
+<!--                                android:text="Net Income"-->
+<!--                                android:textColor="?attr/colorPrimaryLight"/>-->
+
+<!--                            <androidx.appcompat.widget.AppCompatTextView-->
+<!--                                android:layout_width="wrap_content"-->
+<!--                                android:layout_height="wrap_content"-->
+<!--                                android:textSize="16sp"-->
+<!--                                android:text="$1,000,000"-->
+<!--                                android:textColor="?attr/colorLight"-->
+<!--                                android:layout_marginBottom="20dp"/>-->
+
+<!--                            </LinearLayout>-->
+
+<!--                        </com.google.android.material.card.MaterialCardView>-->
 
                         <androidx.appcompat.widget.AppCompatTextView
                             android:layout_width="match_parent"

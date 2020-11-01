@@ -3,6 +3,7 @@ package com.seanmiller.alpacadashboard;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.icu.util.TimeUnit;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -21,9 +22,13 @@ public class SplashActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-        Utils.startTheme(this, new SharedPreferencesManager(this).retrieveInt("theme", Utils.THEME_DEFAULT));
+//        Utils.startTheme(this, new SharedPreferencesManager(this).retrieveInt("theme", Utils.THEME_DEFAULT));
 
         super.onCreate(savedInstanceState);
+        startActivity(new Intent(SplashActivity.this, MainActivity.class));
+        finish();
+
+        /*super.onCreate(savedInstanceState);
         setContentView(R.layout.splash_screen);
 
         Thread thread = new Thread(() -> {
@@ -49,6 +54,6 @@ public class SplashActivity extends Activity {
         new Handler().postDelayed(() -> {
             startActivity(new Intent(SplashActivity.this, MainActivity.class));
             finish();
-        }, 3000);
+        }, 0);*/
     }
 }

@@ -134,18 +134,21 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
             // Fetch news for positions
             PolygonAPI polygonAPI = new PolygonAPI();
             AlpacaAPI alpacaAPI = new AlpacaAPI();
-            ArrayList<Position> stocks = null;
-            try {
-                stocks = alpacaAPI.getOpenPositions();
-            } catch (AlpacaAPIRequestException e) {
-                e.printStackTrace();
-            }
+//            ArrayList<Position> stocks = null;
+//            try {
+//                stocks = alpacaAPI.getOpenPositions();
+//            } catch (AlpacaAPIRequestException e) {
+//                e.printStackTrace();
+//            }
 
+            ArrayList<String> stocks = new ArrayList<>();
+            stocks.add("AAPL");
+            stocks.add("AMD");
             ArrayList<TickerNews> news = null;
             if (stocks != null) {
-                for (Position stock : stocks) {
+                for (/*Position*/String stock : stocks) {
                     try {
-                        news = polygonAPI.getTickerNews(stock.getSymbol(), 10, 1);
+                        news = polygonAPI.getTickerNews(stock/*.getSymbol()*/, 10, 1);
                     } catch (PolygonAPIRequestException e) {
                         e.printStackTrace();
                     }
