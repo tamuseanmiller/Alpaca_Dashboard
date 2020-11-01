@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
@@ -15,8 +16,6 @@ import androidx.annotation.RequiresApi;
  */
 
 public class SplashActivity extends Activity {
-
-    Handler handler;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
@@ -29,20 +28,27 @@ public class SplashActivity extends Activity {
 
         Thread thread = new Thread(() -> {
 
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            Intent intent = new Intent(this, LoginActivity.class);
-            startActivity(intent);
-            finish();
-        });thread.start();
-//        handler = new Handler();
-//        handler.postDelayed(() -> {
+//            MainActivity.dashboardFragment = new DashboardFragment();
+//            MainActivity.searchFragment = new SearchFragment();
+//            MainActivity.profileFragment = new ProfileFragment();
+//            MainActivity.emergencyFragment = new EmergencyFragment();
+
+//            try {
+//                Thread.sleep(3000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
 //            Intent intent = new Intent(this, LoginActivity.class);
+//            Intent intent = new Intent(this, MainActivity.class);
+            new SharedPreferencesManager(this).storeString("auth",  "root");
+            new SharedPreferencesManager(this).storeString("id", "root");
 //            startActivity(intent);
 //            finish();
-//        }, 3000);
+        });thread.start();
+
+        new Handler().postDelayed(() -> {
+            startActivity(new Intent(SplashActivity.this, MainActivity.class));
+            finish();
+        }, 3000);
     }
 }

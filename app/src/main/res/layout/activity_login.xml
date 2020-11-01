@@ -13,7 +13,7 @@
         app:cornerRadius="15dp"
         android:stateListAnimator="@null"
         android:text="Authenticate"
-        android:textColor="?attr/colorLight"
+        android:textColor="@color/colorPrimary"
         android:backgroundTint="@color/yellow"
         android:id="@+id/button_login" />
 

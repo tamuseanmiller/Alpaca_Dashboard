@@ -8,17 +8,12 @@
     tools:context=".ProfileFragment"
     android:orientation="vertical">
 
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:paddingStart="20dp"
         android:paddingTop="@dimen/activity_vertical_margin"
         android:paddingEnd="@dimen/activity_horizontal_margin">
-
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/topRow">
 
         <androidx.appcompat.widget.AppCompatImageButton
             android:layout_width="wrap_content"
@@ -28,6 +23,8 @@
             android:layout_margin="10dp"
             android:layout_marginEnd="10dp"
             android:id="@+id/settingsGear"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:backgroundTint="?attr/colorPrimary"
             android:stateListAnimator="@null"
@@ -43,17 +40,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingBottom="10dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             android:fontFamily="sans-serif-medium"
             android:textColor="?attr/colorLight"
             android:text="@string/profile"
             android:textSize="35sp" />
 
-    </RelativeLayout>
-
         <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@id/topRow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/legend"
+            app:layout_constraintTop_toBottomOf="@id/profileLabel"
             android:layout_marginStart="10dp">
 
         <TextView
@@ -131,11 +129,19 @@
 
         </LinearLayout>
 
+        </RelativeLayout>
+
         <com.github.mikephil.charting.charts.PieChart
-            android:layout_width="300dp"
-            android:layout_height="300dp"
-            android:layout_marginEnd="10dp"
-            android:layout_marginTop="10dp"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="30dp"
+            android:layout_marginStart="30dp"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintLeft_toRightOf="@id/legend"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintTop_toTopOf="parent"
             android:id="@+id/pieChart"
             android:layout_alignParentEnd="true"/>
 
@@ -145,6 +151,8 @@
             android:layout_below="@id/pieChart"
             android:layout_marginTop="20dp"
             android:id="@+id/buyingPower"
+            app:layout_constraintTop_toBottomOf="@id/pieChart"
+            app:layout_constraintLeft_toLeftOf="parent"
             android:text="@string/loading"
             android:textSize="20sp"
             android:textColor="?attr/colorLight"/>
@@ -156,6 +164,8 @@
             android:layout_marginEnd="5dp"
             android:layout_marginTop="5dp"
             android:layout_below="@id/buyingPower"
+            app:layout_constraintTop_toBottomOf="@id/buyingPower"
+            app:layout_constraintLeft_toLeftOf="parent"
             android:text="@string/buying_power"
             android:textSize="12sp"
             android:textColor="?attr/colorPrimaryLight"/>
@@ -165,6 +175,8 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/buyingPowerLabel"
             android:layout_marginTop="20dp"
+            app:layout_constraintTop_toBottomOf="@id/buyingPowerLabel"
+            app:layout_constraintLeft_toLeftOf="parent"
             android:id="@+id/tradingSince"
             android:text="@string/loading"
             android:textSize="20sp"
@@ -174,6 +186,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/tradingSinceLabel"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tradingSince"
             android:layout_marginEnd="5dp"
             android:layout_marginTop="5dp"
             android:layout_below="@id/tradingSince"
@@ -181,22 +195,23 @@
             android:textSize="12sp"
             android:textColor="?attr/colorPrimaryLight"/>
 
-            <com.google.android.material.button.MaterialButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/logout"
-                android:clickable="true"
-                android:focusable="true"
-                android:textColor="?attr/colorLight"
-                android:layout_below="@id/tradingSinceLabel"
-                android:layout_marginTop="40dp"
-                app:cornerRadius="15dp"
-                android:text="@string/log_out"
-                android:stateListAnimator="@null"
-                android:backgroundTint="@color/yellow"/>
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/logout"
+            android:clickable="true"
+            android:focusable="true"
+            android:textColor="@color/colorPrimary"
+            android:layout_below="@id/tradingSinceLabel"
+            app:layout_constraintTop_toBottomOf="@id/tradingSinceLabel"
+            app:layout_constraintLeft_toLeftOf="parent"
+            android:layout_marginTop="40dp"
+            app:cornerRadius="15dp"
+            android:text="@string/log_out"
+            android:stateListAnimator="@null"
+            android:backgroundTint="@color/yellow"/>
 
-        </RelativeLayout>
 
-    </RelativeLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </LinearLayout>

@@ -83,6 +83,7 @@ dependencies {
     implementation "com.google.guava:guava:30.0-jre"
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation "com.mikepenz:aboutlibraries:8.4.3"
+    implementation 'com.ramotion.foldingcell:folding-cell:1.2.3'
 
 //required support lib modules
 //    implementation "androidx.cardview:cardview:2.3.0"

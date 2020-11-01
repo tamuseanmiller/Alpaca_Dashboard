@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+<!--    <com.ramotion.foldingcell.FoldingCell-->
+<!--        android:id="@+id/folding_cell"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:backgroundTint="?attr/colorPrimary"-->
+<!--        app:additionalFlipsCount="0">-->
+
+<!--        <com.google.android.material.card.MaterialCardView-->
+<!--            android:id="@+id/cell_content_view"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:background="@android:color/transparent"-->
+<!--            android:backgroundTint="?attr/colorPrimary"-->
+<!--            android:clipChildren="true"-->
+<!--            android:stateListAnimator="@null"-->
+<!--            android:visibility="gone"-->
+<!--            app:cardCornerRadius="15dp"-->
+<!--            app:strokeColor="?attr/colorAccentTransparent"-->
+<!--            app:strokeWidth="1dp">-->
+
+<!--            <LinearLayout-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:orientation="vertical">-->
+
+<!--                <TextView-->
+<!--                    android:id="@+id/headlineContent"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_centerVertical="true"-->
+<!--                    android:layout_toEndOf="@id/newsImage"-->
+<!--                    android:paddingStart="10dp"-->
+<!--                    android:text="@string/loading"-->
+<!--                    android:textSize="14sp" />-->
+
+<!--                <TextView-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:text="@string/loading"-->
+<!--                    android:textSize="30sp" />-->
+
+<!--                <TextView-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:text="@string/loading"-->
+<!--                    android:textSize="30sp" />-->
+
+<!--                <TextView-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:text="@string/loading"-->
+<!--                    android:textSize="30sp" />-->
+
+<!--                <TextView-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:text="@string/loading"-->
+<!--                    android:textSize="30sp" />-->
+
+<!--                <TextView-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:text="@string/loading"-->
+<!--                    android:textSize="30sp" />-->
+
+<!--                <TextView-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:text="@string/loading"-->
+<!--                    android:textSize="50sp" />-->
+
+<!--                <com.google.android.material.imageview.ShapeableImageView-->
+<!--                    android:id="@+id/newsImageContent"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:scaleType="centerCrop" />-->
+
+<!--            </LinearLayout>-->
+
+<!--        </com.google.android.material.card.MaterialCardView>-->
+
+<!--        <com.google.android.material.card.MaterialCardView-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:stateListAnimator="@null"-->
+<!--            app:strokeColor="?attr/colorAccentTransparent"-->
+<!--            app:strokeWidth="1dp"-->
+<!--            app:cardElevation="0dp"-->
+<!--            android:layout_marginBottom="10dp"-->
+<!--            app:contentPadding="20dp"-->
+<!--            app:cardCornerRadius="15dp"-->
+<!--            android:backgroundTint="?attr/colorPrimary">-->
+
+<!--            <androidx.constraintlayout.widget.ConstraintLayout-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content">-->
+
+<!--                <TextView-->
+<!--                    android:id="@+id/headline"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:textColor="?attr/colorLight"-->
+<!--                    android:textSize="16sp"-->
+<!--                    app:layout_constrainedWidth="true"-->
+<!--                    app:layout_constraintWidth_percent=".8"-->
+<!--                    app:layout_constraintStart_toStartOf="parent"-->
+<!--                    app:layout_constraintTop_toTopOf="parent"/>-->
+
+<!--                <com.google.android.material.imageview.ShapeableImageView-->
+<!--                    android:id="@+id/newsImage"-->
+<!--                    android:layout_width="0dp"-->
+<!--                    android:layout_height="60dp"-->
+<!--                    android:scaleType="centerCrop"-->
+<!--                    app:layout_constraintBottom_toBottomOf="parent"-->
+<!--                    app:layout_constraintDimensionRatio="1:1"-->
+<!--                    app:layout_constraintEnd_toEndOf="parent"-->
+<!--                    app:layout_constraintTop_toTopOf="parent" />-->
+
+<!--            </androidx.constraintlayout.widget.ConstraintLayout>-->
+
+<!--        </com.google.android.material.card.MaterialCardView>-->
+
+<!--&lt;!&ndash;        <com.google.android.material.card.MaterialCardView&ndash;&gt;-->
+<!--&lt;!&ndash;            android:id="@+id/cell_title_view"&ndash;&gt;-->
+<!--&lt;!&ndash;            android:layout_width="match_parent"&ndash;&gt;-->
+<!--&lt;!&ndash;            android:layout_height="wrap_content"&ndash;&gt;-->
+<!--&lt;!&ndash;            android:background="@android:color/transparent"&ndash;&gt;-->
+<!--&lt;!&ndash;            android:backgroundTint="?attr/colorPrimary"&ndash;&gt;-->
+<!--&lt;!&ndash;            android:clipChildren="true"&ndash;&gt;-->
+<!--&lt;!&ndash;            android:clipToPadding="true"&ndash;&gt;-->
+<!--&lt;!&ndash;            android:stateListAnimator="@null"&ndash;&gt;-->
+<!--&lt;!&ndash;            app:cardCornerRadius="15dp"&ndash;&gt;-->
+<!--&lt;!&ndash;            app:contentPadding="10dp"&ndash;&gt;-->
+<!--&lt;!&ndash;            app:strokeColor="?attr/colorAccentTransparent"&ndash;&gt;-->
+<!--&lt;!&ndash;            app:strokeWidth="1dp">&ndash;&gt;-->
+
+<!--&lt;!&ndash;            <androidx.constraintlayout.widget.ConstraintLayout&ndash;&gt;-->
+<!--&lt;!&ndash;                android:layout_width="wrap_content"&ndash;&gt;-->
+<!--&lt;!&ndash;                android:layout_height="wrap_content">&ndash;&gt;-->
+
+<!--&lt;!&ndash;                <TextView&ndash;&gt;-->
+<!--&lt;!&ndash;                    android:id="@+id/headline"&ndash;&gt;-->
+<!--&lt;!&ndash;                    android:layout_width="0dp"&ndash;&gt;-->
+<!--&lt;!&ndash;                    android:layout_height="wrap_content"&ndash;&gt;-->
+<!--&lt;!&ndash;                    android:layout_gravity="center_vertical"&ndash;&gt;-->
+<!--&lt;!&ndash;                    android:paddingStart="10dp"&ndash;&gt;-->
+<!--&lt;!&ndash;                    android:text="@string/loading"&ndash;&gt;-->
+<!--&lt;!&ndash;                    android:textColor="?attr/colorLight"&ndash;&gt;-->
+<!--&lt;!&ndash;                    android:textSize="16sp"&ndash;&gt;-->
+<!--&lt;!&ndash;                    app:layout_constraintBottom_toBottomOf="parent"&ndash;&gt;-->
+<!--&lt;!&ndash;                    app:layout_constraintStart_toStartOf="parent"&ndash;&gt;-->
+<!--&lt;!&ndash;                    app:layout_constraintTop_toTopOf="@+id/newsImage" />&ndash;&gt;-->
+
+<!--&lt;!&ndash;                <com.google.android.material.imageview.ShapeableImageView&ndash;&gt;-->
+<!--&lt;!&ndash;                    android:id="@+id/newsImage"&ndash;&gt;-->
+<!--&lt;!&ndash;                    android:layout_width="0dp"&ndash;&gt;-->
+<!--&lt;!&ndash;                    android:layout_height="50dp"&ndash;&gt;-->
+<!--&lt;!&ndash;                    android:scaleType="centerCrop"&ndash;&gt;-->
+<!--&lt;!&ndash;                    app:layout_constraintBottom_toBottomOf="parent"&ndash;&gt;-->
+<!--&lt;!&ndash;                    app:layout_constraintDimensionRatio="1:1"&ndash;&gt;-->
+<!--&lt;!&ndash;                    app:layout_constraintEnd_toEndOf="parent"&ndash;&gt;-->
+<!--&lt;!&ndash;                    app:layout_constraintTop_toTopOf="parent" />&ndash;&gt;-->
+
+<!--&lt;!&ndash;            </androidx.constraintlayout.widget.ConstraintLayout>&ndash;&gt;-->
+
+<!--&lt;!&ndash;        </com.google.android.material.card.MaterialCardView>&ndash;&gt;-->
+
+<!--    </com.ramotion.foldingcell.FoldingCell>-->
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:stateListAnimator="@null"
+        app:strokeColor="?attr/colorAccentTransparent"
+        app:strokeWidth="1dp"
+        app:cardElevation="0dp"
+        android:layout_marginBottom="10dp"
+        app:contentPadding="20dp"
+        app:cardCornerRadius="15dp"
+        android:backgroundTint="?attr/colorPrimary">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/source"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:text="@string/loading"
+                android:textSize="12sp"
+                android:paddingBottom="10dp"
+                android:textColor="?attr/colorPrimarySlightLight"/>
+
+            <TextView
+                android:id="@+id/headline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="?attr/colorLight"
+                android:textSize="16sp"
+                android:text="@string/loading"
+                app:layout_constrainedWidth="true"
+                app:layout_constraintWidth_percent=".8"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/source"/>
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/newsImage"
+                android:layout_width="0dp"
+                android:layout_height="60dp"
+                android:scaleType="centerCrop"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+</LinearLayout>

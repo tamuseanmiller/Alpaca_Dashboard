@@ -3,6 +3,7 @@ package com.seanmiller.alpacadashboard;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -10,21 +11,32 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.app.Activity;
 import android.app.ActivityOptions;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.graphics.Insets;
+import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.TypedValue;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
+import android.view.WindowManager;
+import android.view.WindowMetrics;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
 import com.google.common.collect.Iterables;
 import com.robinhood.spark.SparkView;
 import com.robinhood.ticker.TickerUtils;
@@ -36,6 +48,7 @@ import net.jacobpeterson.alpaca.enums.OrderStatus;
 import net.jacobpeterson.alpaca.enums.PortfolioPeriodUnit;
 import net.jacobpeterson.alpaca.enums.PortfolioTimeFrame;
 import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
+import net.jacobpeterson.domain.alpaca.calendar.Calendar;
 import net.jacobpeterson.domain.alpaca.order.Order;
 import net.jacobpeterson.domain.alpaca.portfoliohistory.PortfolioHistory;
 import net.jacobpeterson.domain.alpaca.position.Position;
@@ -44,6 +57,7 @@ import net.jacobpeterson.polygon.rest.exception.PolygonAPIRequestException;
 
 import java.text.DecimalFormat;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -84,8 +98,23 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
     private StockAdapter oneMonthAdapter;
     private StockAdapter threeMonthAdapter;
     private StockAdapter oneYearAdapter;
-    private ArrayList<String> stocks;
+    public static ArrayList<String> stocks;
     private Thread t1;
+
+
+    public int fetchHeight() {
+        WindowMetrics windowMetrics = getActivity().getWindowManager().getCurrentWindowMetrics();
+        Insets insets = windowMetrics.getWindowInsets()
+                .getInsetsIgnoringVisibility(WindowInsets.Type.systemBars());
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            return windowMetrics.getBounds().height() - insets.top - insets.bottom;
+
+        } else {
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            requireActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            return displayMetrics.heightPixels;
+        }
+    }
 
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -95,6 +124,12 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
         Utils.startTheme(getActivity(), new SharedPreferencesManager(getActivity()).retrieveInt("theme", Utils.THEME_DEFAULT));
         View mView = inflater.inflate(R.layout.dashboard_fragment, null);
         props.setProperties();
+
+        // Vary size of spark view by height of screen size
+        int height = fetchHeight();
+        sparkView = mView.findViewById(R.id.sparkview);
+        MaterialCardView sparkCard = mView.findViewById(R.id.sparkCard);
+        sparkCard.setMinimumHeight((int) (height/1.75));
 
         // Set theme and icon
         themeChange = mView.findViewById(R.id.themeChange);
@@ -133,7 +168,6 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
         selectedButton = oneDay;
 
         // The sparkline graph data
-        sparkView = mView.findViewById(R.id.sparkview);
         try {
             oneDayAdapter = new StockAdapter(ticker, 1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.ONE_MIN);
             oneWeekAdapter = new StockAdapter(ticker, 1, PortfolioPeriodUnit.WEEK, PortfolioTimeFrame.ONE_HOUR);
@@ -384,14 +418,14 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
                 view.percentChange.setTextColor(posColor);
                 view.percentChange.setBackgroundTintList(ColorStateList.valueOf(posColorLight));
 
-                Drawable downArrow = getActivity().getDrawable(R.drawable.arrow_top_right);
+                Drawable downArrow = ContextCompat.getDrawable(requireActivity(), R.drawable.arrow_top_right);
                 downArrow.setTint(posColor);
                 view.percentChange.setCompoundDrawablesWithIntrinsicBounds(downArrow, null, null, null);
             } else {
                 view.percentChange.setTextColor(negColor);
                 view.percentChange.setBackgroundTintList(ColorStateList.valueOf(negColorLight));
 
-                Drawable downArrow = getActivity().getDrawable(R.drawable.arrow_bottom_right);
+                Drawable downArrow = ContextCompat.getDrawable(requireActivity(), R.drawable.arrow_bottom_right);
                 downArrow.setTint(negColor);
                 view.percentChange.setCompoundDrawablesWithIntrinsicBounds(downArrow, null, null, null);
             }
@@ -450,6 +484,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
         thread2.start();
     }
 
+    // Theme change on click
     @Override
     public void onClick(View v) {
 
@@ -499,6 +534,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
 
             requireActivity().getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
             posOrNegColorLight.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
+            posOrNegColorLight.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
 
         } else {
             percentChange.setText(String.format("-$%.2f (%.2f%%)", Math.abs(profitLoss), percentageChange));
@@ -534,14 +570,47 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
 
         Thread t2 = new Thread(() -> {
 
-            // Gather old portfolio data
-            ArrayList<Double> history = new ArrayList<>();
-            try {
-                PortfolioHistory portVal = alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, LocalDate.now(), true);
-                history = portVal.getEquity();
+            ArrayList<Double> history = null;
 
-            } catch (AlpacaAPIRequestException e) {
-                e.printStackTrace();
+            if (periodUnit == PortfolioPeriodUnit.DAY) {
+
+                // Fetch last open day's information
+                ArrayList<Calendar> calendar = null;
+                try {
+                    calendar = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(1), LocalDate.now());
+                } catch (AlpacaAPIRequestException e) {
+                    e.printStackTrace();
+                }
+                assert calendar != null;
+                LocalDate lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 1).getDate());
+
+                // Gather old portfolio data
+                history = new ArrayList<>();
+                int finalLength = periodLength;
+                try {
+                    PortfolioHistory portVal = null;
+                    portVal = alpacaAPI.getPortfolioHistory(finalLength, periodUnit, timeFrame, lastOpenDate, true);
+                    finalLength++;
+                    history = portVal.getEquity();
+
+                } catch (AlpacaAPIRequestException e) {
+                    e.printStackTrace();
+                }
+
+            } else {
+
+                // Gather old portfolio data
+                history = new ArrayList<>();
+                int finalLength = periodLength;
+                try {
+                    PortfolioHistory portVal = null;
+                    portVal = alpacaAPI.getPortfolioHistory(finalLength, periodUnit, timeFrame, LocalDate.now(), true);
+                    finalLength++;
+                    history = portVal.getEquity();
+
+                } catch (AlpacaAPIRequestException e) {
+                    e.printStackTrace();
+                }
             }
 
             // Add data to chart

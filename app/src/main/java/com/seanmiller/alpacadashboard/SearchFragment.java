@@ -1,58 +1,73 @@
 package com.seanmiller.alpacadashboard;
 
-import org.json.*;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.ActivityOptions;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.material.imageview.ShapeableImageView;
+import com.google.android.material.shape.CornerFamily;
+import com.google.android.material.shape.CornerSize;
+import com.google.android.material.shape.ShapeAppearanceModel;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.lapism.search.internal.SearchLayout;
-import com.lapism.search.util.SearchUtils;
 import com.lapism.search.widget.MaterialSearchView;
 import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import com.ramotion.foldingcell.FoldingCell;
 
 import net.jacobpeterson.alpaca.AlpacaAPI;
+import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
+import net.jacobpeterson.domain.alpaca.position.Position;
+import net.jacobpeterson.domain.polygon.tickernews.TickerNews;
 import net.jacobpeterson.domain.polygon.tickers.ticker.Ticker;
 import net.jacobpeterson.polygon.PolygonAPI;
-import net.jacobpeterson.polygon.enums.Market;
-import net.jacobpeterson.polygon.enums.StockType;
-import net.jacobpeterson.polygon.enums.TickerSort;
 import net.jacobpeterson.polygon.rest.exception.PolygonAPIRequestException;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+import io.cabriole.decorator.GridMarginDecoration;
+import io.cabriole.decorator.LinearMarginDecoration;
 
 import static android.app.Activity.RESULT_OK;
+import static android.content.ContentValues.TAG;
+import static android.os.FileUtils.copy;
 
 public class SearchFragment extends Fragment implements SearchLayout.OnQueryTextListener, SearchableAdapter.ItemClickListener {
 
@@ -106,12 +121,64 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
         // If the navigation button is clicked
         materialSearch.setOnNavigationClickListener(v -> {
             if (materialSearch.hasFocus()) {
-                requireActivity().findViewById(R.id.containerFragSearch).requestFocus();
+//                requireActivity().findViewById(R.id.containerFragSearch).requestFocus();
+                getActivity().getCurrentFocus().clearFocus();
 
             } else {
                 materialSearch.requestFocus();
             }
         });
+
+        Thread thread = new Thread(() -> {
+
+            // Fetch news for positions
+            PolygonAPI polygonAPI = new PolygonAPI();
+            AlpacaAPI alpacaAPI = new AlpacaAPI();
+            ArrayList<Position> stocks = null;
+            try {
+                stocks = alpacaAPI.getOpenPositions();
+            } catch (AlpacaAPIRequestException e) {
+                e.printStackTrace();
+            }
+
+            ArrayList<TickerNews> news = null;
+            if (stocks != null) {
+                for (Position stock : stocks) {
+                    try {
+                        news = polygonAPI.getTickerNews(stock.getSymbol(), 10, 1);
+                    } catch (PolygonAPIRequestException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            if (news != null) {
+                ArrayList<String> arr = new ArrayList<>();
+                for (TickerNews i : news) {
+                    arr.add(i.getTitle());
+                }
+//                arr.add(news.get(0).getTitle());
+                RecyclerView newsRecycler = mView.findViewById(R.id.newsRecycler);
+
+                ArrayList<TickerNews> finalNews = news;
+                requireActivity().runOnUiThread(() -> {
+
+//                    // Get rid of animation bug by rounding corners
+//                    newsImage.setShapeAppearanceModel(new ShapeAppearanceModel().withCornerSize(bounds -> dpToPixel(15)));
+//                    newsImage2.setShapeAppearanceModel(new ShapeAppearanceModel().withCornerSize(bounds -> dpToPixel(15)));
+
+//                    recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
+//                    recyclerView.addItemDecoration(new GridMarginDecoration(0, col, GridLayoutManager.VERTICAL, false, null));
+
+                    newsRecycler.setLayoutManager(new LinearLayoutManager(getActivity()));
+                    newsRecycler.addItemDecoration(new LinearMarginDecoration());
+                    RecyclerViewAdapterNews test = new RecyclerViewAdapterNews(getActivity(), finalNews);
+                    newsRecycler.setAdapter(test);
+                });
+            }
+        });
+        thread.start();
+
         return mView;
     }
 

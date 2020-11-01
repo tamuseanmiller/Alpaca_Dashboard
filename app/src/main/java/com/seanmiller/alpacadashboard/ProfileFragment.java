@@ -133,12 +133,12 @@ public class ProfileFragment extends Fragment {
         // Settings
         ImageButton settings = mView.findViewById(R.id.settingsGear);
         settings.setOnClickListener(v -> {
-            LibsBuilder libsBuilder = new LibsBuilder();
-            libsBuilder.withLicenseShown(true);
-            libsBuilder.supportFragment();
-            libsBuilder.withAboutAppName("Alpaca Dashboard");
-            libsBuilder.withEdgeToEdge(true);
-            libsBuilder.start(requireActivity());
+//            LibsBuilder libsBuilder = new LibsBuilder();
+//            libsBuilder.withLicenseShown(true);
+//            libsBuilder.supportFragment();
+//            libsBuilder.withAboutAppName("Alpaca Dashboard");
+//            libsBuilder.withEdgeToEdge(true);
+//            libsBuilder.start(requireActivity());
         });
 
         // Logout

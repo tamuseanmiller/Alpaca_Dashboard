@@ -46,9 +46,9 @@ public class RecyclerViewAdapterOrders extends RecyclerView.Adapter<RecyclerView
 
         // Fetches 12hour hour:minute format including am/pm
         if (mData.get(position).getFilledAt() != null) {
-            int hourTemp = mData.get(position).getFilledAt().getHour();
+            int hourTemp = mData.get(position).getFilledAt().toLocalTime().getHour();
             String hour = "";
-            String minute = String.valueOf(mData.get(position).getFilledAt().getMinute());
+            String minute = String.valueOf(mData.get(position).getFilledAt().toLocalTime().getMinute());
             if (Integer.parseInt(minute) < 10) {
                 minute = "0" + minute;
             }

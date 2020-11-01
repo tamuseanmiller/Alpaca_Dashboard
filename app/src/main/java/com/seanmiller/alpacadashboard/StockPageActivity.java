@@ -1,11 +1,13 @@
 package com.seanmiller.alpacadashboard;
 
 import android.content.res.ColorStateList;
+import android.graphics.Insets;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.robinhood.spark.SparkView;
 import com.robinhood.ticker.TickerUtils;
@@ -19,8 +21,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.View;
+import android.view.WindowInsets;
+import android.view.WindowMetrics;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -82,6 +87,20 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
     private StockAdapter threeMonthStockAdapter;
     private StockAdapter oneYearStockAdapter;
 
+    public int fetchHeight() {
+        WindowMetrics windowMetrics = getWindowManager().getCurrentWindowMetrics();
+        Insets insets = windowMetrics.getWindowInsets()
+                .getInsetsIgnoringVisibility(WindowInsets.Type.systemBars());
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            return windowMetrics.getBounds().height() - insets.top - insets.bottom;
+
+        } else {
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            return displayMetrics.heightPixels;
+        }
+    }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
 
@@ -89,6 +108,12 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stock_page);
+
+        // Vary size of spark view by height of screen size
+        sparkViewStock = findViewById(R.id.sparkviewStock);
+        int height = fetchHeight();
+        MaterialCardView sparkCardStock = findViewById(R.id.sparkCardStock);
+        sparkCardStock.setMinimumHeight((int) (height / 1.75));
 
         // Initializations
         PolygonAPI polygonAPI = new PolygonAPI();
@@ -173,7 +198,6 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             selectedButton = oneDayStock;
 
             // The sparkline graph data
-            sparkViewStock = findViewById(R.id.sparkviewStock);
             try {
                 oneDayStockAdapter = new StockAdapter(ticker, 1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.ONE_MIN);
                 oneWeekStockAdapter = new StockAdapter(ticker, 1, PortfolioPeriodUnit.WEEK, PortfolioTimeFrame.ONE_HOUR);
@@ -189,11 +213,11 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
 
             // Initalize all graphs
             try {
-                initializeDashboardValues(1, ZonedDateTime.now().minusDays(1), BarsTimeFrame.FIVE_MINUTE, oneDayStockAdapter);
-                initializeDashboardValues(1, ZonedDateTime.now().minusWeeks(1), BarsTimeFrame.FIFTEEN_MINUTE, oneWeekStockAdapter);
-                initializeDashboardValues(1, ZonedDateTime.now().minusMonths(1), BarsTimeFrame.ONE_DAY, oneMonthStockAdapter);
-                initializeDashboardValues(3, ZonedDateTime.now().minusMonths(3), BarsTimeFrame.ONE_DAY, threeMonthStockAdapter);
-                initializeDashboardValues(1, ZonedDateTime.now().minusYears(1), BarsTimeFrame.ONE_DAY, oneYearStockAdapter);
+                initializeDashboardValues(ZonedDateTime.now(), BarsTimeFrame.FIVE_MINUTE, oneDayStockAdapter);
+                initializeDashboardValues(ZonedDateTime.now().minusWeeks(1), BarsTimeFrame.FIFTEEN_MINUTE, oneWeekStockAdapter);
+                initializeDashboardValues(ZonedDateTime.now().minusMonths(1), BarsTimeFrame.ONE_DAY, oneMonthStockAdapter);
+                initializeDashboardValues(ZonedDateTime.now().minusMonths(3), BarsTimeFrame.ONE_DAY, threeMonthStockAdapter);
+                initializeDashboardValues(ZonedDateTime.now().minusYears(1), BarsTimeFrame.ONE_DAY, oneYearStockAdapter);
             } catch (AlpacaAPIRequestException e) {
                 e.printStackTrace();
             }
@@ -244,6 +268,10 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 sparkViewStock.setAdapter(selectedAdapterStock);
                 setStockValues();
             });
+
+        });
+        t2.start();
+
 //            try {
 //                selectedAdapterStock = new StockAdapter(ticker, 0, null, null);
 //            } catch (PolygonAPIRequestException | AlpacaAPIRequestException e) {
@@ -255,54 +283,49 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
 //                e.printStackTrace();
 //            }
 
-            AtomicReference<Double> amount = new AtomicReference<>();
-            DecimalFormat formatter = new DecimalFormat("#,###.00");
+        AtomicReference<Double> amount = new AtomicReference<>();
+        DecimalFormat formatter = new DecimalFormat("#,###.00");
 
-            runOnUiThread(() -> {
+        sparkViewStock.setAdapter(selectedAdapterStock);
 
-                sparkViewStock.setAdapter(selectedAdapterStock);
+        // Scrub for chart
+        TypedValue typedValue = new TypedValue();
+        getTheme().resolveAttribute(R.attr.colorPrimaryLight, typedValue, true);
+        AtomicInteger color = new AtomicInteger(ContextCompat.getColor(this, typedValue.resourceId));
 
-                // Scrub for chart
-                getTheme().resolveAttribute(R.attr.colorPrimaryLight, typedValue, true);
-                AtomicInteger color = new AtomicInteger(ContextCompat.getColor(this, typedValue.resourceId));
+        // Scrub for chart
+        sparkViewStock.setSparkAnimator(null);
+        sparkViewStock.setBaseLineColor(color.get());
+        sparkViewStock.setScrubListener(value -> {
 
-                // Scrub for chart
-                sparkViewStock.setSparkAnimator(null);
-                sparkViewStock.setBaseLineColor(color.get());
-                sparkViewStock.setScrubListener(value -> {
+            // Format to add commas
+            if (value != null) {
+                amount.set(Double.parseDouble(String.valueOf(value)));
 
-                    // Format to add commas
-                    if (value != null) {
-                        amount.set(Double.parseDouble(String.valueOf(value)));
+                tickerViewStock.setText("$" + formatter.format(amount.get()));
 
-                        tickerViewStock.setText("$" + formatter.format(amount.get()));
-
-                    }
-                });
-
-            });
-
+            }
         });
-        t2.start();
 
-        // Check if the market is open, stream to ticker
-        String marketStatus = null;
-        try {
-            marketStatus = polygonAPI.getMarketStatus().getMarket();
-        } catch (PolygonAPIRequestException e) {
-            e.printStackTrace();
-        }
+        Thread t4 = new Thread(() -> {
 
-        // Stream to chart
-        if (marketStatus.equals("open")) {
+            while (true) {
 
-            // Stream live data for a stock
-            MainActivity vars = new MainActivity();
-            vars.streamStockData(polygonAPI, ticker, tickerViewStock);
+                // Check if the market is open, stream to ticker
+                String marketStatus = null;
+                try {
+                    marketStatus = polygonAPI.getMarketStatus().getMarket();
+                } catch (PolygonAPIRequestException e) {
+                    e.printStackTrace();
+                }
 
-            Thread t4 = new Thread(() -> {
+                // Stream to chart
+                if (marketStatus.equals("open")) {
 
-                while (true) {
+                    // Stream live data for a stock
+                    MainActivity vars = new MainActivity();
+                    vars.streamStockData(polygonAPI, ticker, tickerViewStock);
+
                     float askingPrice = 0;
                     try {
                         askingPrice = polygonAPI.getLastQuote(ticker.get()).getLast().getAskprice().floatValue();
@@ -316,39 +339,40 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
 
                     runOnUiThread(this::setStockValues);
 
-                    try {
-                        Thread.sleep(60000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                } else {
+
+                    Thread t5 = new Thread(() -> {
+                        float askingPrice = 0;
+                        try {
+                            askingPrice = polygonAPI.getLastQuote(ticker.get()).getLast().getAskprice().floatValue();
+
+                        } catch (PolygonAPIRequestException e) {
+                            e.printStackTrace();
+                        }
+
+                        float finalAskingPrice = askingPrice;
+                        runOnUiThread(() -> selectedAdapterStock.addVal(finalAskingPrice));
+//                runOnUiThread(this::setStockValues);
+                    });
+//            t5.start();
                 }
-            });
-            t4.start();
-        } else {
 
-            Thread t5 = new Thread(() -> {
-                float askingPrice = 0;
                 try {
-                    askingPrice = polygonAPI.getLastQuote(ticker.get()).getLast().getAskprice().floatValue();
-
-                } catch (PolygonAPIRequestException e) {
+                    Thread.sleep(60000);
+                } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-
-                float finalAskingPrice = askingPrice;
-                runOnUiThread(() -> selectedAdapterStock.addVal(finalAskingPrice));
-//                runOnUiThread(this::setStockValues);
-            });
-//            t5.start();
-        }
+            }
+        });
+        t4.start();
 
         Thread thread = new Thread(() -> {
 
-            // Fetch curent orders
+            // Fetch current orders
             ordersStock = new ArrayList<>();
             order = new ArrayList();
             try {
-                ordersStock = alpacaAPI.getOrders(OrderStatus.CLOSED, 100, null, ZonedDateTime.now().plusDays(1), Direction.DESCENDING, false);
+                ordersStock = alpacaAPI.getOrders(OrderStatus.CLOSED, 20, null, ZonedDateTime.now().plusDays(1), Direction.DESCENDING, false);
             } catch (AlpacaAPIRequestException e) {
                 e.printStackTrace();
             }
@@ -388,7 +412,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             // Fetch curent orders
             ordersStock = new ArrayList<>();
             try {
-                ordersStock = alpacaAPI.getOrders(OrderStatus.CLOSED, 100, null, ZonedDateTime.now().plusDays(1), Direction.DESCENDING, false);
+                ordersStock = alpacaAPI.getOrders(OrderStatus.CLOSED, 20, null, ZonedDateTime.now().plusDays(1), Direction.DESCENDING, false);
             } catch (AlpacaAPIRequestException e) {
                 e.printStackTrace();
             }
@@ -417,7 +441,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
         thread2.start();
     }
 
-    public void initializeDashboardValues(int periodLength, ZonedDateTime datetime, BarsTimeFrame timeFrame, StockAdapter selectedAdapterInitial) throws AlpacaAPIRequestException {
+    public void initializeDashboardValues(ZonedDateTime datetime, BarsTimeFrame timeFrame, StockAdapter selectedAdapterInitial) throws AlpacaAPIRequestException {
 
         // Requests bars and adds to graph
         AlpacaAPI alpacaAPI = new AlpacaAPI();
@@ -435,9 +459,11 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 e.printStackTrace();
             }
 
+            assert marketStatus != null;
             if (marketStatus.equals("open")) {
 
-                if (datetime == ZonedDateTime.now()) {
+                if (BarsTimeFrame.FIVE_MINUTE == timeFrame) {
+
                     // Fetch todays bars
                     try {
                         bars = alpacaAPI.getBars(timeFrame, ticker.get(), 1000,
@@ -449,6 +475,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                     }
 
                 } else {
+
                     // Fetch todays bars
                     try {
                         bars = alpacaAPI.getBars(timeFrame, ticker.get(), 1000,
@@ -462,27 +489,26 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
 
             } else {
 
-                if (datetime == ZonedDateTime.now()) {
+                if (BarsTimeFrame.FIVE_MINUTE == timeFrame) {
 
                     // Fetch last open day's information
                     ArrayList<Calendar> calendar = null;
                     try {
-                        calendar = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(1), LocalDate.now());
+                        calendar = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(2), LocalDate.now());
                     } catch (AlpacaAPIRequestException e) {
                         e.printStackTrace();
                     }
                     LocalDate lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 1).getDate());
-                    LocalTime lastOpenTime = LocalTime.parse(calendar.get(calendar.size() - 1).getClose());
                     LocalTime lastOpenTimeStart = LocalTime.parse(calendar.get(calendar.size() - 1).getOpen());
 
                     try {
-                        bars = alpacaAPI.getBars(BarsTimeFrame.FIVE_MINUTE, ticker.get(), 1000, null, null,
-                                ZonedDateTime.of(lastOpenDate, lastOpenTimeStart, ZoneId.of("UTC-4")),
-                                ZonedDateTime.of(lastOpenDate, lastOpenTime, ZoneId.of("UTC-4")));
+                        bars = alpacaAPI.getBars(BarsTimeFrame.FIVE_MINUTE, ticker.get(), 1000,
+                                ZonedDateTime.of(lastOpenDate, lastOpenTimeStart, ZoneId.of("UTC-4")), null, null, null);
 
                     } catch (AlpacaAPIRequestException e) {
                         e.printStackTrace();
                     }
+
                 } else {
 
                     try {

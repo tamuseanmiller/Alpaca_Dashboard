@@ -27,3 +27,5 @@ app/src/main/java/com/bedefined/alpaca_dashboard/Properties.java
 app/google-services.json
 
 app/src/main/java/com/seanmiller/alpacadashboard/Properties.java
+
+alpaca-java/src/main/java/net/jacobpeterson/polygon/PolygonAPI.java
