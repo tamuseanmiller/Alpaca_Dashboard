@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+<!--    <shortcut-->
+<!--        android:shortcutId="compose"-->
+<!--        android:enabled="true"-->
+<!--        android:icon="@drawable/plus"-->
+<!--        android:shortcutShortLabel="@string/shortcut_order"-->
+<!--        android:shortcutLongLabel="@string/shortcut_order"-->
+<!--        android:shortcutDisabledMessage="@string/shortcut_order">-->
+<!--        <intent-->
+<!--            android:action="android.intent.action.VIEW"-->
+<!--            android:targetPackage="com.seanmiller.alpacadashboard"-->
+<!--            android:targetClass="com.seanmiller.alpacadashboard.MainActivity" />-->
+<!--        &lt;!&ndash; If your shortcut is associated with multiple intents, include them-->
+<!--             here. The last intent in the list determines what the user sees when-->
+<!--             they launch this shortcut. &ndash;&gt;-->
+<!--        <categories android:name="android.shortcut.conversation" />-->
+<!--    </shortcut>-->
+    <!-- Specify more shortcuts here. -->
+    <shortcut
+        android:shortcutId="compose"
+        android:enabled="true"
+        android:icon="@drawable/chart_timeline_variant"
+        android:shortcutShortLabel="@string/open_dashboard"
+        android:shortcutLongLabel="@string/open_dashboard"
+        android:shortcutDisabledMessage="@string/open_dashboard">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.seanmiller.alpacadashboard"
+            android:targetClass="com.seanmiller.alpacadashboard.MainActivity" />
+        <!-- If your shortcut is associated with multiple intents, include them
+             here. The last intent in the list determines what the user sees when
+             they launch this shortcut. -->
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+
+</shortcuts>

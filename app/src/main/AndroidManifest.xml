@@ -18,6 +18,8 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
         </activity>
         <activity
             android:name="net.openid.appauth.RedirectUriReceiverActivity"
@@ -40,6 +42,7 @@
 
                 <category android:name="com.google.android.voicesearch.SELF_NOTE" />
             </intent-filter>
+
         </activity>
         <activity android:name=".StockPageActivity" />
     </application>
