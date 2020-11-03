@@ -39,8 +39,12 @@ import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
 import net.jacobpeterson.domain.alpaca.bar.Bar;
 import net.jacobpeterson.domain.alpaca.calendar.Calendar;
 import net.jacobpeterson.domain.alpaca.order.Order;
+import net.jacobpeterson.domain.polygon.websocket.PolygonStreamMessage;
+import net.jacobpeterson.domain.polygon.websocket.quote.QuoteMessage;
 import net.jacobpeterson.polygon.PolygonAPI;
 import net.jacobpeterson.polygon.rest.exception.PolygonAPIRequestException;
+import net.jacobpeterson.polygon.websocket.listener.PolygonStreamListenerAdapter;
+import net.jacobpeterson.polygon.websocket.message.PolygonStreamMessageType;
 
 import java.lang.reflect.Type;
 import java.text.DecimalFormat;
@@ -86,6 +90,34 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
     private StockAdapter oneMonthStockAdapter;
     private StockAdapter threeMonthStockAdapter;
     private StockAdapter oneYearStockAdapter;
+
+    // Streams ticker data from polygon
+    public void streamStockData(PolygonAPI polygonAPI, AtomicReference<String> ticker, TickerView tickerV) {
+
+        Thread thread = new Thread(() -> {
+
+            polygonAPI.addPolygonStreamListener(new PolygonStreamListenerAdapter(String.valueOf(ticker), PolygonStreamMessageType.QUOTE) {
+
+                float askingPrice = 0;
+
+                @RequiresApi(api = Build.VERSION_CODES.M)
+                @Override
+                public void onStreamUpdate(PolygonStreamMessageType streamMessageType, PolygonStreamMessage streamMessage) {
+                    askingPrice = ((QuoteMessage) streamMessage).getAp().floatValue();
+
+                    double amount = Double.parseDouble(String.valueOf(askingPrice));
+                    DecimalFormat formatter = new DecimalFormat("#,###.00");
+
+                    // Render tickerView
+                    runOnUiThread(() -> {
+                        tickerV.setText("$" + formatter.format(amount));
+                    });
+                }
+
+            });
+        });
+        thread.start();
+    }
 
     public int fetchHeight() {
         WindowMetrics windowMetrics = getWindowManager().getCurrentWindowMetrics();
@@ -323,8 +355,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 if (marketStatus.equals("open")) {
 
                     // Stream live data for a stock
-                    MainActivity vars = new MainActivity();
-                    vars.streamStockData(polygonAPI, ticker, tickerViewStock);
+                    streamStockData(polygonAPI, ticker, tickerViewStock);
 
                     float askingPrice = 0;
                     try {
@@ -434,7 +465,11 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 e.printStackTrace();
             }
 
-            runOnUiThread(() -> recycleAdapterOrdersStock.notifyDataSetChanged());
+            runOnUiThread(() -> {
+                recycleAdapterOrdersStock = new RecyclerViewAdapterOrders(this, order);
+                recyclerOrdersStock.setAdapter(recycleAdapterOrdersStock);
+//                recycleAdapterOrdersStock.notifyDataSetChanged();
+            });
 
             swipeRefreshStock.setRefreshing(false);
         });

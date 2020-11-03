@@ -3,7 +3,6 @@ package com.seanmiller.alpacadashboard;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -11,33 +10,26 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import android.app.Activity;
 import android.app.ActivityOptions;
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Insets;
-import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
-import android.view.WindowManager;
 import android.view.WindowMetrics;
 import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
-import com.google.common.collect.Iterables;
 import com.robinhood.spark.SparkView;
 import com.robinhood.ticker.TickerUtils;
 import com.robinhood.ticker.TickerView;
@@ -57,7 +49,6 @@ import net.jacobpeterson.polygon.rest.exception.PolygonAPIRequestException;
 
 import java.text.DecimalFormat;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -70,7 +61,7 @@ import io.cabriole.decorator.LinearMarginDecoration;
 import static com.seanmiller.alpacadashboard.Utils.THEME_DARK;
 import static com.seanmiller.alpacadashboard.Utils.THEME_LIGHT;
 
-public class DashboardFragment extends Fragment implements RecyclerViewAdapter.ItemClickListener, View.OnClickListener {
+public class DashboardFragment extends Fragment implements RecyclerViewAdapterPositions.ItemClickListener, View.OnClickListener {
 
     private SparkView sparkView;
     private StockAdapter selectedAdapter;
@@ -78,13 +69,11 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
     private RecyclerView recyclerOrders;
     public TickerView tickerView;
     public static AtomicReference<String> ticker;
-    private RecyclerViewAdapter recycleAdapter;
+    private RecyclerViewAdapterPositions recycleAdapter;
     private RecyclerViewAdapterOrders recycleAdapterOrders;
     private Button percentChange;
-    private String cash = null;
-    private Properties props = new Properties();
+    private final Properties props = new Properties();
     private SwipeRefreshLayout swipeRefresh;
-    private ImageButton themeChange;
     private ArrayList<Order> orders;
     private MaterialButton oneDay;
     private MaterialButton oneWeek;
@@ -99,7 +88,6 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
     private StockAdapter threeMonthAdapter;
     private StockAdapter oneYearAdapter;
     public static ArrayList<String> stocks;
-    private Thread t1;
 
 
     public int fetchHeight() {
@@ -129,10 +117,10 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
         int height = fetchHeight();
         sparkView = mView.findViewById(R.id.sparkview);
         MaterialCardView sparkCard = mView.findViewById(R.id.sparkCard);
-        sparkCard.setMinimumHeight((int) (height/1.75));
+        sparkCard.setMinimumHeight((int) (height / 1.75));
 
         // Set theme and icon
-        themeChange = mView.findViewById(R.id.themeChange);
+        ImageButton themeChange = mView.findViewById(R.id.themeChange);
         themeChange.setOnClickListener(this);
         TypedValue outValue = new TypedValue();
         requireActivity().getTheme().resolveAttribute(R.attr.themeName, outValue, true);
@@ -347,7 +335,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
             }
 
             // Fetch the Recycler View
-            recycleAdapter = new RecyclerViewAdapter(getActivity(), stocks);
+            recycleAdapter = new RecyclerViewAdapterPositions(getActivity(), stocks);
             recycleAdapter.setClickListener(this);
             requireActivity().runOnUiThread(() -> recyclerView.setAdapter(recycleAdapter));
 
@@ -400,7 +388,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
     }
 
     @Override
-    public void switchColors(RecyclerViewAdapter.ViewHolder view, boolean pos) {
+    public void switchColors(RecyclerViewAdapterPositions.ViewHolder view, boolean pos) {
 
         TypedValue typedValue = new TypedValue();
         if (isAdded()) {
@@ -478,7 +466,11 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
             orders.addAll(temp);
 
             // Set Recycle Adapter for orders
-            requireActivity().runOnUiThread(() -> recycleAdapterOrders.notifyDataSetChanged());
+            requireActivity().runOnUiThread(() -> {
+                recycleAdapterOrders = new RecyclerViewAdapterOrders(getActivity(), orders);
+                recyclerOrders.setAdapter(recycleAdapterOrders);
+                //                recycleAdapterOrders.notifyDataSetChanged();
+            });
 
             swipeRefresh.setRefreshing(false);
         });
@@ -647,7 +639,8 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapter.I
     public void setDashboardValues() {
 
         // Create thread for updating the values on history switch
-        t1 = new Thread(() -> {
+        // Set colors
+        Thread t1 = new Thread(() -> {
 
             requireActivity().runOnUiThread(() -> {
 

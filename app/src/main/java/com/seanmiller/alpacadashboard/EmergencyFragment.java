@@ -103,23 +103,19 @@ public class EmergencyFragment extends Fragment {
                 dialogBuilder.get().setTitle("Order Cancellations");
                 dialogBuilder.get().setMessage("Are you sure that you want to cancel all open orders?");
                 dialogBuilder.get().setNeutralButton("Cancel", (dialogInterface, j) -> dialogInterface.dismiss());
-                ArrayList<Order> finalOpenOrders = openOrders;
                 dialogBuilder.get().setPositiveButton("Accept", (dialog12, which) -> {
                     boolean check = false;
-                    for (Order i : finalOpenOrders) {
-                        try {
-                            alpacaAPI.getOrder(i.getId(), true).setCanceledAt(ZonedDateTime.now());
-                            check = true;
+                    try {
+                        alpacaAPI.cancelAllOrders();
+                        check = true;
 
-                        } catch (AlpacaAPIRequestException e) {
-                            dialogBuilder.set(new MaterialAlertDialogBuilder(requireContext(), R.style.DialogThemeNegative));
-                            dialogBuilder.get().setTitle("Order Cancellations");
-                            dialogBuilder.get().setMessage("Your cancel order didn't go through!");
-                            dialogBuilder.get().setNeutralButton("Okay", (dialogInterface, j) -> dialogInterface.dismiss());
-                            dialogBuilder.get().create().show();
-                            e.printStackTrace();
-                            break;
-                        }
+                    } catch (AlpacaAPIRequestException e) {
+                        dialogBuilder.set(new MaterialAlertDialogBuilder(requireContext(), R.style.DialogThemeNegative));
+                        dialogBuilder.get().setTitle("Order Cancellations");
+                        dialogBuilder.get().setMessage("Your cancel order didn't go through!");
+                        dialogBuilder.get().setNeutralButton("Okay", (dialogInterface, j) -> dialogInterface.dismiss());
+                        dialogBuilder.get().create().show();
+                        e.printStackTrace();
                     }
                     if (check) {
                         dialogBuilder.set(new MaterialAlertDialogBuilder(requireContext(), R.style.DialogThemePositive));

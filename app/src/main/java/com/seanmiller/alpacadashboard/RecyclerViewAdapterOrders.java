@@ -19,9 +19,8 @@ import java.util.List;
 public class RecyclerViewAdapterOrders extends RecyclerView.Adapter<RecyclerViewAdapterOrders.ViewHolder> {
 
     private static List<Order> mData;
-    private LayoutInflater mInflater;
+    private final LayoutInflater mInflater;
     private ItemClickListener mClickListener;
-    Properties props = new Properties();
 
     // data is passed into the constructor
     RecyclerViewAdapterOrders(Context context, List<Order> data) {
@@ -30,6 +29,7 @@ public class RecyclerViewAdapterOrders extends RecyclerView.Adapter<RecyclerView
     }
 
 
+    @NonNull
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.recyclerview_order, parent, false);
@@ -80,7 +80,7 @@ public class RecyclerViewAdapterOrders extends RecyclerView.Adapter<RecyclerView
             hour = String.valueOf(hourTemp);
             holder.timeClosed.setText(hour + ":" + minute);
             holder.price.setText("Cancelled");
-            holder.pricePlaced.setText("Cancelled");
+            holder.pricePlaced.setText(mData.get(position).getSide() + " " + mData.get(position).getQty());
         }
 
     }
@@ -112,9 +112,6 @@ public class RecyclerViewAdapterOrders extends RecyclerView.Adapter<RecyclerView
 
         @Override
         public void onClick(View view) {
-            if (view.getId() == stockName.getId()) {
-
-            }
             if (mClickListener != null) {
                 mClickListener.onItemClick(view, getAdapterPosition());
             }

@@ -21,6 +21,7 @@
             <meta-data android:name="android.app.shortcuts"
                 android:resource="@xml/shortcuts" />
         </activity>
+
         <activity
             android:name="net.openid.appauth.RedirectUriReceiverActivity"
             tools:node="replace">
@@ -36,7 +37,7 @@
                     android:scheme="alpacadashboard" />
             </intent-filter>
         </activity>
-        <activity android:name=".MainActivity">
+        <activity android:name=".MainActivity" android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
 

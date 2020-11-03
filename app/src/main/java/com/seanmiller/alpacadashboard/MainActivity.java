@@ -62,36 +62,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public static DatabaseReference myRef;
     public static AuthorizationResponse resp;
 
-    // Streams ticker data from polygon
-    public void streamStockData(PolygonAPI polygonAPI, AtomicReference<String> ticker, TickerView tickerV) {
-
-        props.setProperties();
-
-        polygonAPI.addPolygonStreamListener(new PolygonStreamListenerAdapter(String.valueOf(ticker), PolygonStreamMessageType.QUOTE) {
-
-            float askingPrice = 0;
-
-            @RequiresApi(api = Build.VERSION_CODES.M)
-            @Override
-            public void onStreamUpdate(PolygonStreamMessageType streamMessageType, PolygonStreamMessage streamMessage) {
-                askingPrice = ((QuoteMessage) streamMessage).getAp().floatValue();
-
-                Thread thread = new Thread(() -> {
-
-                    double amount = Double.parseDouble(String.valueOf(askingPrice));
-                    DecimalFormat formatter = new DecimalFormat("#,###.00");
-
-                    // Render tickerView
-                    runOnUiThread(() -> {
-                        tickerV.setText("$" + formatter.format(amount));
-                    });
-
-                });
-                thread.start();
-            }
-        });
-    }
-
     public void streamAccountData(AlpacaAPI alpacaAPI) {
 
         props.setProperties();

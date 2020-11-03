@@ -74,6 +74,8 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
     private static final int SPEECH_REQUEST_CODE = 0;
     private MaterialSearchView materialSearch;
     private SearchableAdapter searchableAdapter;
+    private RecyclerView newsRecycler;
+    private RecyclerViewAdapterNews test;
 
 
     @Nullable
@@ -161,7 +163,7 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
                     arr.add(i.getTitle());
                 }
 //                arr.add(news.get(0).getTitle());
-                RecyclerView newsRecycler = mView.findViewById(R.id.newsRecycler);
+                newsRecycler = mView.findViewById(R.id.newsRecycler);
 
                 ArrayList<TickerNews> finalNews = news;
                 requireActivity().runOnUiThread(() -> {
@@ -175,7 +177,7 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
 
                     newsRecycler.setLayoutManager(new LinearLayoutManager(getActivity()));
                     newsRecycler.addItemDecoration(new LinearMarginDecoration());
-                    RecyclerViewAdapterNews test = new RecyclerViewAdapterNews(getActivity(), finalNews);
+                    test = new RecyclerViewAdapterNews(getActivity(), finalNews);
                     newsRecycler.setAdapter(test);
                 });
             }
@@ -269,7 +271,7 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
         return true;
     }
 
-    // When a search item is chose, go to stock page
+    // When a search item is chosen, go to stock page
     @Override
     public void onItemClick(View view, int position) {
         DashboardFragment.ticker.set(searchableAdapter.getItem(position).getTicker());

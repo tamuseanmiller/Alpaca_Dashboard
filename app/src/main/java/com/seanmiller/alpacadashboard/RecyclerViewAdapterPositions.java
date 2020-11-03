@@ -22,14 +22,14 @@ import net.jacobpeterson.polygon.rest.exception.PolygonAPIRequestException;
 
 import java.util.List;
 
-public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
+public class RecyclerViewAdapterPositions extends RecyclerView.Adapter<RecyclerViewAdapterPositions.ViewHolder> {
 
     private static List<String> mData;
     private LayoutInflater mInflater;
     private ItemClickListener mClickListener;
 
     // data is passed into the constructor
-    RecyclerViewAdapter(Context context, List<String> data) {
+    RecyclerViewAdapterPositions(Context context, List<String> data) {
         this.mInflater = LayoutInflater.from(context);
         mData = data;
     }
@@ -44,7 +44,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
-    public void onBindViewHolder(@NonNull RecyclerViewAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerViewAdapterPositions.ViewHolder holder, int position) {
 
         MainActivity mainActivity = new MainActivity();
 

@@ -25,6 +25,8 @@ public class SplashActivity extends Activity {
 //        Utils.startTheme(this, new SharedPreferencesManager(this).retrieveInt("theme", Utils.THEME_DEFAULT));
 
         super.onCreate(savedInstanceState);
+        new SharedPreferencesManager(this).storeString("auth",  "root");
+        new SharedPreferencesManager(this).storeString("id", "root");
         startActivity(new Intent(SplashActivity.this, MainActivity.class));
         finish();
 
@@ -45,8 +47,8 @@ public class SplashActivity extends Activity {
 //            }
 //            Intent intent = new Intent(this, LoginActivity.class);
 //            Intent intent = new Intent(this, MainActivity.class);
-            new SharedPreferencesManager(this).storeString("auth",  "root");
-            new SharedPreferencesManager(this).storeString("id", "root");
+//            new SharedPreferencesManager(this).storeString("auth",  "root");
+//            new SharedPreferencesManager(this).storeString("id", "root");
 //            startActivity(intent);
 //            finish();
         });thread.start();

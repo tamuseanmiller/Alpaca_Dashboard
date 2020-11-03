@@ -40,7 +40,6 @@ public class RecyclerViewAdapterNews extends RecyclerView.Adapter<RecyclerViewAd
 
     private static List<TickerNews> mData;
     private LayoutInflater mInflater;
-    private RecyclerViewAdapterNews.ItemClickListener mClickListener;
 
     // data is passed into the constructor
     RecyclerViewAdapterNews(Context context, List<TickerNews> data) {
@@ -50,7 +49,7 @@ public class RecyclerViewAdapterNews extends RecyclerView.Adapter<RecyclerViewAd
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.news_row, parent, false);
         return new ViewHolder(view);
     }
@@ -83,11 +82,11 @@ public class RecyclerViewAdapterNews extends RecyclerView.Adapter<RecyclerViewAd
 
     // stores and recycles views as they are scrolled off screen
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-                TextView title;
-                TextView source;
-                TextView summary;
-                ShapeableImageView newsImage;
-                FoldingCell fc;
+        TextView title;
+        TextView source;
+        TextView summary;
+        ShapeableImageView newsImage;
+        FoldingCell fc;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -101,12 +100,12 @@ public class RecyclerViewAdapterNews extends RecyclerView.Adapter<RecyclerViewAd
         @Override
         public void onClick(View view) {
 //            if (mClickListener != null) {
-                CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+            CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
 //                builder.setToolbarColor(getColor(R.color.yellow));
-                CustomTabsIntent customTabsIntent = builder.build();
-                customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-                customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                customTabsIntent.launchUrl(view.getContext(), Uri.parse(mData.get(getAdapterPosition()).getUrl()));
+            CustomTabsIntent customTabsIntent = builder.build();
+            customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+            customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            customTabsIntent.launchUrl(view.getContext(), Uri.parse(mData.get(getAdapterPosition()).getUrl()));
 //            }
         }
     }
