@@ -217,8 +217,6 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
         tickerViewStock = findViewById(R.id.tickerViewStock);
         tickerViewStock.setCharacterLists(TickerUtils.provideNumberList());
 
-        Thread t2 = new Thread(() -> {
-
             // The sparkline graph itself
             // Set button group for timeframe
             oneDayStock = findViewById(R.id.oneDayStock);
@@ -242,6 +240,8 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 e.printStackTrace();
             }
             sparkViewStock.setAdapter(selectedAdapterStock);
+
+        Thread t2 = new Thread(() -> {
 
             // Initalize all graphs
             try {

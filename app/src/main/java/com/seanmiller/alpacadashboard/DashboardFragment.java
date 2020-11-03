@@ -263,6 +263,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
         if (marketStatus.equals("open")) {
 
             Thread t3 = new Thread(() -> {
+                DecimalFormat formatter = new DecimalFormat("#,###.00");
 
                 // Run forever to get the new equities
                 while (true) {
@@ -276,7 +277,6 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
 
                         // Format amount
                         double amount = Double.parseDouble(currentValue);
-                        DecimalFormat formatter = new DecimalFormat("#,###.00");
 
                         getActivity().runOnUiThread(() -> tickerView.setText("$" + formatter.format(amount)));
                         Thread.sleep(60000 * 5);
@@ -443,6 +443,8 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
             }
             stocks.clear();
             stocks.addAll(temp);
+            temp.clear();
+            temp = null;
 
             // Set Recycle Adapter for positions
             requireActivity().runOnUiThread(() -> recycleAdapter.notifyDataSetChanged());
@@ -583,7 +585,6 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
                 try {
                     PortfolioHistory portVal = null;
                     portVal = alpacaAPI.getPortfolioHistory(finalLength, periodUnit, timeFrame, lastOpenDate, true);
-                    finalLength++;
                     history = portVal.getEquity();
 
                 } catch (AlpacaAPIRequestException e) {
