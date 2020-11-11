@@ -1,5 +1,6 @@
 package com.seanmiller.alpacadashboard;
 
+import android.content.Context;
 import android.os.Build;
 
 import androidx.annotation.RequiresApi;
@@ -11,7 +12,6 @@ import net.jacobpeterson.alpaca.enums.BarsTimeFrame;
 import net.jacobpeterson.alpaca.enums.PortfolioPeriodUnit;
 import net.jacobpeterson.alpaca.enums.PortfolioTimeFrame;
 import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
-import net.jacobpeterson.domain.alpaca.bar.Bar;
 import net.jacobpeterson.domain.alpaca.calendar.Calendar;
 import net.jacobpeterson.polygon.PolygonAPI;
 import net.jacobpeterson.polygon.rest.exception.PolygonAPIRequestException;
@@ -36,21 +36,23 @@ public class StockAdapter extends SparkAdapter {
     public float baseline;
     private float percent;
     private float profit;
+    private SharedPreferencesManager prefs;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public StockAdapter(AtomicReference<String> ticker, int periodLength, PortfolioPeriodUnit periodUnit, PortfolioTimeFrame timeFrame) throws PolygonAPIRequestException, AlpacaAPIRequestException {
+    public StockAdapter(AtomicReference<String> ticker, int periodLength, PortfolioPeriodUnit periodUnit, PortfolioTimeFrame timeFrame, Context context) throws PolygonAPIRequestException, AlpacaAPIRequestException {
         random = new Random();
         yData = new Vector<>();
         this.ticker = ticker;
         baseline = 0;
+        prefs = new SharedPreferencesManager(context);
 
-        PolygonAPI polygonAPI = new PolygonAPI();
-        AlpacaAPI alpacaAPI = new AlpacaAPI();
+        PolygonAPI polygonAPI = new PolygonAPI(prefs.retrieveString("polygon_id", "NULL"));
+        AlpacaAPI alpacaAPI = new AlpacaAPI(prefs.retrieveString("auth_token", "NULL"));
         AtomicReference<Float> lastClose = new AtomicReference<>((float) 0);
         AtomicReference<ArrayList<Double>> history = new AtomicReference<>(new ArrayList<>());
 
         // Fetch last open day's information
-        ArrayList<Calendar> calendar = null;
+        /*ArrayList<Calendar> calendar = null;
         try {
             calendar = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(1), LocalDate.now());
         } catch (AlpacaAPIRequestException e) {
@@ -61,8 +63,8 @@ public class StockAdapter extends SparkAdapter {
         LocalTime lastOpenTime = LocalTime.parse(calendar.get(calendar.size() - 1).getOpen());
 
         // Set baseline values
-        ArrayList<Calendar> finalCalendar = calendar;
-        Thread thread = new Thread(() -> {
+        ArrayList<Calendar> finalCalendar = calendar;*/
+        /*Thread thread = new Thread(() -> {
 
             String marketStatus = null;
             try {
@@ -87,7 +89,7 @@ public class StockAdapter extends SparkAdapter {
                         baseline = lastClose.get();
                         yData.add(0, lastClose.get());
 
-                    } /*else {
+                    } *//*else {
                     try {
                         lastClose.set(Objects.requireNonNull(alpacaAPI.getBars(BarsTimeFrame.ONE_DAY, ticker.get(), 2, ZonedDateTime.of(lastOpenDate, lastOpenTime, ZoneId.of("UTC-6")), null, null, null).get(ticker.get())).get(0).getC().floatValue());
                     } catch (AlpacaAPIRequestException e) {
@@ -95,7 +97,7 @@ public class StockAdapter extends SparkAdapter {
                     }
                     baseline = lastClose.get();
                     yData.add(lastClose.get());
-                }*/
+                }*//*
 
                     // Else you're on equity stock
                 } else if (periodUnit == PortfolioPeriodUnit.DAY) {
@@ -155,7 +157,7 @@ public class StockAdapter extends SparkAdapter {
                 }
             }
 
-        });
+        });*/
 //        thread.start();
     }
 

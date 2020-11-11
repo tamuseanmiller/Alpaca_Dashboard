@@ -22,11 +22,11 @@ import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.formatter.PercentFormatter;
 import com.google.android.material.button.MaterialButton;
-import com.mikepenz.aboutlibraries.LibsBuilder;
 
 import net.jacobpeterson.alpaca.AlpacaAPI;
 import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
 import net.jacobpeterson.domain.alpaca.account.Account;
+import net.jacobpeterson.polygon.PolygonAPI;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -47,11 +47,12 @@ public class ProfileFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Utils.startTheme(getActivity(), new SharedPreferencesManager(getActivity()).retrieveInt("theme", Utils.THEME_DEFAULT));
         View mView = inflater.inflate(R.layout.profile_fragment, null);
+        SharedPreferencesManager prefs = new SharedPreferencesManager(getActivity());
 
         Thread thread = new Thread(() -> {
 
             // Fetch various account data
-            AlpacaAPI alpacaAPI = new AlpacaAPI();
+            AlpacaAPI alpacaAPI = new AlpacaAPI(prefs.retrieveString("auth_token", "NULL"));
             try {
                 account = alpacaAPI.getAccount();
             } catch (AlpacaAPIRequestException e) {

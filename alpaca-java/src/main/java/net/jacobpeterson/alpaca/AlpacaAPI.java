@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.reflect.TypeToken;
 import com.mashape.unirest.http.HttpResponse;
+import net.jacobpeterson.abstracts.websocket.exception.WebsocketException;
 import net.jacobpeterson.alpaca.enums.ActivityType;
 import net.jacobpeterson.alpaca.enums.AssetStatus;
 import net.jacobpeterson.alpaca.enums.BarsTimeFrame;
@@ -22,17 +23,21 @@ import net.jacobpeterson.alpaca.properties.AlpacaProperties;
 import net.jacobpeterson.alpaca.rest.AlpacaRequest;
 import net.jacobpeterson.alpaca.rest.AlpacaRequestBuilder;
 import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
-import net.jacobpeterson.alpaca.websocket.client.AlpacaWebsocketClient;
-import net.jacobpeterson.alpaca.websocket.listener.AlpacaStreamListener;
+import net.jacobpeterson.alpaca.websocket.broker.client.AlpacaWebsocketClient;
+import net.jacobpeterson.alpaca.websocket.broker.listener.AlpacaStreamListener;
+import net.jacobpeterson.alpaca.websocket.marketdata.client.MarketDataWebsocketClient;
+import net.jacobpeterson.alpaca.websocket.marketdata.listener.MarketDataStreamListener;
 import net.jacobpeterson.domain.alpaca.account.Account;
 import net.jacobpeterson.domain.alpaca.accountactivities.AccountActivity;
 import net.jacobpeterson.domain.alpaca.accountactivities.NonTradeActivity;
 import net.jacobpeterson.domain.alpaca.accountactivities.TradeActivity;
 import net.jacobpeterson.domain.alpaca.accountconfiguration.AccountConfiguration;
 import net.jacobpeterson.domain.alpaca.asset.Asset;
-import net.jacobpeterson.domain.alpaca.bar.Bar;
 import net.jacobpeterson.domain.alpaca.calendar.Calendar;
 import net.jacobpeterson.domain.alpaca.clock.Clock;
+import net.jacobpeterson.domain.alpaca.marketdata.Bar;
+import net.jacobpeterson.domain.alpaca.marketdata.LastQuoteResponse;
+import net.jacobpeterson.domain.alpaca.marketdata.LastTradeResponse;
 import net.jacobpeterson.domain.alpaca.order.CancelledOrder;
 import net.jacobpeterson.domain.alpaca.order.Order;
 import net.jacobpeterson.domain.alpaca.portfoliohistory.PortfolioHistory;
@@ -56,7 +61,7 @@ import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 /**
- * The Class AlpacaAPI.
+ * The class AlpacaAPI. Note that most of these methods are blocking methods and this class in NOT thread-safe.
  */
 public class AlpacaAPI {
 
@@ -66,8 +71,8 @@ public class AlpacaAPI {
     /** The version. */
     private final String apiVersion;
 
-    /** The key id. */
-    private final String keyId;
+    /** The key ID. */
+    private final String keyID;
 
     /** The base API url. */
     private final String baseAPIURL;
@@ -78,70 +83,84 @@ public class AlpacaAPI {
     /** The base data url. */
     private final String baseDataUrl;
 
-    /** The alpaca web socket client. */
+    /** The alpaca websocket client. */
     private final AlpacaWebsocketClient alpacaWebSocketClient;
 
+    /** The market data websocket client. */
+    private final MarketDataWebsocketClient marketDataWebSocketClient;
+
     /**
-     * Instantiates a new Alpaca API using properties specified in alpaca.properties file (or relevant defaults)
+     * Instantiates a new Alpaca API using properties specified in alpaca.properties file (or their associated
+     * defaults)
      */
     public AlpacaAPI() {
         this(AlpacaProperties.API_VERSION_VALUE, AlpacaProperties.KEY_ID_VALUE,
-                AlpacaProperties.SECRET_VALUE, AlpacaProperties.BASE_API_URL_VALUE,
+                AlpacaProperties.SECRET_VALUE, null, AlpacaProperties.BASE_API_URL_VALUE,
                 AlpacaProperties.BASE_DATA_URL_VALUE);
 
         LOGGER.debug(AlpacaProperties.staticToString());
     }
 
     /**
-     * Instantiates a new Alpaca API using the specified apiVersion
+     * Instantiates a new AlpacaAPI using the specified keyID and secret.
      *
-     * @param apiVersion the api version
-     */
-    public AlpacaAPI(String apiVersion) {
-        this(apiVersion, AlpacaProperties.KEY_ID_VALUE, AlpacaProperties.SECRET_VALUE,
-                AlpacaProperties.BASE_API_URL_VALUE, AlpacaProperties.BASE_DATA_URL_VALUE);
-    }
-
-    /**
-     * Instantiates a new Alpaca API using the specified apiVersion, keyId, and secret.
-     *
-     * @param keyId  the key id
+     * @param keyID  the key ID
      * @param secret the secret
      */
-    public AlpacaAPI(String apiVersion, String keyId, String secret) {
-        this(apiVersion, keyId, secret, AlpacaProperties.BASE_API_URL_VALUE,
+    public AlpacaAPI(String keyID, String secret) {
+        this(AlpacaProperties.API_VERSION_VALUE, keyID, secret, null, AlpacaProperties.BASE_API_URL_VALUE,
                 AlpacaProperties.BASE_DATA_URL_VALUE);
     }
 
     /**
-     * Instantiates a new Alpaca API using the specified apiVersion, keyId, secret, and baseAPIURL.
+     * Instantiates a new AlpacaAPI using the specified keyID, secret, and baseAPIURL.
      *
-     * @param apiVersion the api version
-     * @param keyId      the key id
+     * @param keyID      the key ID
      * @param secret     the secret
      * @param baseAPIURL the api account url
      */
-    public AlpacaAPI(String apiVersion, String keyId, String secret, String baseAPIURL) {
-        this(apiVersion, keyId, secret, baseAPIURL, AlpacaProperties.BASE_DATA_URL_VALUE);
+    public AlpacaAPI(String keyID, String secret, String baseAPIURL) {
+        this(AlpacaProperties.API_VERSION_VALUE, keyID, secret, null, baseAPIURL, AlpacaProperties.BASE_DATA_URL_VALUE);
     }
 
     /**
-     * Instantiates a new Alpaca API using the specified keyId, secret, baseAPIURL, and baseDataUrl.
+     * Instantiates a new AlpacaAPI using the specified OAuth token.
+     *
+     * @param oAuthToken the OAuth token
+     */
+    public AlpacaAPI(String oAuthToken) {
+        this(AlpacaProperties.API_VERSION_VALUE, null, null, oAuthToken, AlpacaProperties.BASE_API_URL_VALUE,
+                AlpacaProperties.BASE_DATA_URL_VALUE);
+    }
+
+    /**
+     * Instantiates a new AlpacaAPI using the specified apiVersion, keyId, secret, OAuth token (if there is one),
+     * baseAPIURL, and baseDataURL.
      *
      * @param apiVersion  the api version
-     * @param keyId       the key id
+     * @param keyID       the key ID
      * @param secret      the secret
-     * @param baseAPIURL  the base api url
-     * @param baseDataUrl the base data url
+     * @param oAuthToken  the OAuth token
+     * @param baseAPIURL  the base API URL
+     * @param baseDataURL the base data URL
      */
-    public AlpacaAPI(String apiVersion, String keyId, String secret, String baseAPIURL, String baseDataUrl) {
-        this.apiVersion = apiVersion;
-        this.keyId = keyId;
-        this.baseAPIURL = baseAPIURL;
-        this.baseDataUrl = baseDataUrl;
+    public AlpacaAPI(String apiVersion, String keyID, String secret, String oAuthToken, String baseAPIURL,
+            String baseDataURL) {
+        Preconditions.checkState((keyID != null && secret != null) || !oAuthToken.equals("NULL"));
 
-        alpacaRequest = new AlpacaRequest(keyId, secret);
-        alpacaWebSocketClient = new AlpacaWebsocketClient(keyId, secret, baseAPIURL);
+        this.apiVersion = apiVersion;
+        this.keyID = keyID;
+        this.baseAPIURL = baseAPIURL;
+        this.baseDataUrl = baseDataURL;
+
+        boolean isOAuth = oAuthToken != null;
+
+        alpacaRequest = isOAuth ? new AlpacaRequest(oAuthToken) :
+                new AlpacaRequest(keyID, secret);
+        alpacaWebSocketClient = isOAuth ? new AlpacaWebsocketClient(oAuthToken, baseAPIURL) :
+                new AlpacaWebsocketClient(keyID, secret, baseAPIURL);
+        marketDataWebSocketClient = isOAuth ? new MarketDataWebsocketClient(oAuthToken, baseDataURL) :
+                new MarketDataWebsocketClient(keyID, secret, baseDataURL);
 
         LOGGER.debug(this.toString());
     }
@@ -490,22 +509,20 @@ public class AlpacaAPI {
      * #requestNewOrder(String, Integer, OrderSide, OrderType, OrderTimeInForce, Double, Double, Double, Double,
      * Boolean, String, OrderClass, Double, Double, Double)} with {@link OrderType#MARKET}.
      *
-     * @param symbol        symbol or asset ID to identify the asset to trade
-     * @param quantity      number of shares to trade
-     * @param side          buy or sell
-     * @param timeInForce   day, gtc, opg, cls, ioc, fok. Please see Understand Orders for more info.
-     * @param extendedHours (default) false. If true, order will be eligible to execute in premarket/afterhours. Only
-     *                      works with type limit and time_in_force day.
+     * @param symbol      symbol or asset ID to identify the asset to trade
+     * @param quantity    number of shares to trade
+     * @param side        buy or sell
+     * @param timeInForce day, gtc, opg, cls, ioc, fok. Please see Understand Orders for more info.
      *
      * @return the order
      *
      * @throws AlpacaAPIRequestException the alpaca api request exception
      * @see <a href="https://docs.alpaca.markets/trading-on-alpaca/orders/#order-types">Order Types</a>
      */
-    public Order requestNewMarketOrder(String symbol, Integer quantity, OrderSide side, OrderTimeInForce timeInForce,
-            Boolean extendedHours) throws AlpacaAPIRequestException {
-        return requestNewOrder(symbol, quantity, side, OrderType.MARKET, timeInForce, null, null, null, null,
-                extendedHours, null, OrderClass.SIMPLE, null, null, null);
+    public Order requestNewMarketOrder(String symbol, Integer quantity, OrderSide side, OrderTimeInForce timeInForce)
+            throws AlpacaAPIRequestException {
+        return requestNewOrder(symbol, quantity, side, OrderType.MARKET, timeInForce, null, null, null, null, null,
+                null, OrderClass.SIMPLE, null, null, null);
     }
 
     /**
@@ -1542,7 +1559,8 @@ public class AlpacaAPI {
      * @param after     Filter bars after this time. Cannot be used with start.
      * @param until     Filter bars before this time. Cannot be used with end.
      *
-     * @return the bars
+     * @return An object with a key for each symbol and the Bars object as the values. Note that it returns status 200
+     * with an empty object if no requested symbol is found.
      *
      * @throws AlpacaAPIRequestException the alpaca API exception
      * @see <a href="https://docs.alpaca.markets/api-documentation/api-v2/market-data/bars/">Bars</a>
@@ -1569,7 +1587,8 @@ public class AlpacaAPI {
      * @param after     Filter bars after this time. Cannot be used with start.
      * @param until     Filter bars before this time. Cannot be used with end.
      *
-     * @return the bars
+     * @return @return An object with a key for each symbol and the Bars object as the values. Note that it returns
+     * status 200 with an empty object if no requested symbol is found.
      *
      * @throws AlpacaAPIRequestException the alpaca API exception
      * @see <a href="https://docs.alpaca.markets/api-documentation/api-v2/market-data/bars/">Bars</a>
@@ -1624,11 +1643,67 @@ public class AlpacaAPI {
     }
 
     /**
+     * Retrieves the last trade for the requested symbol.
+     *
+     * @param symbol A stock ticker symbol to retrieve the last trade of
+     *
+     * @return the last trade response object
+     *
+     * @throws AlpacaAPIRequestException the alpaca api request exception
+     * @see <a href="https://alpaca.markets/docs/api-documentation/api-v2/market-data/last-trade/">Last Trade</a>
+     */
+    public LastTradeResponse getLastTrade(String symbol) throws AlpacaAPIRequestException {
+        Preconditions.checkNotNull(symbol);
+
+        AlpacaRequestBuilder urlBuilder = new AlpacaRequestBuilder(baseDataUrl, AlpacaConstants.VERSION_1_ENDPOINT,
+                AlpacaConstants.LAST_ENDPOINT,
+                AlpacaConstants.STOCKS_ENDPOINT,
+                symbol);
+
+        HttpResponse<InputStream> response = alpacaRequest.invokeGet(urlBuilder);
+
+        if (response.getStatus() != 200) {
+            throw new AlpacaAPIRequestException(response);
+        }
+
+        return alpacaRequest.getResponseObject(response, LastTradeResponse.class);
+    }
+
+    /**
+     * Retrieves the last quote for the requested symbol.
+     *
+     * @param symbol A stock ticker symbol to retrieve the last trade of
+     *
+     * @return the last quote response object
+     *
+     * @throws AlpacaAPIRequestException the alpaca api request exception
+     * @see <a href="https://alpaca.markets/docs/api-documentation/api-v2/market-data/last-quote/>Last Quote</a>
+     */
+    public LastQuoteResponse getLastQuote(String symbol) throws AlpacaAPIRequestException {
+        Preconditions.checkNotNull(symbol);
+
+        AlpacaRequestBuilder urlBuilder = new AlpacaRequestBuilder(baseDataUrl, AlpacaConstants.VERSION_1_ENDPOINT,
+                AlpacaConstants.LAST_QUOTE_ENDPOINT,
+                AlpacaConstants.STOCKS_ENDPOINT,
+                symbol);
+
+        HttpResponse<InputStream> response = alpacaRequest.invokeGet(urlBuilder);
+
+        if (response.getStatus() != 200) {
+            throw new AlpacaAPIRequestException(response);
+        }
+
+        return alpacaRequest.getResponseObject(response, LastQuoteResponse.class);
+    }
+
+    /**
      * Adds the alpaca stream listener.
      *
      * @param streamListener the stream listener
+     *
+     * @throws WebsocketException the WebsocketException
      */
-    public void addAlpacaStreamListener(AlpacaStreamListener streamListener) {
+    public void addAlpacaStreamListener(AlpacaStreamListener streamListener) throws WebsocketException {
         alpacaWebSocketClient.addListener(streamListener);
     }
 
@@ -1636,9 +1711,33 @@ public class AlpacaAPI {
      * Removes the alpaca stream listener.
      *
      * @param streamListener the stream listener
+     *
+     * @throws WebsocketException the WebsocketException
      */
-    public void removeAlpacaStreamListener(AlpacaStreamListener streamListener) {
+    public void removeAlpacaStreamListener(AlpacaStreamListener streamListener) throws WebsocketException {
         alpacaWebSocketClient.removeListener(streamListener);
+    }
+
+    /**
+     * Adds the alpaca stream listener.
+     *
+     * @param streamListener the stream listener
+     *
+     * @throws WebsocketException the WebsocketException
+     */
+    public void addMarketDataStreamListener(MarketDataStreamListener streamListener) throws WebsocketException {
+        marketDataWebSocketClient.addListener(streamListener);
+    }
+
+    /**
+     * Removes the alpaca stream listener.
+     *
+     * @param streamListener the stream listener
+     *
+     * @throws WebsocketException the WebsocketException
+     */
+    public void removeMarketDataStreamListener(MarketDataStreamListener streamListener) throws WebsocketException {
+        marketDataWebSocketClient.removeListener(streamListener);
     }
 
     @Override
@@ -1647,7 +1746,7 @@ public class AlpacaAPI {
                 .add("apiVersion = " + apiVersion)
                 .add("baseAPIURL = " + baseAPIURL)
                 .add("baseDataUrl = " + baseDataUrl)
-                .add("keyId = " + keyId)
+                .add("keyID = " + keyID)
                 .toString();
     }
 }

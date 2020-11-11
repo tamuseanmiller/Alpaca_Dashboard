@@ -15,18 +15,9 @@ import android.view.MenuItem;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
-import com.robinhood.ticker.TickerView;
 
 import net.jacobpeterson.alpaca.AlpacaAPI;
-import net.jacobpeterson.alpaca.websocket.listener.AlpacaStreamListenerAdapter;
-import net.jacobpeterson.alpaca.websocket.message.AlpacaStreamMessageType;
-import net.jacobpeterson.domain.alpaca.websocket.AlpacaStreamMessage;
-import net.jacobpeterson.domain.alpaca.websocket.account.AccountUpdateMessage;
-import net.jacobpeterson.domain.alpaca.websocket.trade.TradeUpdateMessage;
+import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
 import net.jacobpeterson.domain.polygon.websocket.PolygonStreamMessage;
 import net.jacobpeterson.domain.polygon.websocket.quote.QuoteMessage;
 import net.jacobpeterson.polygon.PolygonAPI;
@@ -35,58 +26,41 @@ import net.jacobpeterson.polygon.websocket.message.PolygonStreamMessageType;
 import net.openid.appauth.AuthorizationException;
 import net.openid.appauth.AuthorizationResponse;
 import net.openid.appauth.AuthorizationServiceConfiguration;
+import net.openid.appauth.ClientAuthentication;
 import net.openid.appauth.TokenRequest;
 import net.openid.appauth.TokenResponse;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.IOException;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import static com.seanmiller.alpacadashboard.LoginActivity.authService;
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
 
     public static AtomicReference<String> ticker;
-    private Properties props = new Properties();
     public static DashboardFragment dashboardFragment;
     public static SearchFragment searchFragment;
     public static ProfileFragment profileFragment;
-    private BottomNavigationView bottomNavigation;
     public static NoSwipePager viewPager;
     public static EmergencyFragment emergencyFragment;
     public static int lastItem = 0;
     public static BottomBarAdapter pagerAdapter;
     public static DatabaseReference myRef;
     public static AuthorizationResponse resp;
-
-    public void streamAccountData(AlpacaAPI alpacaAPI) {
-
-        props.setProperties();
-
-        // Register explicitly for ACCOUNT_UPDATES and ORDER_UPDATES Messages via stream listener
-        alpacaAPI.addAlpacaStreamListener(new AlpacaStreamListenerAdapter(
-                AlpacaStreamMessageType.ACCOUNT_UPDATES,
-                AlpacaStreamMessageType.TRADE_UPDATES) {
-
-            public void onStreamUpdate(AlpacaStreamMessageType streamMessageType, AlpacaStreamMessage streamMessage) {
-                switch (streamMessageType) {
-                    case ACCOUNT_UPDATES:
-                        AccountUpdateMessage accountUpdateMessage = (AccountUpdateMessage) streamMessage;
-                        System.out.println("\nReceived Account Update: \n\t" +
-                                accountUpdateMessage.toString().replace(",", ",\n\t"));
-                        break;
-                    case TRADE_UPDATES:
-                        TradeUpdateMessage tradeUpdateMessage = (TradeUpdateMessage) streamMessage;
-                        System.out.println("\nReceived Order Update: \n\t" +
-                                tradeUpdateMessage.toString().replace(",", ",\n\t"));
-                        break;
-                }
-            }
-        });
-    }
+    private Thread t1;
+    private SharedPreferencesManager prefs;
 
     // onCreate
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -94,34 +68,41 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public void onCreate(Bundle savedInstanceState) {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
+        prefs = new SharedPreferencesManager(this);
 
-        Utils.startTheme(MainActivity.this, new SharedPreferencesManager(this).retrieveInt("theme", Utils.THEME_DEFAULT));
+        Utils.startTheme(MainActivity.this, prefs.retrieveInt("theme", Utils.THEME_DEFAULT));
+
+        ClassLoader classLoader = MainActivity.class.getClassLoader();
+        URL resource = classLoader.getResource("org/apache/http/message/BasicLineFormatter.class");
+        System.out.println(resource);
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        boolean check = false;
 
-        if (new SharedPreferencesManager(this).retrieveString("auth", "NULL").equals("NULL")) {
-            try {
-                performAuthentication();
-            } catch (UnirestException e) {
-                e.printStackTrace();
-            }
+        if (prefs.retrieveString("auth_token", "NULL").equals("NULL") || prefs.retrieveString("polygon_id", "NULL").equals("NULL")) {
+            performAuthentication();
+            check = true;
         }
 
         // Write a message to the database
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         myRef = database.getReference();
 
-        // Create viewpager for bottombar fragments
-        viewPager = findViewById(R.id.viewPager);
-        viewPager.setPagingEnabled(false);
-        pagerAdapter = new BottomBarAdapter(getSupportFragmentManager());
+//        runOnUiThread(() -> {
 
-        bottomNavigation = findViewById(R.id.bottom_navigation);
-        bottomNavigation.bringToFront();
-        bottomNavigation.setOnNavigationItemSelectedListener(this);
+            // Create viewpager for bottombar fragments
+            viewPager = findViewById(R.id.viewPager);
+            viewPager.setPagingEnabled(false);
+            pagerAdapter = new BottomBarAdapter(getSupportFragmentManager());
 
-        Thread t1 = new Thread(() -> {
+            BottomNavigationView bottomNavigation = findViewById(R.id.bottom_navigation);
+            bottomNavigation.bringToFront();
+            bottomNavigation.setOnNavigationItemSelectedListener(this);
+
+//        });
+
+        t1 = new Thread(() -> {
 
             dashboardFragment = new DashboardFragment();
             searchFragment = new SearchFragment();
@@ -137,7 +118,14 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 viewPager.setCurrentItem(0);
             });
         });
-        t1.start();
+
+        if (!prefs.retrieveString("auth_token", "NULL").equals("NULL") &&
+                !prefs.retrieveString("polygon_id", "NULL").equals("NULL") &&
+                !check) {
+            t1.start();
+        }
+
+//        t1.start();
     }
 
 
@@ -185,7 +173,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     }
 
-    public void performAuthentication() throws UnirestException {
+    public void performAuthentication() {
         AuthorizationServiceConfiguration serviceConfig =
                 new AuthorizationServiceConfiguration(
                         Uri.parse("https://app.alpaca.markets/oauth/authorize"), // authorindeization endpoint
@@ -205,6 +193,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
             finish();
+            return;
             // authorization failed, check ex for more details
         }
 
@@ -234,29 +223,61 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 // exchange succeeded
                 System.out.println("Authentication Done");
                 authState.updateAfterTokenResponse(tokenResponse1, ex1);
-                new SharedPreferencesManager(this).storeString("auth", tokenResponse1.accessToken);
+                prefs.storeString("auth_token", tokenResponse1.accessToken);
+                System.out.println(tokenResponse1.accessToken);
                 authenticationResponse.set(tokenResponse1.accessToken);
 
-                // Authenticate Polygon as well
-                HttpResponse<JsonNode> nodeHttpResponse = null;
+                // Fetch Polygon Id and add to SharedPreferences
                 try {
-                    nodeHttpResponse = Unirest.get("https://api.alpaca.markets/oauth/token")
-                            .header("Authorization", "Bearer " + authenticationResponse).asJson();
-                } catch (UnirestException e) {
+
+                    // Create Client and request
+                    OkHttpClient client = new OkHttpClient();
+                    Request request = new Request.Builder()
+                            .url("https://api.alpaca.markets/oauth/token")
+                            .addHeader("Authorization", "Bearer " + tokenResponse1.accessToken).build();
+
+                    // Catch response after execution
+                    Response response = client.newCall(request).execute();
+
+                    // Convert response to json to find the field
+                    JSONObject jsonObject = new JSONObject(Objects.requireNonNull(response.body()).string());
+                    System.out.println(jsonObject.get("id"));
+                    prefs.storeString("polygon_id", jsonObject.get("id").toString());
+
+                } catch (IOException | JSONException e) {
                     e.printStackTrace();
                 }
 
-                // Add to SharedPreferences
-                try {
-                    new SharedPreferencesManager(this).storeString("id", nodeHttpResponse.getBody().getObject().get("id").toString());
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                // Authenticate Polygon as well
+//                HttpResponse<JsonNode> nodeHttpResponse = null;
+//                try {
+//                    nodeHttpResponse = Unirest.get("https://api.alpaca.markets/oauth/token")
+//                            .header("Authorization", "Bearer " + tokenResponse1.accessToken).asJson();
+//                } catch (UnirestException e) {
+//                    e.printStackTrace();
+//                }
+
+                // Add Polygon ID to SharedPreferences
+//                try {
+//                    prefs.storeString("polygon_id", nodeHttpResponse.getBody().getObject().get("id").toString());
+//
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
 
             } else {
                 // authorization failed, check ex for more details
                 System.out.println(ex1);
             }
+
+            if (prefs.retrieveString("auth_token", "NULL").equals("NULL") || prefs.retrieveString("polygon_id", "NULL").equals("NULL")) {
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                startActivity(intent);
+                finish();
+            }
+
+            t1.start();
+
         });
 
 

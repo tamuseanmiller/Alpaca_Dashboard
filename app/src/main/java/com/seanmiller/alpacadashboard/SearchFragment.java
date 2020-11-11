@@ -76,6 +76,7 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
     private SearchableAdapter searchableAdapter;
     private RecyclerView newsRecycler;
     private RecyclerViewAdapterNews test;
+    private SharedPreferencesManager prefs;
 
 
     @Nullable
@@ -83,6 +84,7 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         View mView = inflater.inflate(R.layout.search_fragment, null);
+        prefs = new SharedPreferencesManager(getActivity());
 
         materialSearch = mView.findViewById(R.id.material_search_view);
         materialSearch.setAdapterLayoutManager(new LinearLayoutManager(getActivity()));
@@ -134,8 +136,7 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
         Thread thread = new Thread(() -> {
 
             // Fetch news for positions
-            PolygonAPI polygonAPI = new PolygonAPI();
-            AlpacaAPI alpacaAPI = new AlpacaAPI();
+            PolygonAPI polygonAPI = new PolygonAPI(prefs.retrieveString("polygon_id", "NULL"));
 //            ArrayList<Position> stocks = null;
 //            try {
 //                stocks = alpacaAPI.getOpenPositions();

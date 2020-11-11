@@ -72,7 +72,6 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
     private RecyclerViewAdapterPositions recycleAdapter;
     private RecyclerViewAdapterOrders recycleAdapterOrders;
     private Button percentChange;
-    private final Properties props = new Properties();
     private SwipeRefreshLayout swipeRefresh;
     private ArrayList<Order> orders;
     private MaterialButton oneDay;
@@ -88,6 +87,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
     private StockAdapter threeMonthAdapter;
     private StockAdapter oneYearAdapter;
     public static ArrayList<String> stocks;
+    private SharedPreferencesManager prefs;
 
 
     public int fetchHeight() {
@@ -111,7 +111,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Utils.startTheme(getActivity(), new SharedPreferencesManager(getActivity()).retrieveInt("theme", Utils.THEME_DEFAULT));
         View mView = inflater.inflate(R.layout.dashboard_fragment, null);
-        props.setProperties();
+        prefs = new SharedPreferencesManager(getActivity());
 
         // Vary size of spark view by height of screen size
         int height = fetchHeight();
@@ -124,7 +124,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
         themeChange.setOnClickListener(this);
         TypedValue outValue = new TypedValue();
         requireActivity().getTheme().resolveAttribute(R.attr.themeName, outValue, true);
-        if ("light".equals(outValue.string)) {
+        if ("light".contentEquals(outValue.string)) {
             Drawable lightTheme = ContextCompat.getDrawable(requireActivity(), R.drawable.brightness_6);
             themeChange.setImageDrawable(lightTheme);
         } else {
@@ -140,8 +140,8 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
         requireActivity().getTheme().resolveAttribute(R.attr.color_negative_light, typedValue, true);
         AtomicInteger negColorLight = new AtomicInteger(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
         negColorLight.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
-        PolygonAPI polygonAPI = new PolygonAPI();
-        AlpacaAPI alpacaAPI = new AlpacaAPI();
+        PolygonAPI polygonAPI = new PolygonAPI(prefs.retrieveString("polygon_id", "NULL"));
+        AlpacaAPI alpacaAPI = new AlpacaAPI(prefs.retrieveString("auth_token", "NULL"));
 
         // Set title
         TextView totalEquity = mView.findViewById(R.id.stockTraded);
@@ -157,11 +157,11 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
 
         // The sparkline graph data
         try {
-            oneDayAdapter = new StockAdapter(ticker, 1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.ONE_MIN);
-            oneWeekAdapter = new StockAdapter(ticker, 1, PortfolioPeriodUnit.WEEK, PortfolioTimeFrame.ONE_HOUR);
-            oneMonthAdapter = new StockAdapter(ticker, 1, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY);
-            threeMonthAdapter = new StockAdapter(ticker, 3, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY);
-            oneYearAdapter = new StockAdapter(ticker, 1, PortfolioPeriodUnit.YEAR, PortfolioTimeFrame.ONE_DAY);
+            oneDayAdapter = new StockAdapter(ticker, 1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.ONE_MIN, getActivity());
+            oneWeekAdapter = new StockAdapter(ticker, 1, PortfolioPeriodUnit.WEEK, PortfolioTimeFrame.ONE_HOUR, getActivity());
+            oneMonthAdapter = new StockAdapter(ticker, 1, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY, getActivity());
+            threeMonthAdapter = new StockAdapter(ticker, 3, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY, getActivity());
+            oneYearAdapter = new StockAdapter(ticker, 1, PortfolioPeriodUnit.YEAR, PortfolioTimeFrame.ONE_DAY, getActivity());
             selectedAdapter = oneDayAdapter;
 
         } catch (PolygonAPIRequestException | AlpacaAPIRequestException e) {
@@ -235,7 +235,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
         swipeRefresh.bringToFront();
 
         requireActivity().getTheme().resolveAttribute(R.attr.colorPrimaryLight, typedValue, true);
-        AtomicInteger color = new AtomicInteger(ContextCompat.getColor(getActivity(), typedValue.resourceId));
+        AtomicInteger color = new AtomicInteger(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
 
         // Scrub for chart
         sparkView.setSparkAnimator(null);
@@ -271,6 +271,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
                         String currentValue = null;
                         try {
                             currentValue = alpacaAPI.getAccount().getPortfolioValue();
+
                         } catch (AlpacaAPIRequestException e) {
                             e.printStackTrace();
                         }
@@ -427,7 +428,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
 
         Thread thread = new Thread(() -> {
 
-            AlpacaAPI alpacaAPI = new AlpacaAPI();
+            AlpacaAPI alpacaAPI = new AlpacaAPI(prefs.retrieveString("auth_token", "NULL"));
 
             // Fetch current positions
             ArrayList<Position> positions = new ArrayList<>();
@@ -454,7 +455,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
 
         Thread thread2 = new Thread(() -> {
 
-            AlpacaAPI alpacaAPI = new AlpacaAPI();
+            AlpacaAPI alpacaAPI = new AlpacaAPI(prefs.retrieveString("auth_token", "NULL"));
 
             // Fetch curent orders
             ArrayList<Order> temp = new ArrayList<>();
@@ -561,7 +562,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
 
     public void initializeDashboardValues(int periodLength, PortfolioPeriodUnit periodUnit, PortfolioTimeFrame timeFrame, StockAdapter selectedAdapterInitial) {
 
-        AlpacaAPI alpacaAPI = new AlpacaAPI();
+        AlpacaAPI alpacaAPI = new AlpacaAPI(prefs.retrieveString("auth_token", "NULL"));
 
         Thread t2 = new Thread(() -> {
 

@@ -17,10 +17,6 @@
         <item name="colorControlActivated">@color/colorPrimaryLight</item>
         <item name="search_radius">15</item>
         <item name="search_strokeColor">@color/colorAccentTransparent</item>
-        <item name="aboutLibrariesCardBackground">@color/colorPrimary</item>
-
-        <item name="aboutLibrariesStyle">@style/CustomAboutLibrariesStyle</item>
-
         <item name="boxStrokeColor">@color/colorAccentTransparent</item>
         <item name="boxStrokeWidth">1dp</item>
 
@@ -47,8 +43,6 @@
         <item name="search_radius">15</item>
         <item name="search_strokeColor">@color/colorAccentTransparent_light</item>
         <!--        <item name="aboutLibrariesStyle">@style/CustomAboutLibrariesStyle</item>-->
-        <item name="aboutLibrariesCardBackground">@color/colorPrimary_light</item>
-
 
         <item name="boxStrokeColor">@color/colorAccentTransparent_light</item>
         <item name="boxStrokeWidth">1dp</item>
@@ -56,18 +50,6 @@
         <!--         Status bar color.-->
         <item name="android:statusBarColor" tools:targetApi="l">@color/colorPrimary_light</item>
         <!-- Customize your theme here. -->
-    </style>
-
-    <style name="CustomAboutLibrariesStyle" parent="">
-        <!-- AboutLibraries specific values -->
-        <item name="aboutLibrariesCardBackground">?attr/colorPrimary</item>
-        <!--        <item name="aboutLibrariesDescriptionTitle">?attr/colorAccentLight</item>-->
-        <item name="aboutLibrariesDescriptionText">?android:textColorSecondary</item>
-        <item name="aboutLibrariesDescriptionDivider">?attr/colorAccentTransparent</item>
-        <item name="aboutLibrariesOpenSourceTitle">?android:textColorPrimary</item>
-        <item name="aboutLibrariesOpenSourceText">?android:textColorSecondary</item>
-        <item name="aboutLibrariesSpecialButtonText">?android:textColorPrimary</item>
-        <!--        <item name="aboutLibrariesOpenSourceDivider">@color/opensource_divider</item>-->
     </style>
 
     <style name="LoginTextInputLayoutStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">

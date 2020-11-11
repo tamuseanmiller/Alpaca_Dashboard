@@ -14,6 +14,7 @@ import net.jacobpeterson.alpaca.AlpacaAPI;
 import net.jacobpeterson.alpaca.enums.OrderSide;
 import net.jacobpeterson.alpaca.enums.OrderTimeInForce;
 import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
+import net.jacobpeterson.polygon.PolygonAPI;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -27,7 +28,7 @@ public class PlaceOrderFragment extends AAH_FabulousFragment {
         dialogBuilder.get().setNeutralButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss());
         dialogBuilder.get().setPositiveButton("Accept", (dialog12, which) -> {
             try {
-                alpacaAPI.requestNewMarketOrder(DashboardFragment.ticker.get(), Integer.valueOf(qty.getText().toString()), side, OrderTimeInForce.DAY, null);
+                alpacaAPI.requestNewMarketOrder(DashboardFragment.ticker.get(), Integer.valueOf(qty.getText().toString()), side, OrderTimeInForce.DAY);
                 dialogBuilder.set(new MaterialAlertDialogBuilder(requireContext(), R.style.DialogThemePositive));
                 dialogBuilder.get().setTitle(side + " Order");
                 dialogBuilder.get().setMessage("Congrats! Your " + side + " order of " + qty.getText().toString() + " stocks of " + DashboardFragment.ticker + " went through!");
@@ -59,7 +60,7 @@ public class PlaceOrderFragment extends AAH_FabulousFragment {
         TextInputEditText qty = contentView.findViewById(R.id.quantityTextField);
 
         // Place buy order on button click
-        AlpacaAPI alpacaAPI = new AlpacaAPI();
+        AlpacaAPI alpacaAPI = new AlpacaAPI(new SharedPreferencesManager(getActivity()).retrieveString("auth_token", "NULL"));
         MaterialButton buy = contentView.findViewById(R.id.btn_close);
         buy.setOnClickListener(v -> {
             if (qty.getText().toString().isEmpty()) {
