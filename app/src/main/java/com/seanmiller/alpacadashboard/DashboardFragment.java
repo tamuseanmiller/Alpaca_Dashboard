@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.app.ActivityOptions;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Insets;
@@ -20,6 +21,7 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
@@ -49,6 +51,7 @@ import net.jacobpeterson.polygon.rest.exception.PolygonAPIRequestException;
 
 import java.text.DecimalFormat;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -63,11 +66,11 @@ import static com.seanmiller.alpacadashboard.Utils.THEME_LIGHT;
 
 public class DashboardFragment extends Fragment implements RecyclerViewAdapterPositions.ItemClickListener, View.OnClickListener {
 
-    private SparkView sparkView;
+    private CustomSparkView sparkView;
     private StockAdapter selectedAdapter;
     private RecyclerView recyclerView;
     private RecyclerView recyclerOrders;
-    public TickerView tickerView;
+    public static TickerView tickerView;
     public static AtomicReference<String> ticker;
     private RecyclerViewAdapterPositions recycleAdapter;
     private RecyclerViewAdapterOrders recycleAdapterOrders;
@@ -303,10 +306,11 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
                 }
 
                 // Format amount
+                assert currentValue != null;
                 double amount = Double.parseDouble(currentValue);
                 DecimalFormat formatter = new DecimalFormat("#,###.00");
 
-                getActivity().runOnUiThread(() -> {
+                requireActivity().runOnUiThread(() -> {
                     tickerView.setText("$" + formatter.format(amount));
                 });
 
@@ -469,10 +473,9 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
             orders.addAll(temp);
 
             // Set Recycle Adapter for orders
+            recycleAdapterOrders = new RecyclerViewAdapterOrders(getActivity(), orders);
             requireActivity().runOnUiThread(() -> {
-                recycleAdapterOrders = new RecyclerViewAdapterOrders(getActivity(), orders);
                 recyclerOrders.setAdapter(recycleAdapterOrders);
-                //                recycleAdapterOrders.notifyDataSetChanged();
             });
 
             swipeRefresh.setRefreshing(false);
@@ -577,8 +580,14 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
                 } catch (AlpacaAPIRequestException e) {
                     e.printStackTrace();
                 }
+
+                // Assign last open datetime and check for if it is the morning of
                 assert calendar != null;
                 LocalDate lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 1).getDate());
+                if (LocalTime.of(Integer.parseInt(calendar.get(calendar.size() - 1).getOpen().substring(0, 2)),
+                                 Integer.parseInt(calendar.get(calendar.size() - 1).getOpen().substring(3, 5))).compareTo(LocalTime.now()) > 0) {
+                    lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 2).getDate());
+                }
 
                 // Gather old portfolio data
                 history = new ArrayList<>();

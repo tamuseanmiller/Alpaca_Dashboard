@@ -40,6 +40,7 @@ import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
 import net.jacobpeterson.domain.alpaca.calendar.Calendar;
 import net.jacobpeterson.domain.alpaca.marketdata.Bar;
 import net.jacobpeterson.domain.alpaca.order.Order;
+import net.jacobpeterson.domain.polygon.lastquote.LastQuoteResponse;
 import net.jacobpeterson.domain.polygon.websocket.PolygonStreamMessage;
 import net.jacobpeterson.domain.polygon.websocket.quote.QuoteMessage;
 import net.jacobpeterson.polygon.PolygonAPI;
@@ -67,10 +68,10 @@ import static com.seanmiller.alpacadashboard.DashboardFragment.ticker;
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class StockPageActivity extends AppCompatActivity implements RecyclerViewAdapterStocks.ItemClickListener {
 
-    private SparkView sparkViewStock;
+    private CustomSparkView sparkViewStock;
     private StockAdapter selectedAdapterStock;
     private RecyclerView recyclerOrdersStock;
-    public TickerView tickerViewStock;
+    public static TickerView tickerViewStock;
     private RecyclerViewAdapterOrders recycleAdapterOrders;
     private Button percentChangeStock;
     private ArrayList<Order> ordersStock;
@@ -92,6 +93,20 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
     private StockAdapter threeMonthStockAdapter;
     private StockAdapter oneYearStockAdapter;
     private SharedPreferencesManager prefs;
+
+    public static boolean isInFront = false;
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        isInFront = true;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        isInFront = false;
+    }
 
     // Streams ticker data from polygon
     public void streamStockData(PolygonAPI polygonAPI, AtomicReference<String> ticker, TickerView tickerV) {
@@ -364,16 +379,21 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
 
                 while (true) {
 
-                    float askingPrice = 0;
+                    LastQuoteResponse askingPrice = null;
                     try {
-                        askingPrice = polygonAPI.getLastQuote(ticker.get()).getLast().getAskprice().floatValue();
+                        askingPrice = polygonAPI.getLastQuote(ticker.get());
 
                     } catch (PolygonAPIRequestException e) {
                         e.printStackTrace();
                     }
 
-                    float finalAskingPrice = askingPrice;
-                    runOnUiThread(() -> selectedAdapterStock.addVal(finalAskingPrice));
+                    float finalAskingPrice = 0;
+                    if (askingPrice != null) {
+                        finalAskingPrice = askingPrice.getLast().getAskprice().floatValue();;
+                    }
+
+                    float finalAskingPrice1 = finalAskingPrice;
+                    runOnUiThread(() -> selectedAdapterStock.addVal(finalAskingPrice1));
 
                     runOnUiThread(this::setStockValues);
 
@@ -410,14 +430,16 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             ordersStock = new ArrayList<>();
             order = new ArrayList();
             try {
-                ordersStock = alpacaAPI.getOrders(OrderStatus.CLOSED, 20, null, ZonedDateTime.now().plusDays(1), Direction.DESCENDING, false);
+                ordersStock = alpacaAPI.getOrders(OrderStatus.CLOSED, 1000, null, ZonedDateTime.now().plusDays(1), Direction.DESCENDING, false);
             } catch (AlpacaAPIRequestException e) {
                 e.printStackTrace();
             }
-            for (int i = 0; i < ordersStock.size(); i++) {
+            int i = 0;
+            while (i < ordersStock.size() && order.size() <= 10) {
                 if (ordersStock.get(i).getSymbol().equals(ticker.get())) {
                     order.add(ordersStock.get(i));
                 }
+                i++;
             }
 
             recyclerOrdersStock = findViewById(R.id.ordersStock);
@@ -450,15 +472,17 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             // Fetch curent orders
             ordersStock = new ArrayList<>();
             try {
-                ordersStock = alpacaAPI.getOrders(OrderStatus.CLOSED, 20, null, ZonedDateTime.now().plusDays(1), Direction.DESCENDING, false);
+                ordersStock = alpacaAPI.getOrders(OrderStatus.CLOSED, 1000, null, ZonedDateTime.now().plusDays(1), Direction.DESCENDING, false);
             } catch (AlpacaAPIRequestException e) {
                 e.printStackTrace();
             }
             order.clear();
-            for (int i = 0; i < ordersStock.size(); i++) {
+            int i = 0;
+            while (i < ordersStock.size() && order.size() <= 10) {
                 if (ordersStock.get(i).getSymbol().equals(ticker.get())) {
                     order.add(ordersStock.get(i));
                 }
+                i++;
             }
 
             // Set number of stocks textview
@@ -473,7 +497,8 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             }
 
             runOnUiThread(() -> {
-                recycleAdapterOrdersStock = new RecyclerViewAdapterOrders(this, order);
+                recyclerOrdersStock.setLayoutManager(new LinearLayoutManager(this));
+                recyclerOrdersStock.addItemDecoration(LinearMarginDecoration.create(0, LinearLayoutManager.VERTICAL, false, null));
                 recyclerOrdersStock.setAdapter(recycleAdapterOrdersStock);
 //                recycleAdapterOrdersStock.notifyDataSetChanged();
             });
@@ -540,8 +565,17 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                     } catch (AlpacaAPIRequestException e) {
                         e.printStackTrace();
                     }
+
+                    // Assign last open datetime and check for if it is the morning of
+                    assert calendar != null;
                     LocalDate lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 1).getDate());
                     LocalTime lastOpenTimeStart = LocalTime.parse(calendar.get(calendar.size() - 1).getOpen());
+                    if (LocalTime.of(Integer.parseInt(calendar.get(calendar.size() - 1).getOpen().substring(0, 2)),
+                            Integer.parseInt(calendar.get(calendar.size() - 1).getOpen().substring(3, 5))).compareTo(LocalTime.now()) > 0) {
+                        lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 2).getDate());
+                        lastOpenTimeStart = LocalTime.parse(calendar.get(calendar.size() - 2).getOpen());
+                    }
+
 
                     try {
                         bars = alpacaAPI.getBars(BarsTimeFrame.FIVE_MINUTE, ticker.get(), 1000,

@@ -25,6 +25,7 @@ import net.jacobpeterson.polygon.websocket.listener.PolygonStreamListenerAdapter
 import net.jacobpeterson.polygon.websocket.message.PolygonStreamMessageType;
 import net.openid.appauth.AuthorizationException;
 import net.openid.appauth.AuthorizationResponse;
+import net.openid.appauth.AuthorizationService;
 import net.openid.appauth.AuthorizationServiceConfiguration;
 import net.openid.appauth.ClientAuthentication;
 import net.openid.appauth.TokenRequest;
@@ -45,14 +46,12 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-import static com.seanmiller.alpacadashboard.LoginActivity.authService;
-
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
 
     public static AtomicReference<String> ticker;
-    public static DashboardFragment dashboardFragment;
+    private DashboardFragment dashboardFragment;
     public static SearchFragment searchFragment;
-    public static ProfileFragment profileFragment;
+    private ProfileFragment profileFragment;
     public static NoSwipePager viewPager;
     public static EmergencyFragment emergencyFragment;
     public static int lastItem = 0;
@@ -73,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         Utils.startTheme(MainActivity.this, prefs.retrieveInt("theme", Utils.THEME_DEFAULT));
 
         ClassLoader classLoader = MainActivity.class.getClassLoader();
+        assert classLoader != null;
         URL resource = classLoader.getResource("org/apache/http/message/BasicLineFormatter.class");
         System.out.println(resource);
 
@@ -215,6 +215,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
 
         AtomicReference<String> authenticationResponse = new AtomicReference<>();
+
+        AuthorizationService authService = new AuthorizationService(this);
 
         authService.performTokenRequest(tokenRequest, (tokenResponse1, ex1) -> {
 

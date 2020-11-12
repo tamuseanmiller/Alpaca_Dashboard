@@ -145,8 +145,8 @@ public class ProfileFragment extends Fragment {
         // Logout
         MaterialButton logout = mView.findViewById(R.id.logout);
         logout.setOnClickListener(v -> {
-            new SharedPreferencesManager(getActivity()).storeString("auth", "NULL");
-            new SharedPreferencesManager(getActivity()).storeString("id", "NULL");
+            new SharedPreferencesManager(getActivity()).storeString("auth_token", "NULL");
+            new SharedPreferencesManager(getActivity()).storeString("polygon_id", "NULL");
             Intent intent = new Intent(getActivity(), LoginActivity.class);
             startActivity(intent);
             requireActivity().finish();

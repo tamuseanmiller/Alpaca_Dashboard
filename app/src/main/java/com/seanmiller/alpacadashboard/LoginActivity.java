@@ -29,27 +29,23 @@ import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
 
-    public static AuthorizationService authService;
+    private AuthorizationService authService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-//        AlpacaAPI alpacaAPI = new AlpacaAPI("6fa2644b-aa45-4f8e-87fc-e54e27581e9a");
-//        try {
-//            System.out.println(alpacaAPI.getAccount());
-//        } catch (AlpacaAPIRequestException e) {
-//            e.printStackTrace();
-//        }
+        super.onCreate(savedInstanceState);
 
         // If already authenticated
-        if (!new SharedPreferencesManager(this).retrieveString("auth", "NULL").equals("NULL")) {
-            Intent intent = new Intent(this, MainActivity.class);
+        if (!new SharedPreferencesManager(this).retrieveString("auth_token", "NULL").equals("NULL") ||
+            !new SharedPreferencesManager(this).retrieveString("polygon_id", "NULL").equals("NULL")) {
+            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
             startActivity(intent);
             finish();
+            return;
         }
-        Utils.startTheme(this, new SharedPreferencesManager(this).retrieveInt("theme", Utils.THEME_DEFAULT));
 
-        super.onCreate(savedInstanceState);
+        Utils.startTheme(this, new SharedPreferencesManager(this).retrieveInt("theme", Utils.THEME_DEFAULT));
         setContentView(R.layout.activity_login);
 
         // On authenticate click
