@@ -6,13 +6,11 @@ buildscript {
         jcenter()
     }
 
-    dependencies {
-        classpath 'org.jsonschema2pojo:jsonschema2pojo-gradle-plugin:1.0.2'
-    }
 }
 
 plugins {
     id 'java'
+    id 'application'
     id 'eclipse'
     id 'maven-publish'
 }
@@ -21,9 +19,13 @@ plugins {
 apply plugin: 'jsonschema2pojo'
 tasks.getByName("generateJsonSchema2Pojo").enabled(false) // Disable default jsonSchema2Pojo task
 
+startScripts {
+    classpath += files('src/main/resources')
+}
+
 archivesBaseName = 'alpaca-java'
 group = 'net.jacobpeterson'
-version = '6.0'
+version = '5.2'
 
 repositories {
     mavenLocal()
@@ -32,19 +34,17 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.apache.httpcomponents:httpcore:4.4.13'
-    implementation 'org.apache.httpcomponents:httpclient:4.5.13'
-
     implementation 'com.google.guava:guava:24.1-jre'
-    implementation "com.mashape.unirest:unirest-java:1.4.9"
-    implementation "com.google.code.gson:gson:2.8.6"
+    implementation "com.google.code.gson:gson:2.8.5"
     implementation "commons-lang:commons-lang:20030203.000129"
     implementation 'org.apache.logging.log4j:log4j-api:2.13.3'
-//    annotationProcessor 'org.apache.logging.log4j:log4j-core:2.11.1'
+    annotationProcessor 'org.apache.logging.log4j:log4j-core:2.11.1'
     implementation "org.eclipse.jetty.websocket:javax-websocket-client-impl:9.4.28.v20200408"
+    implementation "com.mashape.unirest:unirest-java:1.4.8"
+//    implementation 'org.apache.httpcomponents:httpcore:4.4.13'
+//    implementation 'org.apache.httpcomponents:httpclient:4.5.12'
 
-
-    testImplementation 'junit:junit:4.13.1'
+    testImplementation 'junit:junit:4.13'
 }
 
 //
@@ -57,27 +57,11 @@ targetCompatibility = 1.8
 // Used to suppress java doc warnings
 javadoc.options.addStringOption('Xdoclint:none', '-quiet')
 javadoc.options.addStringOption("charset", "UTF-8")
+
+//mainClassName = 'net.jacobpeterson.polygon.PolygonExample'
+mainClassName = 'net.jacobpeterson.alpaca.AlpacaExample'
 //
 // END Build options
-//
-
-//
-// START reproducible builds
-//
-// Reference: https://dzone.com/articles/reproducible-builds-in-java
-// Prevent manifest from changing every build
-project.tasks.withType(Jar) {
-    manifest.attributes Date: ''
-    preserveFileTimestamps = false
-}
-
-// Prevent timestamps from appearing in JAR and use reproducible file order
-tasks.withType(AbstractArchiveTask) {
-    preserveFileTimestamps = false
-    reproducibleFileOrder = true
-}
-//
-// END reproducible builds
 //
 
 //
@@ -140,24 +124,6 @@ processResources {
 }
 //
 // END publishing
-//
-
-//
-// START allJar task
-//
-// Used for creating a far jar (a jar packaged with dependencies)
-task allJar(type: Jar) {
-    from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-    }
-
-    archiveClassifier.set "all"
-
-    with jar
-}
-//
-// END allJar task
 //
 
 //

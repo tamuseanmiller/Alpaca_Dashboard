@@ -50,7 +50,7 @@ public class RecyclerViewAdapterPositions extends RecyclerView.Adapter<RecyclerV
 
         String stockName = mData.get(position);
         holder.stock_name.setText(stockName);
-        SharedPreferencesManager prefs = new SharedPreferencesManager(mainActivity.getApplicationContext());
+        SharedPreferencesManager prefs = new SharedPreferencesManager(mInflater.getContext());
 
         Thread thread = new Thread(() -> {
 

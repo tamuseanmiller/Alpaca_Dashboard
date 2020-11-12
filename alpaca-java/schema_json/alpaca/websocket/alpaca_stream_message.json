@@ -6,7 +6,7 @@
   "title": "See <a href=\"https://docs.alpaca.markets/api-documentation/api-v2/streaming/\">https://docs.alpaca.markets/api-documentation/api-v2/streaming/</a>",
   "properties": {
     "stream": {
-      "existingJavaType": "net.jacobpeterson.alpaca.websocket.broker.message.AlpacaStreamMessageType",
+      "existingJavaType": "net.jacobpeterson.alpaca.websocket.message.AlpacaStreamMessageType",
       "title": "The stream type"
     }
   }

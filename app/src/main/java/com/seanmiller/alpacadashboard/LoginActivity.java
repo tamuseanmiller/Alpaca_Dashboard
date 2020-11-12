@@ -34,12 +34,12 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-        AlpacaAPI alpacaAPI = new AlpacaAPI("6fa2644b-aa45-4f8e-87fc-e54e27581e9a");
-        try {
-            System.out.println(alpacaAPI.getAccount());
-        } catch (AlpacaAPIRequestException e) {
-            e.printStackTrace();
-        }
+//        AlpacaAPI alpacaAPI = new AlpacaAPI("6fa2644b-aa45-4f8e-87fc-e54e27581e9a");
+//        try {
+//            System.out.println(alpacaAPI.getAccount());
+//        } catch (AlpacaAPIRequestException e) {
+//            e.printStackTrace();
+//        }
 
         // If already authenticated
         if (!new SharedPreferencesManager(this).retrieveString("auth", "NULL").equals("NULL")) {

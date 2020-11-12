@@ -4,19 +4,20 @@
 </a> <a href="https://opensource.org/licenses/MIT" target="_blank"><img alt="GitHub" src="https://img.shields.io/github/license/petersoj/alpaca-java"></a>    
 </p>
 
-## Overview
+# Overview
 This is a Java implementation for <a href="https://alpaca.markets/">Alpaca</a>. Alpaca  lets you build and trade with real-time market data for free. This library is community developed and if you have any questions, please ask them on the [Alpaca Slack #dev-alpaca-java channel](https://alpaca.markets/slack) or on the [Alpaca Forums](https://forum.alpaca.markets/).
 
 ## Table of Contents
-1. [Building](#building)
-2. [Gradle Integration](#gradle-integration)
-3. [Maven Integration](#maven-integration)
-4. [Maven Central Integrity](#maven-central-integrity)
-5. [Configuration](#configuration)
-6. [AlpacaAPI Example](#alpacaapi-example)
+1. [Alpaca Java Building](#alpaca-java-building)
+2. [Alpaca Java Gradle Integration](#alpaca-java-gradle-integration)
+3. [Alpaca Java Maven Integration](#alpaca-java-maven-integration)
+4. [Configuration](#configuration)
+5. [AlpacaAPI Example](#alpacaapi-example)
 7. [PolygonAPI Example](#polygonapi-example)
 
-## Building
+## Alpaca Java Building
+
+This project exposes that data as a Java project.  
 
 To build this project yourself, clone the project and run:
 
@@ -24,23 +25,17 @@ To build this project yourself, clone the project and run:
 ./gradlew build
 ```
 
-To build this project and install it to your local maven repo, run:
-
-```
-./gradlew build install
-```
-
-## Gradle Integration
+## Alpaca Java Gradle Integration
 
 Add the following dependency to your build.gradle file:
 
 ```
 dependencies {
-    compile "net.jacobpeterson:alpaca-java:6.0"
+	compile "net.jacobpeterson:alpaca-java:5.2"
 }
 ```
 
-## Maven Integration
+## Alpaca Java Maven Integration
 
 Add the following dependency to your pom.xml file:
 
@@ -48,32 +43,10 @@ Add the following dependency to your pom.xml file:
 <dependency>
     <groupId>net.jacobpeterson</groupId>
     <artifactId>alpaca-java</artifactId>
-    <version>6.0</version>
+    <version>5.2</version>
     <scope>compile</scope>
 </dependency>
 ```
-
-## Maven Central Integrity
-
-Since this community-developed library uses sensitive information (e.g. your Alpaca API keys),
-it's important to verify that the jar in Maven Central that is downloaded via Gradle or Maven is indeed the jar that is built
-from this source code that you see on this Github repository. This library has been configured to create reproducible builds
-that provide the same file checksums when built on any machine. Maven Central has a way to verify that artifacts are uploaded
-by the domain holder of the artifact group ID (e.g. `jacobpeterson.net`) via PGP artifact signing, but lacks the ability
-to verify the legitimacy of those artifacts in the context of an open-source library. To verify that this dependency
-that you use in your trading algorithm projects is indeed legitimate, we need to compare the Jar MD5 checksum in Maven Central
-with the Jar MD5 checksum from this source code:
-1. Clone the repo somewhere: `git clone https://github.com/Petersoj/alpaca-java`
-2. `cd alpaca-java`
-3. Checkout/reset to the latest version: `git reset 6.0 --hard`
-4. Build the project: `./gradlew build`
-    1. Note: if you build the project twice without a `clean` task in between (e.g. `./gradlew build; ./gradlew build`), the MD5 checksum will change.
-5. Generate the MD5 checksum: `md5 build/libs/alpaca-java-6.0.jar`
-6. Confirm that the checksum value in Maven Central is the same as in step 4:
-`curl https://repo1.maven.org/maven2/net/jacobpeterson/alpaca-java/6.0/alpaca-java-6.0.jar.md5`
-
-If the checksums are different, please [create a new issue](https://github.com/Petersoj/alpaca-java/issues/new)!
-
 ## Configuration
 
 If you plan on using the alpaca.properties, set the following properties in an alpaca.properties file on the classpath:
@@ -106,59 +79,25 @@ This example uses the `AlpacaAPI` class to subscribe to the Account and Trade Up
 AlpacaAPI alpacaAPI = new AlpacaAPI();
 
 // Register explicitly for ACCOUNT_UPDATES and ORDER_UPDATES Messages via stream listener
-try {
-    alpacaAPI.addAlpacaStreamListener(new AlpacaStreamListenerAdapter(
-            AlpacaStreamMessageType.ACCOUNT_UPDATES,
-            AlpacaStreamMessageType.TRADE_UPDATES) {
-        @Override
-        public void onStreamUpdate(AlpacaStreamMessageType streamMessageType, AlpacaStreamMessage streamMessage) {
-            switch (streamMessageType) {
-                case ACCOUNT_UPDATES:
-                    AccountUpdateMessage accountUpdateMessage = (AccountUpdateMessage) streamMessage;
-                    System.out.println("\nReceived Account Update: \n\t" +
-                            accountUpdateMessage.toString().replace(",", ",\n\t"));
-                    break;
-                case TRADE_UPDATES:
-                    TradeUpdateMessage tradeUpdateMessage = (TradeUpdateMessage) streamMessage;
-                    System.out.println("\nReceived Order Update: \n\t" +
-                            tradeUpdateMessage.toString().replace(",", ",\n\t"));
-                    break;
-            }
+alpacaAPI.addAlpacaStreamListener(new AlpacaStreamListenerAdapter(
+        AlpacaStreamMessageType.ACCOUNT_UPDATES,
+        AlpacaStreamMessageType.TRADE_UPDATES) {
+    @Override
+    public void onStreamUpdate(AlpacaStreamMessageType streamMessageType, AlpacaStreamMessage streamMessage) {
+        switch (streamMessageType) {
+            case ACCOUNT_UPDATES:
+                AccountUpdateMessage accountUpdateMessage = (AccountUpdateMessage) streamMessage;
+                System.out.println("\nReceived Account Update: \n\t" +
+                        accountUpdateMessage.toString().replace(",", ",\n\t"));
+                break;
+            case TRADE_UPDATES:
+                TradeUpdateMessage tradeUpdateMessage = (TradeUpdateMessage) streamMessage;
+                System.out.println("\nReceived Order Update: \n\t" +
+                        tradeUpdateMessage.toString().replace(",", ",\n\t"));
+                break;
         }
-    });
-} catch (WebsocketException e) {
-    e.printStackTrace();
-}
-
-// Add an Alpaca Market data stream listener to listen to "T.AAPL", "Q.AAPL", and "AM.AAPL" messages
-try {
-    alpacaAPI.addMarketDataStreamListener(
-        new MarketDataStreamListenerAdapter("AAPL", MarketDataStreamMessageType.values()) {
-            @Override
-            public void onStreamUpdate(MarketDataStreamMessageType streamMessageType,
-                    MarketDataStreamMessage streamMessage) {
-                switch (streamMessageType) {
-                    case QUOTES:
-                        QuoteMessage quoteMessage = (QuoteMessage) streamMessage;
-                        System.out.println("\nQuote Update: \n\t" +
-                                quoteMessage.toString().replace(",", ",\n\t"));
-                        break;
-                    case TRADES:
-                        TradeMessage tradeMessage = (TradeMessage) streamMessage;
-                        System.out.println("\nTrade Update: \n\t" +
-                                tradeMessage.toString().replace(",", ",\n\t"));
-                        break;
-                    case AGGREGATE_MINUTE:
-                        AggregateMinuteMessage aggregateMinuteMessage = (AggregateMinuteMessage) streamMessage;
-                        System.out.println("\nAggregate Minute Update: \n\t" +
-                                aggregateMinuteMessage.toString().replace(",", ",\n\t"));
-                        break;
-                }
-            }
-        });
-} catch (WebsocketException e) {
-    e.printStackTrace();
-}
+    }
+});
 
 // Get Account Information
 try {
@@ -213,13 +152,20 @@ try {
 } catch (AlpacaAPIRequestException e) {
     e.printStackTrace();
 }
+
+// Keep the Alpaca websocket stream open for 5 seconds
+try {
+    Thread.sleep(5000);
+} catch (InterruptedException e) {
+    e.printStackTrace();
+}
 ```
 
 This code will output the following:
 
 ```
 Account Information:
-        Account@626abbd0[id=<account id>,
+        io.github.mainstringargs.domain.alpaca.account.Account@626abbd0[id=<account id>,
         accountNumber=<account number>,
         status=ACTIVE,
         currency=USD,
@@ -247,7 +193,7 @@ Account Information:
         regtBuyingPower=92734.08]
 
 New AAPL Order:
-        Order@37313c65[id=<order id>,
+        io.github.mainstringargs.domain.alpaca.order.Order@37313c65[id=<order id>,
         clientOrderId=929e412f-32b6-4ddf-9729-d77a59c19ec8,
         createdAt=2019-11-26T03:41:10.475959154Z,
         updatedAt=2019-11-26T03:41:10.481465924Z,
@@ -274,7 +220,7 @@ Received Order Update:
 	 OrderUpdateMessage [event=NEW,
             price=null,
             timestamp=null,
-            order=net.jacobpeterson.alpaca.domain.Order@5c728415[id=<order id>,
+            order=io.github.mainstringargs.alpaca.domain.Order@5c728415[id=<order id>,
             clientOrderId=e23ca503-ebec-4754-b65a-ee42806fc67d,
             createdAt=2019-11-23T14:41:05.503352Z,
             updatedAt=2019-11-23T14:41:05.599835871Z,
@@ -299,12 +245,12 @@ Received Order Update:
 
 
 Day Trade Watchlist:
-        Watchlist@34bde49d[id=7c414350-79d8-4527-8892-f1667faa712a,
+        io.github.mainstringargs.domain.alpaca.watchlist.Watchlist@34bde49d[id=7c414350-79d8-4527-8892-f1667faa712a,
         createdAt=2019-11-26T03:20:31.953679Z,
         updatedAt=2019-11-26T03:20:31.953679Z,
         name=Day Trade,
         accountId=<account id>,
-        assets=[Asset@1b1cfb87[id=b0b6dd9d-8b9b-48a9-ba46-b9d54906e415,
+        assets=[io.github.mainstringargs.domain.alpaca.asset.Asset@1b1cfb87[id=b0b6dd9d-8b9b-48a9-ba46-b9d54906e415,
         _class=us_equity,
         exchange=NASDAQ,
         symbol=AAPL,
@@ -352,7 +298,7 @@ Bars response:
         Volume: 1.4021695E7
 ```
 
-## PolygonAPI Example
+# PolygonAPI Example
 
 This example uses the `PolygonAPI` class to subscribe to the Polygon websocket stream, get stocks splits, and get aggregates. Click [here](https://polygon.io/docs/) for the general Polygon API documentation and click [here](https://javadoc.io/doc/net.jacobpeterson/alpaca-java/latest/net/jacobpeterson/polygon/PolygonAPI.html) for the `PolygonAPI` javadoc.
 
@@ -363,15 +309,18 @@ PolygonAPI polygonAPI = new PolygonAPI();
 String aaplTicker = "AAPL";
 
 // Add a Polygon stream listener to listen to "T.AAPL", "Q.AAPL", "A.AAPL", "AM.AAPL", and status messages
+polygonAPI.addPolygonStreamListener(new PolygonStreamListenerAdapter(aaplTicker,
+        PolygonStreamMessageType.values()) {
+    @Override
+    public void onStreamUpdate(PolygonStreamMessageType streamMessageType, PolygonStreamMessage streamMessage) {
+        System.out.println("===> streamUpdate " + streamMessageType + " " + streamMessage);
+    }
+});
+
+// Sleep the current thread for 2 seconds so we can see some trade/quote/aggregates updates on the stream!
 try {
-    polygonAPI.addPolygonStreamListener(new PolygonStreamListenerAdapter(aaplTicker,
-            PolygonStreamMessageType.values()) {
-        @Override
-        public void onStreamUpdate(PolygonStreamMessageType streamMessageType, PolygonStreamMessage streamMessage) {
-            System.out.println("===> streamUpdate " + streamMessageType + " " + streamMessage);
-        }
-    });
-} catch (WebsocketException e) {
+    Thread.sleep(2000);
+} catch (InterruptedException e) {
     e.printStackTrace();
 }
 
@@ -413,21 +362,21 @@ This code will output the following:
 [INFO ] 2019-11-25 21:33:20.489 [main] PolygonWebsocketClient - Subscribing to Q.AAPL
 [DEBUG] 2019-11-25 21:33:20.491 [main] PolygonWebsocketClientEndpoint - sendMessage {"action":"subscribe","params":"A.AAPL,T.AAPL,AM.AAPL,Q.AAPL"}
 [INFO ] 2019-11-25 21:33:20.492 [main] PolygonWebsocketClient - Subscriptions updated to {AAPL=[AGGREGATE_PER_SECOND, TRADES, AGGREGATE_PER_MINUTE, QUOTES]}
-[INFO] 2019-11-25 21:33:20.508 [PolygonWebsocketThread] PolygonWebsocketClient - Channel status: net.jacobpeterson.domain.polygon.websocket.ChannelStatus@78428bcb[ev=status,status=connected,message=Connected Successfully]
-[INFO] 2019-11-25 21:33:20.667 [PolygonWebsocketThread] PolygonWebsocketClient - Channel status: net.jacobpeterson.domain.polygon.websocket.ChannelStatus@629dc521[ev=status,status=auth_success,message=authenticated]
-[INFO] 2019-11-25 21:33:20.735 [PolygonWebsocketThread] PolygonWebsocketClient - Channel status: net.jacobpeterson.domain.polygon.websocket.ChannelStatus@7f4d9c50[ev=status,status=success,message=subscribed to: A.AAPL]
-[INFO] 2019-11-25 21:33:20.737 [PolygonWebsocketThread] PolygonWebsocketClient - Channel status: net.jacobpeterson.domain.polygon.websocket.ChannelStatus@2aa9728c[ev=status,status=success,message=subscribed to: T.AAPL]
-[INFO] 2019-11-25 21:33:20.738 [PolygonWebsocketThread] PolygonWebsocketClient - Channel status: net.jacobpeterson.domain.polygon.websocket.ChannelStatus@4659b8c1[ev=status,status=success,message=subscribed to: AM.AAPL]
-[INFO] 2019-11-25 21:33:20.738 [PolygonWebsocketThread] PolygonWebsocketClient - Channel status: net.jacobpeterson.domain.polygon.websocket.ChannelStatus@4a61d9e6[ev=status,status=success,message=subscribed to: Q.AAPL]
-===> streamUpdate QUOTES QuotesMessage [ticker=AAPL, channelType=QUOTES, stockQuote=net.jacobpeterson.polygon.domain.StockQuote@4d5b710e[ev=<null>,sym=AAPL,bx=12,bp=124.86,bs=6,ax=12,ap=124.87,as=5,c=1,t=1559143439610], timestamp=2019-05-29T10:23:59.610]
-===> streamUpdate QUOTES QuotesMessage [ticker=AAPL, channelType=QUOTES, stockQuote=net.jacobpeterson.polygon.domain.StockQuote@16b79976[ev=<null>,sym=AAPL,bx=12,bp=124.86,bs=4,ax=12,ap=124.87,as=5,c=1,t=1559143439712], timestamp=2019-05-29T10:23:59.712]
-===> streamUpdate TRADES TradesMessage [ticker=AAPL, channelType=TRADES, stockTrade=net.jacobpeterson.polygon.domain.StockTrade@32b4aa49[ev=<null>,sym=AAPL,x=4,p=124.86,s=100,c=[],t=1559143439772], timestamp=2019-05-29T10:23:59.772]
-===> streamUpdate AGGREGATE_PER_SECOND AggregateMessage [ticker=AAPL, channelType=AGGREGATE_PER_SECOND, stockAggregate=net.jacobpeterson.polygon.domain.StockAggregate@5ace47f7[ev=<null>,sym=AAPL,v=1131,av=6602041,op=125.5,vw=124.9778,o=124.8665,c=124.86,h=124.8665,l=124.86,a=124.8636,s=1559143439000,e=1559143440000], start=2019-05-29T10:23:59, end=2019-05-29T10:24]
+[INFO] 2019-11-25 21:33:20.508 [PolygonWebsocketThread] PolygonWebsocketClient - Channel status: io.github.mainstringargs.domain.polygon.websocket.ChannelStatus@78428bcb[ev=status,status=connected,message=Connected Successfully]
+[INFO] 2019-11-25 21:33:20.667 [PolygonWebsocketThread] PolygonWebsocketClient - Channel status: io.github.mainstringargs.domain.polygon.websocket.ChannelStatus@629dc521[ev=status,status=auth_success,message=authenticated]
+[INFO] 2019-11-25 21:33:20.735 [PolygonWebsocketThread] PolygonWebsocketClient - Channel status: io.github.mainstringargs.domain.polygon.websocket.ChannelStatus@7f4d9c50[ev=status,status=success,message=subscribed to: A.AAPL]
+[INFO] 2019-11-25 21:33:20.737 [PolygonWebsocketThread] PolygonWebsocketClient - Channel status: io.github.mainstringargs.domain.polygon.websocket.ChannelStatus@2aa9728c[ev=status,status=success,message=subscribed to: T.AAPL]
+[INFO] 2019-11-25 21:33:20.738 [PolygonWebsocketThread] PolygonWebsocketClient - Channel status: io.github.mainstringargs.domain.polygon.websocket.ChannelStatus@4659b8c1[ev=status,status=success,message=subscribed to: AM.AAPL]
+[INFO] 2019-11-25 21:33:20.738 [PolygonWebsocketThread] PolygonWebsocketClient - Channel status: io.github.mainstringargs.domain.polygon.websocket.ChannelStatus@4a61d9e6[ev=status,status=success,message=subscribed to: Q.AAPL]
+===> streamUpdate QUOTES QuotesMessage [ticker=AAPL, channelType=QUOTES, stockQuote=io.github.mainstringargs.polygon.domain.StockQuote@4d5b710e[ev=<null>,sym=AAPL,bx=12,bp=124.86,bs=6,ax=12,ap=124.87,as=5,c=1,t=1559143439610], timestamp=2019-05-29T10:23:59.610]
+===> streamUpdate QUOTES QuotesMessage [ticker=AAPL, channelType=QUOTES, stockQuote=io.github.mainstringargs.polygon.domain.StockQuote@16b79976[ev=<null>,sym=AAPL,bx=12,bp=124.86,bs=4,ax=12,ap=124.87,as=5,c=1,t=1559143439712], timestamp=2019-05-29T10:23:59.712]
+===> streamUpdate TRADES TradesMessage [ticker=AAPL, channelType=TRADES, stockTrade=io.github.mainstringargs.polygon.domain.StockTrade@32b4aa49[ev=<null>,sym=AAPL,x=4,p=124.86,s=100,c=[],t=1559143439772], timestamp=2019-05-29T10:23:59.772]
+===> streamUpdate AGGREGATE_PER_SECOND AggregateMessage [ticker=AAPL, channelType=AGGREGATE_PER_SECOND, stockAggregate=io.github.mainstringargs.polygon.domain.StockAggregate@5ace47f7[ev=<null>,sym=AAPL,v=1131,av=6602041,op=125.5,vw=124.9778,o=124.8665,c=124.86,h=124.8665,l=124.86,a=124.8636,s=1559143439000,e=1559143440000], start=2019-05-29T10:23:59, end=2019-05-29T10:24]
 
 AAPL Stock Split Response:
         Status: OK
         Count: 3
-        StockSplit@6b09fb41[ticker=AAPL,
+        io.github.mainstringargs.domain.polygon.stocksplits.StockSplit@6b09fb41[ticker=AAPL,
         exDate=2014-06-09,
         paymentDate=2014-06-09,
         recordDate=<null>,
@@ -440,7 +389,7 @@ AAPL Stock Split Response:
 Aggregate Response:
         Status: OK
         Count: 5.0
-        Aggregate@6cd24612[ticker=<null>,
+        io.github.mainstringargs.domain.polygon.aggregates.Aggregate@6cd24612[ticker=<null>,
         v=23984783,
         o=265.8,
         c=267.1,
@@ -448,7 +397,7 @@ Aggregate Response:
         l=264.23,
         t=1574053200000,
         n=1]
-        Aggregate@5dafbe45[ticker=<null>,
+        io.github.mainstringargs.domain.polygon.aggregates.Aggregate@5dafbe45[ticker=<null>,
         v=21208039,
         o=267.9,
         c=266.29,

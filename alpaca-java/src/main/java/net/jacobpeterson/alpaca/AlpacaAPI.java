@@ -146,7 +146,7 @@ public class AlpacaAPI {
      */
     public AlpacaAPI(String apiVersion, String keyID, String secret, String oAuthToken, String baseAPIURL,
             String baseDataURL) {
-        Preconditions.checkState((keyID != null && secret != null) || !oAuthToken.equals("NULL"));
+        Preconditions.checkState((keyID != null && secret != null) || oAuthToken != null);
 
         this.apiVersion = apiVersion;
         this.keyID = keyID;
