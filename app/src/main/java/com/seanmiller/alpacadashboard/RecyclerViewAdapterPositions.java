@@ -50,11 +50,12 @@ public class RecyclerViewAdapterPositions extends RecyclerView.Adapter<RecyclerV
 
         String stockName = mData.get(position);
         holder.stock_name.setText(stockName);
+        SharedPreferencesManager prefs = new SharedPreferencesManager(mInflater.getContext());
 
         Thread thread = new Thread(() -> {
 
-            PolygonAPI polygonAPI = new PolygonAPI();
-            AlpacaAPI alpacaAPI = new AlpacaAPI();
+            PolygonAPI polygonAPI = new PolygonAPI(prefs.retrieveString("polygon_id", "NULL"));
+            AlpacaAPI alpacaAPI = new AlpacaAPI(prefs.retrieveString("auth_token", "NULL"));
 
             // Get Last value
             float close = 0;

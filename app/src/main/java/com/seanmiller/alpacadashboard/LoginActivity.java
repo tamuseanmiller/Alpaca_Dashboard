@@ -11,6 +11,8 @@ import androidx.browser.customtabs.CustomTabsIntent;
 
 import com.google.android.material.button.MaterialButton;
 
+import net.jacobpeterson.alpaca.AlpacaAPI;
+import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
 import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationException;
 import net.openid.appauth.AuthorizationRequest;
@@ -27,20 +29,23 @@ import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
 
-    public static AuthorizationService authService;
+    private AuthorizationService authService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
+        super.onCreate(savedInstanceState);
+
         // If already authenticated
-        if (!new SharedPreferencesManager(this).retrieveString("auth", "NULL").equals("NULL")) {
-            Intent intent = new Intent(this, MainActivity.class);
+        if (!new SharedPreferencesManager(this).retrieveString("auth_token", "NULL").equals("NULL") ||
+            !new SharedPreferencesManager(this).retrieveString("polygon_id", "NULL").equals("NULL")) {
+            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
             startActivity(intent);
             finish();
+            return;
         }
-        Utils.startTheme(this, new SharedPreferencesManager(this).retrieveInt("theme", Utils.THEME_DEFAULT));
 
-        super.onCreate(savedInstanceState);
+        Utils.startTheme(this, new SharedPreferencesManager(this).retrieveInt("theme", Utils.THEME_DEFAULT));
         setContentView(R.layout.activity_login);
 
         // On authenticate click

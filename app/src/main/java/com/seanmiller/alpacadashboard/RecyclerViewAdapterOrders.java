@@ -31,7 +31,7 @@ public class RecyclerViewAdapterOrders extends RecyclerView.Adapter<RecyclerView
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.recyclerview_order, parent, false);
         return new ViewHolder(view);
     }
@@ -44,44 +44,48 @@ public class RecyclerViewAdapterOrders extends RecyclerView.Adapter<RecyclerView
 //        holder.shrQty.setText(mData.get(position).getQty());
 //        holder.timeClosed.setText(mData.get(position).getFilledAt().getMonth().getValue() + "/" + mData.get(position).getFilledAt().getDayOfMonth() + "/" + mData.get(position).getFilledAt().getYear() /*+ "\n" + mData.get(position).getFilledAt().getHour() + ":" + mData.get(position).getFilledAt().getMinute()*/);
 
-        // Fetches 12hour hour:minute format including am/pm
-        if (mData.get(position).getFilledAt() != null) {
-            int hourTemp = mData.get(position).getFilledAt().toLocalTime().getHour();
-            String hour = "";
-            String minute = String.valueOf(mData.get(position).getFilledAt().toLocalTime().getMinute());
-            if (Integer.parseInt(minute) < 10) {
-                minute = "0" + minute;
-            }
-            minute += "am";
-            if (hourTemp > 12) {
-                hourTemp -= 12;
-                minute = minute.substring(0, minute.length() - 2);
-                minute += "pm";
-            }
-            hour = String.valueOf(hourTemp);
-            holder.timeClosed.setText(hour + ":" + minute);
-            holder.price.setText("$" + mData.get(position).getFilledAvgPrice());
-            holder.pricePlaced.setText(mData.get(position).getSide() + " " + mData.get(position).getQty());
+        Thread thread = new Thread(() -> {
 
-        } else {
-            int hourTemp = mData.get(position).getCanceledAt().getHour();
-            String hour = "";
-            String minute = String.valueOf(mData.get(position).getCanceledAt().getMinute());
-            if (Integer.parseInt(minute) < 10) {
-                minute = "0" + minute;
-            }
-            minute += "am";
-            if (hourTemp > 12) {
-                hourTemp -= 12;
-                minute = minute.substring(0, minute.length() - 2);
-                minute += "pm";
-            }
+            // Fetches 12hour hour:minute format including am/pm
+            if (mData.get(position).getFilledAt() != null) {
+                int hourTemp = mData.get(position).getFilledAt().toLocalTime().getHour();
+                String hour = "";
+                String minute = String.valueOf(mData.get(position).getFilledAt().toLocalTime().getMinute());
+                if (Integer.parseInt(minute) < 10) {
+                    minute = "0" + minute;
+                }
+                minute += "am";
+                if (hourTemp > 12) {
+                    hourTemp -= 12;
+                    minute = minute.substring(0, minute.length() - 2);
+                    minute += "pm";
+                }
+                hour = String.valueOf(hourTemp);
+                holder.timeClosed.setText(hour + ":" + minute);
+                holder.price.setText("$" + mData.get(position).getFilledAvgPrice());
+                holder.pricePlaced.setText(mData.get(position).getSide() + " " + mData.get(position).getQty());
 
-            hour = String.valueOf(hourTemp);
-            holder.timeClosed.setText(hour + ":" + minute);
-            holder.price.setText("Cancelled");
-            holder.pricePlaced.setText(mData.get(position).getSide() + " " + mData.get(position).getQty());
-        }
+            } else {
+                int hourTemp = mData.get(position).getCanceledAt().getHour();
+                String hour = "";
+                String minute = String.valueOf(mData.get(position).getCanceledAt().getMinute());
+                if (Integer.parseInt(minute) < 10) {
+                    minute = "0" + minute;
+                }
+                minute += "am";
+                if (hourTemp > 12) {
+                    hourTemp -= 12;
+                    minute = minute.substring(0, minute.length() - 2);
+                    minute += "pm";
+                }
+
+                hour = String.valueOf(hourTemp);
+                holder.timeClosed.setText(hour + ":" + minute);
+                holder.price.setText("Cancelled");
+                holder.pricePlaced.setText(mData.get(position).getSide() + " " + mData.get(position).getQty());
+            }
+        });
+        thread.start();
 
     }
 

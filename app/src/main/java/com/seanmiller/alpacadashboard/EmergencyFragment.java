@@ -20,6 +20,7 @@ import net.jacobpeterson.alpaca.enums.OrderTimeInForce;
 import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
 import net.jacobpeterson.domain.alpaca.order.Order;
 import net.jacobpeterson.domain.alpaca.position.Position;
+import net.jacobpeterson.polygon.PolygonAPI;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -37,7 +38,7 @@ public class EmergencyFragment extends Fragment {
             boolean check = false;
             for (Position i : positions) {
                 try {
-                    alpacaAPI.requestNewMarketOrder(i.getSymbol(), Integer.valueOf(i.getQty()), OrderSide.SELL, OrderTimeInForce.DAY, null);
+                    alpacaAPI.requestNewMarketOrder(i.getSymbol(), Integer.valueOf(i.getQty()), OrderSide.SELL, OrderTimeInForce.DAY);
                     check = true;
 
                 } catch (AlpacaAPIRequestException e) {
@@ -72,7 +73,7 @@ public class EmergencyFragment extends Fragment {
         MaterialButton liquidate = mView.findViewById(R.id.liquidateButton);
         MaterialButton cancel = mView.findViewById(R.id.cancelButton);
 
-        AlpacaAPI alpacaAPI = new AlpacaAPI();
+        AlpacaAPI alpacaAPI = new AlpacaAPI(new SharedPreferencesManager(getActivity()).retrieveString("auth_token", "NULL"));
 
         liquidate.setOnClickListener(v -> {
             ArrayList<Position> positions = null;

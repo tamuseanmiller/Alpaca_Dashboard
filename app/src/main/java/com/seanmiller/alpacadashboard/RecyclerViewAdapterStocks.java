@@ -43,8 +43,8 @@ public class RecyclerViewAdapterStocks extends RecyclerView.Adapter<RecyclerView
         String stockName = mData.get(position);
         holder.myTextView.setText(stockName);
 
-        PolygonAPI polygonAPI = new PolygonAPI();
-        AlpacaAPI alpacaAPI = new AlpacaAPI();
+//        PolygonAPI polygonAPI = new PolygonAPI();
+//        AlpacaAPI alpacaAPI = new AlpacaAPI();
 
     }
 

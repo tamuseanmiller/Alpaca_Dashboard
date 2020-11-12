@@ -1,4 +1,4 @@
-package net.jacobpeterson.alpaca.properties;
+package net.jacobpeterson.alpaca.properties.properties;
 
 import java.util.StringJoiner;
 
