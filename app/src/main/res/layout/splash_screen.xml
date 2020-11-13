@@ -12,7 +12,7 @@
         android:layout_height="250dp"
         android:translationY="-40dp"
         android:layout_centerInParent="true"
-        android:src="@drawable/ic_launcher_background"/>
+        android:src="@drawable/ic_launcher_background_old"/>
 
     <TextView
         android:layout_width="wrap_content"

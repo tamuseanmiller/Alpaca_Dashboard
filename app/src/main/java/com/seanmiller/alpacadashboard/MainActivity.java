@@ -13,11 +13,15 @@ import android.os.StrictMode;
 import android.view.MenuItem;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import net.jacobpeterson.alpaca.AlpacaAPI;
+import net.jacobpeterson.alpaca.enums.AccountStatus;
+import net.jacobpeterson.alpaca.enums.OrderTimeInForce;
 import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
+import net.jacobpeterson.domain.alpaca.account.Account;
 import net.jacobpeterson.domain.polygon.websocket.PolygonStreamMessage;
 import net.jacobpeterson.domain.polygon.websocket.quote.QuoteMessage;
 import net.jacobpeterson.polygon.PolygonAPI;
@@ -91,14 +95,14 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
 //        runOnUiThread(() -> {
 
-            // Create viewpager for bottombar fragments
-            viewPager = findViewById(R.id.viewPager);
-            viewPager.setPagingEnabled(false);
-            pagerAdapter = new BottomBarAdapter(getSupportFragmentManager());
+        // Create viewpager for bottombar fragments
+        viewPager = findViewById(R.id.viewPager);
+        viewPager.setPagingEnabled(false);
+        pagerAdapter = new BottomBarAdapter(getSupportFragmentManager());
 
-            BottomNavigationView bottomNavigation = findViewById(R.id.bottom_navigation);
-            bottomNavigation.bringToFront();
-            bottomNavigation.setOnNavigationItemSelectedListener(this);
+        BottomNavigationView bottomNavigation = findViewById(R.id.bottom_navigation);
+        bottomNavigation.bringToFront();
+        bottomNavigation.setOnNavigationItemSelectedListener(this);
 
 //        });
 
@@ -229,28 +233,39 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 System.out.println(tokenResponse1.accessToken);
                 authenticationResponse.set(tokenResponse1.accessToken);
 
-                // Fetch Polygon Id and add to SharedPreferences
+                Account account = null;
+                AlpacaAPI alpacaAPI = new AlpacaAPI(tokenResponse1.accessToken);
                 try {
-
-                    // Create Client and request
-                    OkHttpClient client = new OkHttpClient();
-                    Request request = new Request.Builder()
-                            .url("https://api.alpaca.markets/oauth/token")
-                            .addHeader("Authorization", "Bearer " + tokenResponse1.accessToken).build();
-
-                    // Catch response after execution
-                    Response response = client.newCall(request).execute();
-
-                    // Convert response to json to find the field
-                    JSONObject jsonObject = new JSONObject(Objects.requireNonNull(response.body()).string());
-                    System.out.println(jsonObject.get("id"));
-                    prefs.storeString("polygon_id", jsonObject.get("id").toString());
-
-                } catch (IOException | JSONException e) {
+                    account = alpacaAPI.getAccount();
+                } catch (AlpacaAPIRequestException e) {
                     e.printStackTrace();
                 }
 
-                // Authenticate Polygon as well
+                // Check for if account is funded
+                if (account != null && Float.parseFloat(account.getPortfolioValue()) > 0 && account.getStatus() == AccountStatus.ACTIVE) {
+
+                    // Fetch Polygon Id and add to SharedPreferences
+                    try {
+
+                        // Create Client and request
+                        OkHttpClient client = new OkHttpClient();
+                        Request request = new Request.Builder()
+                                .url("https://api.alpaca.markets/oauth/token")
+                                .addHeader("Authorization", "Bearer " + tokenResponse1.accessToken).build();
+
+                        // Catch response after execution
+                        Response response = client.newCall(request).execute();
+
+                        // Convert response to json to find the field
+                        JSONObject jsonObject = new JSONObject(Objects.requireNonNull(response.body()).string());
+                        System.out.println(jsonObject.get("id"));
+                        prefs.storeString("polygon_id", jsonObject.get("id").toString());
+
+                    } catch (IOException | JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    // Authenticate Polygon as well
 //                HttpResponse<JsonNode> nodeHttpResponse = null;
 //                try {
 //                    nodeHttpResponse = Unirest.get("https://api.alpaca.markets/oauth/token")
@@ -259,12 +274,28 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 //                    e.printStackTrace();
 //                }
 
-                // Add Polygon ID to SharedPreferences
+                    // Add Polygon ID to SharedPreferences
 //                try {
 //                    prefs.storeString("polygon_id", nodeHttpResponse.getBody().getObject().get("id").toString());
 //
 //                } catch (JSONException e) {
 //                    e.printStackTrace();
+
+                // If account is not funded
+                } else {
+
+                    AtomicReference<MaterialAlertDialogBuilder> dialogBuilder = new AtomicReference<>(new MaterialAlertDialogBuilder(this, R.style.DialogThemePositive));
+                    dialogBuilder.get().setTitle("Account is not Funded");
+                    dialogBuilder.get().setMessage("Your Alpaca Account is not funded, and therefore cannot be used to authenticate.");
+                    dialogBuilder.get().setNeutralButton("Cancel", (dialogInterface, i) -> {
+                        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                        startActivity(intent);
+                        finish();
+                        prefs.storeString("auth_token", "NULL");
+                        dialogInterface.dismiss();
+                    });
+                    dialogBuilder.get().create().show();
+                }
 //                }
 
             } else {

@@ -50,4 +50,16 @@
     <string name="description">Dashboard for all things Alpaca!</string>
     <string name="log_out">Log Out</string>
     <string name="statistics">Statistics</string>
+    <string name="dividend_yield">Dividend Yield</string>
+    <string name="assets">Assets</string>
+    <string name="debt">Debt</string>
+    <string name="debt_to_equity_ratio">Debt to Equity Ratio</string>
+    <string name="gross_profit">Gross Profit</string>
+    <string name="earnings_per_share">Earnings Per Share</string>
+    <string name="gross_margin">Gross Margin</string>
+    <string name="market_cap">Market Cap</string>
+    <string name="net_cash_flow">Net Cash Flow</string>
+    <string name="price_to_earnings_ratio">Price to Earnings Ratio</string>
+    <string name="price_to_earnings">Price to Earnings</string>
+    <string name="revenues">Revenues</string>
 </resources>

@@ -54,6 +54,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -94,7 +95,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
 
 
     public int fetchHeight() {
-        WindowMetrics windowMetrics = getActivity().getWindowManager().getCurrentWindowMetrics();
+        WindowMetrics windowMetrics = requireActivity().getWindowManager().getCurrentWindowMetrics();
         Insets insets = windowMetrics.getWindowInsets()
                 .getInsetsIgnoringVisibility(WindowInsets.Type.systemBars());
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
@@ -605,11 +606,8 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
 
                 // Gather old portfolio data
                 history = new ArrayList<>();
-                int finalLength = periodLength;
                 try {
-                    PortfolioHistory portVal = null;
-                    portVal = alpacaAPI.getPortfolioHistory(finalLength, periodUnit, timeFrame, LocalDate.now(), true);
-                    finalLength++;
+                    PortfolioHistory portVal = alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, LocalDate.now(), true);
                     history = portVal.getEquity();
 
                 } catch (AlpacaAPIRequestException e) {
@@ -617,11 +615,24 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
                 }
             }
 
-            // Add data to chart
-            if (history.size() != 0) {
-                for (Double i : history) {
-                    if (i != null) {
-                        selectedAdapterInitial.addVal(Float.parseFloat(String.valueOf(i)));
+            // Fixes weird bug with repeating data on week period
+            if (periodUnit == PortfolioPeriodUnit.WEEK) {
+                // Add data to chart
+                if (history.size() != 0) {
+                    for (int i = 10; i < history.size(); i++) {
+                        if (history.get(i) != null) {
+                            selectedAdapterInitial.addVal(Float.parseFloat(String.valueOf(history.get(i))));
+                        }
+                    }
+                }
+
+            } else {
+                // Add data to chart
+                if (history.size() != 0) {
+                    for (int i = 0; i < history.size(); i++) {
+                        if (history.get(i) != null) {
+                            selectedAdapterInitial.addVal(Float.parseFloat(String.valueOf(history.get(i))));
+                        }
                     }
                 }
             }
@@ -657,12 +668,11 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
 
                 // Set colors
                 if (selectedAdapter.getProfit() >= 0) {
-
                     setDashboardColors(true, selectedAdapter.getProfit(), selectedAdapter.getPercent());
 
                 } else {
-
                     setDashboardColors(false, selectedAdapter.getProfit(), selectedAdapter.getPercent());
+
                 }
 
             });

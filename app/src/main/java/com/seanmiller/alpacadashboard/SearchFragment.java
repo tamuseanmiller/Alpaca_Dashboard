@@ -183,7 +183,7 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
                 });
             }
         });
-        thread.start();
+//        thread.start();
 
         return mView;
     }
