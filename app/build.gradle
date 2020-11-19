@@ -84,6 +84,9 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation "com.mikepenz:aboutlibraries:8.4.3"
     implementation 'com.ramotion.foldingcell:folding-cell:1.2.3'
+    implementation "androidx.browser:browser:1.2.0"
+    implementation 'com.klinkerapps:article_viewer:0.26.0'
+    implementation 'com.rometools:rome:1.15.0'
 
 //required support lib modules
 //    implementation "androidx.cardview:cardview:2.3.0"

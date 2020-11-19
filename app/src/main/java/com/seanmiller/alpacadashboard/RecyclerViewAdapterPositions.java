@@ -127,6 +127,16 @@ public class RecyclerViewAdapterPositions extends RecyclerView.Adapter<RecyclerV
 
     }
 
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return position;
+    }
+
     // total number of rows
     @Override
     public int getItemCount() {

@@ -4,35 +4,18 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.ActivityOptions;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
-import android.graphics.Rect;
-import android.graphics.RectF;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
-import android.util.DisplayMetrics;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
-import com.google.android.material.imageview.ShapeableImageView;
-import com.google.android.material.shape.CornerFamily;
-import com.google.android.material.shape.CornerSize;
-import com.google.android.material.shape.ShapeAppearanceModel;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -43,7 +26,11 @@ import com.lapism.search.widget.MaterialSearchView;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import com.ramotion.foldingcell.FoldingCell;
+import com.rometools.rome.feed.synd.SyndEntry;
+import com.rometools.rome.feed.synd.SyndFeed;
+import com.rometools.rome.io.FeedException;
+import com.rometools.rome.io.SyndFeedInput;
+import com.rometools.rome.io.XmlReader;
 
 import net.jacobpeterson.alpaca.AlpacaAPI;
 import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
@@ -53,20 +40,15 @@ import net.jacobpeterson.domain.polygon.tickers.ticker.Ticker;
 import net.jacobpeterson.polygon.PolygonAPI;
 import net.jacobpeterson.polygon.rest.exception.PolygonAPIRequestException;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import io.cabriole.decorator.GridMarginDecoration;
 import io.cabriole.decorator.LinearMarginDecoration;
 
 import static android.app.Activity.RESULT_OK;
-import static android.content.ContentValues.TAG;
 import static android.os.FileUtils.copy;
 
 public class SearchFragment extends Fragment implements SearchLayout.OnQueryTextListener, SearchableAdapter.ItemClickListener {
@@ -75,7 +57,7 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
     private MaterialSearchView materialSearch;
     private SearchableAdapter searchableAdapter;
     private RecyclerView newsRecycler;
-    private RecyclerViewAdapterNews test;
+    private RecyclerViewAdapterNews newsAdapter;
     private SharedPreferencesManager prefs;
 
 
@@ -137,53 +119,78 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
 
             // Fetch news for positions
             PolygonAPI polygonAPI = new PolygonAPI(prefs.retrieveString("polygon_id", "NULL"));
-//            ArrayList<Position> stocks = null;
-//            try {
-//                stocks = alpacaAPI.getOpenPositions();
-//            } catch (AlpacaAPIRequestException e) {
-//                e.printStackTrace();
-//            }
+            AlpacaAPI alpacaAPI = new AlpacaAPI(prefs.retrieveString("auth_token", "NULL"));
+            ArrayList<Position> positions = null;
+            try {
+                positions = alpacaAPI.getOpenPositions();
+            } catch (AlpacaAPIRequestException e) {
+                e.printStackTrace();
+            }
 
-            ArrayList<String> stocks = new ArrayList<>();
-            stocks.add("AAPL");
-            stocks.add("AMD");
-            ArrayList<TickerNews> news = null;
-            if (stocks != null) {
-                for (/*Position*/String stock : stocks) {
+            ArrayList<TickerNews> news = new ArrayList<>();
+            List<SyndEntry> feed = new ArrayList<>();
+
+            // If no positions, show news for AAPL and AMD
+            if (positions == null || positions.isEmpty()) {
+                ArrayList<String> stocks = new ArrayList<>();
+                stocks.add("AAPL");
+                stocks.add("AMD");
+                for (String stock : stocks) {
                     try {
-                        news = polygonAPI.getTickerNews(stock/*.getSymbol()*/, 10, 1);
+                        news.addAll(polygonAPI.getTickerNews(stock, 100, 1));
+                        Collections.sort(news,
+                                (o1, o2) -> o1.getTimestamp().toLocalDate().compareTo(o2.getTimestamp().toLocalDate()));
+                        Collections.reverse(news);
                     } catch (PolygonAPIRequestException e) {
                         e.printStackTrace();
                     }
                 }
-            }
+                
+            // If positions exist show news for your positions
+            } else {
+                
+                for (Position stock : positions) {
+                    try {
+                        news.addAll(polygonAPI.getTickerNews(stock.getSymbol(), 100, 1));
+                        news.sort((o1, o2) -> o1.getTimestamp().toLocalDate().compareTo(o2.getTimestamp().toLocalDate()));
+                        Collections.reverse(news);
 
-            if (news != null) {
-                ArrayList<String> arr = new ArrayList<>();
-                for (TickerNews i : news) {
-                    arr.add(i.getTitle());
+                    } catch (PolygonAPIRequestException e) {
+                        e.printStackTrace();
+                    }
                 }
-//                arr.add(news.get(0).getTitle());
-                newsRecycler = mView.findViewById(R.id.newsRecycler);
 
-                ArrayList<TickerNews> finalNews = news;
-                requireActivity().runOnUiThread(() -> {
 
-//                    // Get rid of animation bug by rounding corners
-//                    newsImage.setShapeAppearanceModel(new ShapeAppearanceModel().withCornerSize(bounds -> dpToPixel(15)));
-//                    newsImage2.setShapeAppearanceModel(new ShapeAppearanceModel().withCornerSize(bounds -> dpToPixel(15)));
+    //                http://feeds.finance.yahoo.com/rss/2.0/headline?s=a&region=US&lang=en-US
+//                for (Position stock : positions) {
+//                    String url = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=" + stock.getSymbol() + "&region=US&lang=en-US";
+//                    try {
+//                        feed.addAll(new SyndFeedInput().build(new XmlReader(new URL(url))).getEntries());
+//
+//                    } catch (FeedException | IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
 
-//                    recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
-//                    recyclerView.addItemDecoration(new GridMarginDecoration(0, col, GridLayoutManager.VERTICAL, false, null));
-
-                    newsRecycler.setLayoutManager(new LinearLayoutManager(getActivity()));
-                    newsRecycler.addItemDecoration(new LinearMarginDecoration());
-                    test = new RecyclerViewAdapterNews(getActivity(), finalNews);
-                    newsRecycler.setAdapter(test);
-                });
             }
+
+            // Show the most recent 20 articles
+            newsRecycler = mView.findViewById(R.id.newsRecycler);
+            ArrayList<TickerNews> temp = new ArrayList<>(news.subList(0, 20));
+            news.clear();
+            news.addAll(temp);
+            temp.clear();
+
+            ArrayList<TickerNews> finalNews = news;
+            requireActivity().runOnUiThread(() -> {
+
+                newsRecycler.setLayoutManager(new LinearLayoutManager(getActivity()));
+                newsRecycler.addItemDecoration(new LinearMarginDecoration());
+                newsAdapter = new RecyclerViewAdapterNews(getActivity(), finalNews);
+                newsRecycler.setAdapter(newsAdapter);
+            });
         });
-//        thread.start();
+        thread.start();
 
         return mView;
     }

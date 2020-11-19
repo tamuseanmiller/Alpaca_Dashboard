@@ -75,16 +75,13 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         Utils.startTheme(MainActivity.this, prefs.retrieveInt("theme", Utils.THEME_DEFAULT));
 
-        ClassLoader classLoader = MainActivity.class.getClassLoader();
-        assert classLoader != null;
-        URL resource = classLoader.getResource("org/apache/http/message/BasicLineFormatter.class");
-        System.out.println(resource);
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         boolean check = false;
 
-        if (prefs.retrieveString("auth_token", "NULL").equals("NULL") || prefs.retrieveString("polygon_id", "NULL").equals("NULL")) {
+        if (prefs.retrieveString("auth_token", "NULL").equals("NULL") ||
+            prefs.retrieveString("polygon_id", "NULL").equals("NULL")) {
+
             performAuthentication();
             check = true;
         }

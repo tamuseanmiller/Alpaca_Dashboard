@@ -36,6 +36,16 @@ public class RecyclerViewAdapterOrders extends RecyclerView.Adapter<RecyclerView
         return new ViewHolder(view);
     }
 
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return position;
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onBindViewHolder(@NonNull RecyclerViewAdapterOrders.ViewHolder holder, int position) {

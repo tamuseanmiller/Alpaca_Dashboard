@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.gridlayout.widget.GridLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:grid="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -36,8 +36,6 @@
         android:layout_width="wrap_content"
         android:id="@+id/positionCard"
         android:layout_height="wrap_content"
-        android:layout_row="0"
-        android:layout_column="0"
         grid:cardCornerRadius="15dp"
         grid:cardElevation="0dp"
         android:clickable="true"
@@ -51,7 +49,9 @@
 
             <GridLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:rowCount="4"
+                android:columnCount="2">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/currentPrice"
@@ -59,6 +59,8 @@
                     android:layout_height="wrap_content"
                     android:layout_row="3"
                     android:layout_column="0"
+                    android:layout_columnWeight="1"
+                    android:layout_rowWeight="1"
                     android:backgroundTint="?attr/colorAccentTransparent"
                     android:stateListAnimator="@null"
                     android:text="@string/loading"
@@ -75,6 +77,8 @@
                     android:layout_height="wrap_content"
                     android:layout_row="1"
                     android:layout_column="0"
+                    android:layout_columnWeight="1"
+                    android:layout_rowWeight="1"
                     android:paddingBottom="20dp"
                     android:text="@string/loading"
                     android:textColor="?attr/colorPrimarySlightLight"
@@ -86,6 +90,8 @@
                     android:layout_height="wrap_content"
                     android:layout_row="2"
                     android:layout_column="0"
+                    android:layout_columnWeight="1"
+                    android:layout_rowWeight="1"
                     android:paddingBottom="5dp"
                     android:textColor="?attr/colorPrimaryLight"
                     android:text="@string/loading"
@@ -97,7 +103,9 @@
                     android:layout_height="wrap_content"
                     android:layout_row="0"
                     android:layout_column="0"
-                    android:gravity="right"
+                    android:layout_columnWeight="1"
+                    android:layout_rowWeight="1"
+                    android:gravity="start"
                     android:text="@string/loading"
                     android:textColor="?attr/colorLight"
                     android:textSize="12sp" />
@@ -108,6 +116,8 @@
                     android:layout_height="20dp"
                     android:layout_row="0"
                     android:layout_column="1"
+                    android:layout_columnWeight="1"
+                    android:layout_rowWeight="1"
                     android:paddingStart="3dp"
                     android:paddingTop="2dp"
                     android:src="@drawable/poll"
@@ -119,4 +129,4 @@
 
     </com.google.android.material.card.MaterialCardView>
 
-</androidx.gridlayout.widget.GridLayout>
+</LinearLayout>

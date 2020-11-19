@@ -489,14 +489,14 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
     public void onClick(View v) {
 
         TypedValue outValue = new TypedValue();
-        getActivity().getTheme().resolveAttribute(R.attr.themeName, outValue, true);
+        requireActivity().getTheme().resolveAttribute(R.attr.themeName, outValue, true);
         if ("light".contentEquals(outValue.string)) {
             new SharedPreferencesManager(getActivity()).storeInt("theme", THEME_DARK);
-            Utils.changeToTheme(getActivity(), Utils.THEME_DARK);
+            Utils.changeToTheme(requireActivity(), Utils.THEME_DARK);
 
         } else {
             new SharedPreferencesManager(getActivity()).storeInt("theme", THEME_LIGHT);
-            Utils.changeToTheme(getActivity(), Utils.THEME_LIGHT);
+            Utils.changeToTheme(requireActivity(), Utils.THEME_LIGHT);
         }
 
     }
@@ -578,6 +578,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
                 ArrayList<Calendar> calendar = null;
                 try {
                     calendar = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(1), LocalDate.now());
+
                 } catch (AlpacaAPIRequestException e) {
                     e.printStackTrace();
                 }
@@ -594,8 +595,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
                 history = new ArrayList<>();
                 int finalLength = periodLength;
                 try {
-                    PortfolioHistory portVal = null;
-                    portVal = alpacaAPI.getPortfolioHistory(finalLength, periodUnit, timeFrame, lastOpenDate, true);
+                    PortfolioHistory portVal = alpacaAPI.getPortfolioHistory(finalLength, periodUnit, timeFrame, lastOpenDate, true);
                     history = portVal.getEquity();
 
                 } catch (AlpacaAPIRequestException e) {

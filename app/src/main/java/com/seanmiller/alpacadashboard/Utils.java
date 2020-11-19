@@ -46,6 +46,7 @@ public class Utils {
             default:
             case THEME_DEFAULT:
                 activity.setTheme(R.style.Theme_Alpaca_Dashboard_Light);
+                
                 break;
             case THEME_LIGHT:
                 activity.setTheme(R.style.Theme_Alpaca_Dashboard_Light);

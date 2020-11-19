@@ -395,7 +395,8 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
 
                     float finalAskingPrice = 0;
                     if (askingPrice != null) {
-                        finalAskingPrice = askingPrice.getLast().getAskprice().floatValue();;
+                        finalAskingPrice = askingPrice.getLast().getAskprice().floatValue();
+                        ;
                     }
 
                     float finalAskingPrice1 = finalAskingPrice;
@@ -466,45 +467,55 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             swipeRefreshStock.setNestedScrollingEnabled(false);
         });
 
-        // Set Statistics
-        TextView dividend_yield = findViewById(R.id.dividend_yield);
-        TextView assets = findViewById(R.id.assets);
-        TextView debt = findViewById(R.id.debt);
-        TextView debt_equity_ratio = findViewById(R.id.debt_equity);
-        TextView earnings_per_share = findViewById(R.id.earnings_per_share);
-        TextView gross_margin = findViewById(R.id.gross_margin);
-        TextView gross_profit = findViewById(R.id.gross_profit);
-        TextView market_cap = findViewById(R.id.market_cap);
-        TextView net_cash_flow = findViewById(R.id.net_cash_flow);
-        TextView price_earnings_ratio = findViewById(R.id.price_earnings_ratio);
-        TextView price_earnings = findViewById(R.id.price_earnings);
-        TextView revenues = findViewById(R.id.revenues);
-        TextView financial_date = findViewById(R.id.financial_date);
+        Thread t1 = new Thread(() -> {
 
-        StockFinancialsResponse financials = null;
-        try {
-            financials = polygonAPI.getStockFinancials(ticker.get(), 1, FinancialReportType.QA, FinancialSort.REPORT_PERIOD_DESCENDING);
-        } catch (PolygonAPIRequestException e) {
-            e.printStackTrace();
-        }
+            // Set Statistics
+            TextView dividend_yield = findViewById(R.id.dividend_yield);
+            TextView assets = findViewById(R.id.assets);
+            TextView debt = findViewById(R.id.debt);
+            TextView debt_equity_ratio = findViewById(R.id.debt_equity);
+            TextView earnings_per_share = findViewById(R.id.earnings_per_share);
+            TextView gross_margin = findViewById(R.id.gross_margin);
+            TextView gross_profit = findViewById(R.id.gross_profit);
+            TextView market_cap = findViewById(R.id.market_cap);
+            TextView net_cash_flow = findViewById(R.id.net_cash_flow);
+            TextView price_earnings_ratio = findViewById(R.id.price_earnings_ratio);
+            TextView price_earnings = findViewById(R.id.price_earnings);
+            TextView revenues = findViewById(R.id.revenues);
+            TextView financial_date = findViewById(R.id.financial_date);
 
-        if (financials!= null) {
-            DecimalFormat format = new DecimalFormat("$#,###.##");
-            StockFinancials result = financials.getResults().get(0);
-            financial_date.setText("Last Updated: " + result.getUpdated());
-            dividend_yield.setText(result.getDividendYield().toString());
-            assets.setText(format.format(result.getAssets().floatValue()));
-            debt.setText(format.format(result.getDebt().floatValue()));
-            debt_equity_ratio.setText(result.getDebtToEquityRatio().toString());
-            earnings_per_share.setText(format.format(result.getEarningsPerBasicShareUSD().floatValue()));
-            gross_margin.setText(format.format(result.getGrossMargin().floatValue()));
-            gross_profit.setText(format.format(result.getGrossProfit().floatValue()));
-            market_cap.setText(format.format(result.getMarketCapitalization().floatValue()));
-            net_cash_flow.setText(format.format(result.getNetCashFlow().floatValue()));
-            price_earnings_ratio.setText(result.getPriceToEarningsRatio().toString());
-            price_earnings.setText(format.format(result.getPriceEarnings().floatValue()));
-            revenues.setText(format.format(result.getRevenuesUSD().floatValue()));
-        }
+            StockFinancialsResponse financials = null;
+            try {
+                financials = polygonAPI.getStockFinancials(ticker.get(), 1, FinancialReportType.QA, FinancialSort.REPORT_PERIOD_DESCENDING);
+            } catch (PolygonAPIRequestException e) {
+                e.printStackTrace();
+            }
+
+            StockFinancialsResponse finalFinancials = financials;
+            runOnUiThread(() -> {
+
+                if (finalFinancials != null) {
+                    DecimalFormat format = new DecimalFormat("$#,###.##");
+                    StockFinancials result = finalFinancials.getResults().get(0);
+                    financial_date.setText("Last Updated: " + result.getUpdated());
+                    dividend_yield.setText(result.getDividendYield().toString());
+                    assets.setText(format.format(result.getAssets().floatValue()));
+                    debt.setText(format.format(result.getDebt().floatValue()));
+                    debt_equity_ratio.setText(result.getDebtToEquityRatio().toString());
+                    earnings_per_share.setText(format.format(result.getEarningsPerBasicShareUSD().floatValue()));
+                    gross_margin.setText(format.format(result.getGrossMargin().floatValue()));
+                    gross_profit.setText(format.format(result.getGrossProfit().floatValue()));
+                    market_cap.setText(format.format(result.getMarketCapitalization().floatValue()));
+                    net_cash_flow.setText(format.format(result.getNetCashFlow().floatValue()));
+                    price_earnings_ratio.setText(result.getPriceToEarningsRatio().toString());
+                    price_earnings.setText(format.format(result.getPriceEarnings().floatValue()));
+                    revenues.setText(format.format(result.getRevenuesUSD().floatValue()));
+                }
+
+            });
+
+        });
+        t1.start();
 
     }
 
