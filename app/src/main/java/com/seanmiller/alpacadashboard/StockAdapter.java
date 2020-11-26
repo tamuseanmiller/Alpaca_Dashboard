@@ -5,6 +5,9 @@ import android.os.Build;
 
 import androidx.annotation.RequiresApi;
 
+import com.mashape.unirest.http.JsonNode;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import com.robinhood.spark.SparkAdapter;
 
 import net.jacobpeterson.alpaca.AlpacaAPI;
@@ -15,6 +18,10 @@ import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
 import net.jacobpeterson.domain.alpaca.calendar.Calendar;
 import net.jacobpeterson.polygon.PolygonAPI;
 import net.jacobpeterson.polygon.rest.exception.PolygonAPIRequestException;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -64,6 +71,7 @@ public class StockAdapter extends SparkAdapter {
         ArrayList<Calendar> finalCalendar = calendar;
         Thread thread = new Thread(() -> {
 
+            // Get market status
             String marketStatus = null;
             try {
                 marketStatus = polygonAPI.getMarketStatus().getMarket();
@@ -72,11 +80,13 @@ public class StockAdapter extends SparkAdapter {
                 e.printStackTrace();
             }
 
+            // Check if market is open
             if (marketStatus.equals("open")) {
 
                 // If you are rendering a stockpage
                 if (!ticker.get().equals("NOTICKER")) {
 
+                    // If you're looking at a single day
                     if (periodUnit == PortfolioPeriodUnit.DAY) {
                         try {
                             lastClose.set(polygonAPI.getPreviousClose(String.valueOf(ticker), false).getResults().get(0).getC().floatValue());
@@ -88,13 +98,13 @@ public class StockAdapter extends SparkAdapter {
                         yData.add(0, lastClose.get());
 
                     } else {
-                        try {
-                            lastClose.set(Objects.requireNonNull(alpacaAPI.getBars(BarsTimeFrame.ONE_DAY, ticker.get(), 2, ZonedDateTime.of(lastOpenDate, lastOpenTime, ZoneId.of("UTC-6")), null, null, null).get(ticker.get())).get(0).getC().floatValue());
-                        } catch (AlpacaAPIRequestException e) {
-                            e.printStackTrace();
-                        }
-                        baseline = lastClose.get();
-                        yData.add(lastClose.get());
+//                        try {
+//                            lastClose.set(Objects.requireNonNull(alpacaAPI.getBars(BarsTimeFrame.ONE_DAY, ticker.get(), 2, ZonedDateTime.of(lastOpenDate, lastOpenTime, ZoneId.of("UTC-6")), null, null, null).get(ticker.get())).get(0).getC().floatValue());
+//                        } catch (AlpacaAPIRequestException e) {
+//                            e.printStackTrace();
+//                        }
+//                        baseline = lastClose.get();
+//                        yData.add(lastClose.get());
                     }
 
                     // Else you're on equity stock
@@ -103,13 +113,7 @@ public class StockAdapter extends SparkAdapter {
                     // Gather old portfolio data
                     history.set(new ArrayList<>());
                     try {
-
-                        // Checks to see if market is closed for today, edge case
-                        if (lastOpenDate.equals(LocalDate.now())) {
-                            history.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, LocalDate.parse(finalCalendar.get(finalCalendar.size() - 2).getDate()), false).getEquity());
-                        } else {
-                            history.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, lastOpenDate, false).getEquity());
-                        }
+                        history.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, LocalDate.parse(finalCalendar.get(finalCalendar.size() - 2).getDate()), false).getEquity());
 
                     } catch (AlpacaAPIRequestException e) {
                         e.printStackTrace();
@@ -129,15 +133,23 @@ public class StockAdapter extends SparkAdapter {
                     if (periodUnit == PortfolioPeriodUnit.DAY) {
 
                         float temp = 0;
-                        try {
-                            if (lastOpenDate.equals(LocalDate.now())) {
-                                temp = polygonAPI.getSnapshotSingleTicker(ticker.get()).getTicker().getPrevDay().getC().floatValue();
-                            } else {
-                                temp = polygonAPI.getSnapshotSingleTicker(ticker.get()).getTicker().getPrevDay().getC().floatValue();
-                            }
 
-                        } catch (PolygonAPIRequestException e) {
+                        // Fetch Daily Open Close endpoint
+//                      https://api.polygon.io/v1/open-close/AAPL/2020-10-14?apiKey=
+                        JSONObject nodeHttpResponse = null;
+                        try {
+                            nodeHttpResponse = Unirest.get("https://api.polygon.io/v1/open-close/" + ticker + "/" + finalCalendar.get(finalCalendar.size() - 2).getDate() + "?apiKey=" + prefs.retrieveString("polygon_id", "NULL")).asJson().getBody().getObject();
+                        } catch (UnirestException e) {
                             e.printStackTrace();
+                        }
+
+                        // Add the close value to temp
+                        if (nodeHttpResponse != null) {
+                            try {
+                                temp = Float.parseFloat(nodeHttpResponse.get("close").toString());
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
                         }
 
                         yData.add(0, temp);
@@ -150,14 +162,8 @@ public class StockAdapter extends SparkAdapter {
                     history.set(new ArrayList<>());
 
                     try {
+                        history.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, LocalDate.parse(finalCalendar.get(finalCalendar.size() - 2).getDate()), false).getEquity());
 
-                        // Deals with case when the market has closed but it's still that same say
-                        if (lastOpenDate.equals(LocalDate.now())) {
-                            history.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, LocalDate.parse(finalCalendar.get(finalCalendar.size() - 2).getDate()), false).getEquity());
-
-                        } else {
-                            history.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, lastOpenDate, false).getEquity());
-                        }
                     } catch (AlpacaAPIRequestException e) {
                         e.printStackTrace();
                     }
