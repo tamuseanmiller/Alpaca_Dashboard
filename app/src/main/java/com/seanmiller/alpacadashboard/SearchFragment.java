@@ -9,13 +9,19 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.ActivityOptions;
 import android.content.Intent;
+import android.graphics.drawable.shapes.Shape;
+import android.media.Image;
+import android.net.Uri;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
+import com.google.android.material.imageview.ShapeableImageView;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -26,27 +32,23 @@ import com.lapism.search.widget.MaterialSearchView;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import com.rometools.rome.feed.synd.SyndEntry;
-import com.rometools.rome.feed.synd.SyndFeed;
-import com.rometools.rome.io.FeedException;
-import com.rometools.rome.io.SyndFeedInput;
-import com.rometools.rome.io.XmlReader;
 
 import net.jacobpeterson.alpaca.AlpacaAPI;
 import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
 import net.jacobpeterson.domain.alpaca.position.Position;
-import net.jacobpeterson.domain.polygon.tickernews.TickerNews;
 import net.jacobpeterson.domain.polygon.tickers.ticker.Ticker;
 import net.jacobpeterson.polygon.PolygonAPI;
-import net.jacobpeterson.polygon.rest.exception.PolygonAPIRequestException;
 
-import java.io.IOException;
-import java.net.URL;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import io.cabriole.decorator.LinearMarginDecoration;
+import xyz.klinker.android.article.ArticleUtils;
 
 import static android.app.Activity.RESULT_OK;
 import static android.os.FileUtils.copy;
@@ -117,8 +119,30 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
 
         Thread thread = new Thread(() -> {
 
+
+            // Formats the response into an array
+//            if (nodeHttpResponse != null) {
+//                String innerJson = nodeHttpResponse.getBody().substring(42, nodeHttpResponse.getBody().length() - 2);
+//                JsonParser parse = new JsonParser();
+//                JsonObject jsonObject = (JsonObject) parse.parse(innerJson);
+//                JsonArray stocks = jsonObject.get("ResultSet").getAsJsonObject().get("Result").getAsJsonArray();
+//                ArrayList<Ticker> tickers = new ArrayList<>();
+//
+//                for (JsonElement i : stocks) {
+//                    Ticker t = new Ticker();
+//                    t.setName(i.getAsJsonObject().get("name").getAsString());
+//                    t.setTicker(i.getAsJsonObject().get("symbol").getAsString());
+//                    tickers.add(t);
+//                }
+//
+//                // Sets adapter
+//                searchableAdapter = new SearchableAdapter(tickers);
+//                searchableAdapter.setClickListener(this);
+//                requireActivity().runOnUiThread(() -> materialSearch.setAdapter(searchableAdapter));
+//            }
+
             // Fetch news for positions
-            PolygonAPI polygonAPI = new PolygonAPI(prefs.retrieveString("polygon_id", "NULL"));
+//            PolygonAPI polygonAPI = new PolygonAPI(prefs.retrieveString("polygon_id", "NULL"));
             AlpacaAPI alpacaAPI = new AlpacaAPI(prefs.retrieveString("auth_token", "NULL"));
             ArrayList<Position> positions = null;
             try {
@@ -127,8 +151,44 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
                 e.printStackTrace();
             }
 
-            ArrayList<TickerNews> news = new ArrayList<>();
-            List<SyndEntry> feed = new ArrayList<>();
+            ArrayList<JSONObject> news = new ArrayList<>();
+            // If no positions, show news for AAPL and AMD
+            if (positions == null || positions.isEmpty()) {
+                ArrayList<String> stocks = new ArrayList<>();
+                stocks.add("AAPL");
+                stocks.add("AMD");
+                for (String stock : stocks) {
+                    news.addAll(getNews(stock));
+                }
+                news.sort((o1, o2) -> {
+                    try {
+                        return o1.get("datetime").toString().compareTo(o2.get("datetime").toString());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    return 0;
+                });
+                Collections.reverse(news);
+
+                // If positions exist show news for your positions
+            } else {
+
+                for (Position stock : positions) {
+                    news.addAll(getNews(stock.getSymbol()));
+                }
+                news.sort((o1, o2) -> {
+                    try {
+                        return o1.get("datetime").toString().compareTo(o2.get("datetime").toString());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    return 0;
+                });
+                Collections.reverse(news);
+            }
+
+
+            /*ArrayList<TickerNews> news = new ArrayList<>();
 
             // If no positions, show news for AAPL and AMD
             if (positions == null || positions.isEmpty()) {
@@ -175,24 +235,54 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
             }
 
             // Show the most recent 20 articles
-            newsRecycler = mView.findViewById(R.id.newsRecycler);
             ArrayList<TickerNews> temp = new ArrayList<>(news.subList(0, 20));
             news.clear();
             news.addAll(temp);
-            temp.clear();
+            temp.clear();*/
+            if (news.size() >= 21) {
+                ArrayList<JSONObject> temp = new ArrayList<>(news.subList(0, 20));
+                news.clear();
+                news.addAll(temp);
+                temp.clear();
+            }
+            newsRecycler = mView.findViewById(R.id.newsRecycler);
 
-            ArrayList<TickerNews> finalNews = news;
             requireActivity().runOnUiThread(() -> {
 
                 newsRecycler.setLayoutManager(new LinearLayoutManager(getActivity()));
                 newsRecycler.addItemDecoration(new LinearMarginDecoration());
-                newsAdapter = new RecyclerViewAdapterNews(getActivity(), finalNews);
+                newsAdapter = new RecyclerViewAdapterNews(getContext(), news);
                 newsRecycler.setAdapter(newsAdapter);
+
             });
+
         });
         thread.start();
 
         return mView;
+    }
+
+    public ArrayList<JSONObject> getNews(String ticker) {
+
+        JSONArray nodeHttpResponse = null;
+        try {
+            nodeHttpResponse = Unirest.get("https://cloud-sse.iexapis.com/stable/stock/" + ticker + "/news/last/10?token=" + Properties.getIexApiKey()).asJson().getBody().getArray();
+        } catch (UnirestException e) {
+            e.printStackTrace();
+        }
+
+        ArrayList<JSONObject> articles = new ArrayList<>();
+        try {
+            for (int i = 0; i < nodeHttpResponse.length(); i++) {
+                if (nodeHttpResponse.getJSONObject(i).get("lang").toString().equals("en")) {
+                    articles.add(nodeHttpResponse.getJSONObject(i));
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return articles;
     }
 
     @Override

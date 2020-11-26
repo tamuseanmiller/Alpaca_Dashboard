@@ -185,13 +185,22 @@
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/newsImage"
-                android:layout_width="0dp"
+                android:layout_width="60dp"
                 android:layout_height="60dp"
                 android:scaleType="centerCrop"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintDimensionRatio="1:1"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
+
+<!--            <ImageView-->
+<!--                android:id="@+id/newsImage"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_height="60dp"-->
+<!--                android:scaleType="centerCrop"-->
+<!--                app:layout_constraintBottom_toBottomOf="parent"-->
+<!--                app:layout_constraintDimensionRatio="1:1"-->
+<!--                app:layout_constraintEnd_toEndOf="parent"-->
+<!--                app:layout_constraintTop_toTopOf="parent" />-->
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
