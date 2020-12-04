@@ -1088,7 +1088,7 @@ public class AlpacaAPI {
 
         HttpResponse<InputStream> response = alpacaRequest.invokeGet(urlBuilder);
 
-        if (response.getStatus() != 200) {
+        if (response != null && response.getStatus() != 200) {
             throw new AlpacaAPIRequestException(response);
         }
 

@@ -45,7 +45,9 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import io.cabriole.decorator.LinearMarginDecoration;
 import xyz.klinker.android.article.ArticleUtils;
@@ -156,7 +158,7 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
             if (positions == null || positions.isEmpty()) {
                 ArrayList<String> stocks = new ArrayList<>();
                 stocks.add("AAPL");
-                stocks.add("AMD");
+                stocks.add("GOOGL");
                 for (String stock : stocks) {
                     news.addAll(getNews(stock));
                 }
@@ -240,18 +242,24 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
             news.addAll(temp);
             temp.clear();*/
             if (news.size() >= 21) {
-                ArrayList<JSONObject> temp = new ArrayList<>(news.subList(0, 20));
+                try {
+                    news = removeDuplicates(news);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                Set<JSONObject> set = new HashSet<>(news.subList(0, 20));
                 news.clear();
-                news.addAll(temp);
-                temp.clear();
+                news.addAll(set);
+                set.clear();
             }
             newsRecycler = mView.findViewById(R.id.newsRecycler);
 
+            ArrayList<JSONObject> finalNews = news;
             requireActivity().runOnUiThread(() -> {
 
                 newsRecycler.setLayoutManager(new LinearLayoutManager(getActivity()));
                 newsRecycler.addItemDecoration(new LinearMarginDecoration());
-                newsAdapter = new RecyclerViewAdapterNews(getContext(), news);
+                newsAdapter = new RecyclerViewAdapterNews(getContext(), finalNews);
                 newsRecycler.setAdapter(newsAdapter);
 
             });
@@ -264,6 +272,7 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
 
     public ArrayList<JSONObject> getNews(String ticker) {
 
+        // Call get news endpoint from IEX Cloud
         JSONArray nodeHttpResponse = null;
         try {
             nodeHttpResponse = Unirest.get("https://cloud-sse.iexapis.com/stable/stock/" + ticker + "/news/last/10?token=" + Properties.getIexApiKey()).asJson().getBody().getArray();
@@ -271,10 +280,12 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
             e.printStackTrace();
         }
 
+        // Add to ArrayList
         ArrayList<JSONObject> articles = new ArrayList<>();
         try {
             for (int i = 0; i < nodeHttpResponse.length(); i++) {
                 if (nodeHttpResponse.getJSONObject(i).get("lang").toString().equals("en")) {
+
                     articles.add(nodeHttpResponse.getJSONObject(i));
                 }
             }
@@ -283,6 +294,18 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
         }
 
         return articles;
+    }
+
+    // Remove duplicate articles
+    public ArrayList<JSONObject> removeDuplicates(ArrayList<JSONObject> news) throws JSONException {
+        for (int i = 0; i < news.size(); i++) {
+            for (int j = i; j < news.size(); j++) {
+                if (i != j && news.get(i).get("headline").toString().equals(news.get(j).get("headline").toString())) {
+                    news.remove(i);
+                }
+            }
+        }
+        return news;
     }
 
     @Override

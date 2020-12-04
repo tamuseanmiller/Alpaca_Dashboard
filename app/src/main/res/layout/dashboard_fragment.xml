@@ -260,6 +260,7 @@
                     android:id="@+id/recyclerStocks"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
                     android:layout_marginTop="5dp"
                     android:paddingStart="-5dp"
                     android:paddingEnd="-5dp"
@@ -291,6 +292,7 @@
                     android:id="@+id/orders"
                     android:paddingStart="-5dp"
                     android:paddingEnd="-5dp"
+                    android:nestedScrollingEnabled="false"
                     app:layout_constraintBottom_toBottomOf="parent"
                     android:paddingBottom="60dp"/>
 

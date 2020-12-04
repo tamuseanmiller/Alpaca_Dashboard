@@ -40,6 +40,8 @@ import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
 import net.jacobpeterson.domain.alpaca.calendar.Calendar;
 import net.jacobpeterson.domain.alpaca.marketdata.Bar;
 import net.jacobpeterson.domain.alpaca.order.Order;
+import net.jacobpeterson.domain.polygon.aggregates.Aggregate;
+import net.jacobpeterson.domain.polygon.aggregates.AggregatesResponse;
 import net.jacobpeterson.domain.polygon.lastquote.LastQuoteResponse;
 import net.jacobpeterson.domain.polygon.stockfinancials.StockFinancials;
 import net.jacobpeterson.domain.polygon.stockfinancials.StockFinancialsResponse;
@@ -48,6 +50,7 @@ import net.jacobpeterson.domain.polygon.websocket.quote.QuoteMessage;
 import net.jacobpeterson.polygon.PolygonAPI;
 import net.jacobpeterson.polygon.enums.FinancialReportType;
 import net.jacobpeterson.polygon.enums.FinancialSort;
+import net.jacobpeterson.polygon.enums.Timespan;
 import net.jacobpeterson.polygon.rest.exception.PolygonAPIRequestException;
 import net.jacobpeterson.polygon.websocket.listener.PolygonStreamListenerAdapter;
 import net.jacobpeterson.polygon.websocket.message.PolygonStreamMessageType;
@@ -55,6 +58,7 @@ import net.jacobpeterson.polygon.websocket.message.PolygonStreamMessageType;
 import org.w3c.dom.Text;
 
 import java.lang.reflect.Type;
+import java.sql.Time;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -273,11 +277,11 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
 
             // Initalize all graphs
             try {
-                initializeDashboardValues(ZonedDateTime.now(), BarsTimeFrame.FIVE_MINUTE, oneDayStockAdapter);
-                initializeDashboardValues(ZonedDateTime.now().minusWeeks(1), BarsTimeFrame.FIFTEEN_MINUTE, oneWeekStockAdapter);
-                initializeDashboardValues(ZonedDateTime.now().minusMonths(1), BarsTimeFrame.ONE_DAY, oneMonthStockAdapter);
-                initializeDashboardValues(ZonedDateTime.now().minusMonths(3), BarsTimeFrame.ONE_DAY, threeMonthStockAdapter);
-                initializeDashboardValues(ZonedDateTime.now().minusYears(1), BarsTimeFrame.ONE_DAY, oneYearStockAdapter);
+                initializeDashboardValues(ZonedDateTime.now(), 5, Timespan.MINUTE, oneDayStockAdapter);
+                initializeDashboardValues(ZonedDateTime.now().minusWeeks(1), 45, Timespan.MINUTE, oneWeekStockAdapter);
+                initializeDashboardValues(ZonedDateTime.now().minusMonths(1), 2, Timespan.HOUR, oneMonthStockAdapter);
+                initializeDashboardValues(ZonedDateTime.now().minusMonths(3), 1, Timespan.DAY, threeMonthStockAdapter);
+                initializeDashboardValues(ZonedDateTime.now().minusYears(1), 5, Timespan.DAY, oneYearStockAdapter);
             } catch (AlpacaAPIRequestException e) {
                 e.printStackTrace();
             }
@@ -450,7 +454,9 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             }
 
             recyclerOrdersStock = findViewById(R.id.ordersStock);
-            recycleAdapterOrdersStock = new RecyclerViewAdapterOrders(this, order);
+            if (!order.isEmpty()) {
+                recycleAdapterOrdersStock = new RecyclerViewAdapterOrders(this, order);
+            }
 
             runOnUiThread(() -> {
                 recyclerOrdersStock.setLayoutManager(new LinearLayoutManager(this));
@@ -486,7 +492,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
 
             StockFinancialsResponse financials = null;
             try {
-                financials = polygonAPI.getStockFinancials(ticker.get(), 1, FinancialReportType.QA, FinancialSort.REPORT_PERIOD_DESCENDING);
+                financials = polygonAPI.getStockFinancials(ticker.get(), 1, FinancialReportType.Q, FinancialSort.REPORT_PERIOD_DESCENDING);
             } catch (PolygonAPIRequestException e) {
                 e.printStackTrace();
             }
@@ -567,7 +573,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
         thread2.start();
     }
 
-    public void initializeDashboardValues(ZonedDateTime datetime, BarsTimeFrame timeFrame, StockAdapter selectedAdapterInitial) throws AlpacaAPIRequestException {
+    public void initializeDashboardValues(ZonedDateTime datetime, int multiplier, Timespan timeFrame, StockAdapter selectedAdapterInitial) throws AlpacaAPIRequestException {
 
         // Requests bars and adds to graph
         PolygonAPI polygonAPI = new PolygonAPI(prefs.retrieveString("polygon_id", "NULL"));
@@ -576,6 +582,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
         Thread thread = new Thread(() -> {
 
             Map<String, ArrayList<Bar>> bars = null;
+            ArrayList<Aggregate> aggs = null;
 
             // Check if market is open
             String marketStatus = null;
@@ -588,15 +595,13 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             assert marketStatus != null;
             if (marketStatus.equals("open")) {
 
-                if (BarsTimeFrame.FIVE_MINUTE == timeFrame) {
+                if (datetime.toLocalDate().toString().equals(ZonedDateTime.now().toLocalDate().toString())) {
 
                     // Fetch todays bars
                     try {
-                        bars = alpacaAPI.getBars(timeFrame, ticker.get(), 1000,
-                                ZonedDateTime.of(LocalDateTime.of(LocalDate.now(), LocalTime.of(5, 30)), ZoneId.of("UTC-4")),
-                                null, null, ZonedDateTime.now());
+                        aggs = polygonAPI.getAggregates(ticker.get(), multiplier, timeFrame, datetime.toLocalDate(), LocalDate.now(), false).getResults();
 
-                    } catch (AlpacaAPIRequestException e) {
+                    } catch (PolygonAPIRequestException e) {
                         e.printStackTrace();
                     }
 
@@ -604,10 +609,9 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
 
                     // Fetch todays bars
                     try {
-                        bars = alpacaAPI.getBars(timeFrame, ticker.get(), 1000,
-                                datetime, ZonedDateTime.now(), null, null);
+                        aggs = polygonAPI.getAggregates(ticker.get(), multiplier, timeFrame, datetime.toLocalDate(), LocalDate.now(), false).getResults();
 
-                    } catch (AlpacaAPIRequestException e) {
+                    } catch (PolygonAPIRequestException e) {
                         e.printStackTrace();
                     }
                 }
@@ -615,7 +619,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
 
             } else {
 
-                if (BarsTimeFrame.FIVE_MINUTE == timeFrame) {
+                if (datetime.toLocalDate().toString().equals(ZonedDateTime.now().toLocalDate().toString())) {
 
                     // Fetch last open day's information
                     ArrayList<Calendar> calendar = null;
@@ -640,6 +644,8 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                         bars = alpacaAPI.getBars(BarsTimeFrame.FIVE_MINUTE, ticker.get(), 1000,
                                 ZonedDateTime.of(lastOpenDate, lastOpenTimeStart, ZoneId.of("UTC-4")), null, null, null);
 
+//                        aggs = polygonAPI.getAggregates(ticker.get(), multiplier, timeFrame, datetime.toLocalDate().minusDays(1), LocalDate.now(), false).getResults();
+
                     } catch (AlpacaAPIRequestException e) {
                         e.printStackTrace();
                     }
@@ -647,9 +653,10 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 } else {
 
                     try {
-                        bars = alpacaAPI.getBars(timeFrame, ticker.get(), 1000, datetime, null, null, ZonedDateTime.now());
+                        aggs = polygonAPI.getAggregates(ticker.get(), multiplier, Timespan.DAY, datetime.toLocalDate(), LocalDate.now(), false).getResults();
+//                        bars = alpacaAPI.getBars(timeFrame, ticker.get(), 1000, datetime, null, null, ZonedDateTime.now());
 
-                    } catch (AlpacaAPIRequestException e) {
+                    } catch (PolygonAPIRequestException e) {
                         e.printStackTrace();
                     }
                 }
@@ -658,6 +665,12 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             if (bars != null) {
                 for (Bar bar : Objects.requireNonNull(bars.get(ticker.get()))) {
                     runOnUiThread(() -> selectedAdapterInitial.addVal(bar.getC().floatValue()));
+                }
+            }
+
+            if (aggs != null) {
+                for (Aggregate agg : aggs) {
+                    runOnUiThread(() -> selectedAdapterInitial.addVal(agg.getC().floatValue()));
                 }
             }
 

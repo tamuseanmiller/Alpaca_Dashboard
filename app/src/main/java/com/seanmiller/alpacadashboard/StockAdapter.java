@@ -90,6 +90,7 @@ public class StockAdapter extends SparkAdapter {
                     if (periodUnit == PortfolioPeriodUnit.DAY) {
                         try {
                             lastClose.set(polygonAPI.getPreviousClose(String.valueOf(ticker), false).getResults().get(0).getC().floatValue());
+
                         } catch (PolygonAPIRequestException e) {
                             e.printStackTrace();
                         }
@@ -97,14 +98,6 @@ public class StockAdapter extends SparkAdapter {
                         baseline = lastClose.get();
                         yData.add(0, lastClose.get());
 
-                    } else {
-//                        try {
-//                            lastClose.set(Objects.requireNonNull(alpacaAPI.getBars(BarsTimeFrame.ONE_DAY, ticker.get(), 2, ZonedDateTime.of(lastOpenDate, lastOpenTime, ZoneId.of("UTC-6")), null, null, null).get(ticker.get())).get(0).getC().floatValue());
-//                        } catch (AlpacaAPIRequestException e) {
-//                            e.printStackTrace();
-//                        }
-//                        baseline = lastClose.get();
-//                        yData.add(lastClose.get());
                     }
 
                     // Else you're on equity stock
@@ -138,7 +131,11 @@ public class StockAdapter extends SparkAdapter {
 //                      https://api.polygon.io/v1/open-close/AAPL/2020-10-14?apiKey=
                         JSONObject nodeHttpResponse = null;
                         try {
-                            nodeHttpResponse = Unirest.get("https://api.polygon.io/v1/open-close/" + ticker + "/" + finalCalendar.get(finalCalendar.size() - 2).getDate() + "?apiKey=" + prefs.retrieveString("polygon_id", "NULL")).asJson().getBody().getObject();
+                            nodeHttpResponse = Unirest.get("https://api.polygon.io/v1/open-close/" +
+                                    ticker + "/" + finalCalendar.get(finalCalendar.size() - 2).getDate() +
+                                    "?apiKey=" + prefs.retrieveString("polygon_id", "NULL"))
+                                    .asJson().getBody().getObject();
+
                         } catch (UnirestException e) {
                             e.printStackTrace();
                         }
@@ -174,6 +171,8 @@ public class StockAdapter extends SparkAdapter {
 
                 }
             }
+
+            DashboardFragment.oneDayAdapter.notifyDataSetChanged();
 
         });
         thread.start();

@@ -143,6 +143,12 @@ public class RecyclerViewAdapterPositions extends RecyclerView.Adapter<RecyclerV
                         e.printStackTrace();
                     }
 
+                    try {
+                        close = polygonAPI.getPreviousClose(mData.get(position), false).getResults().get(0).getC().floatValue();
+                    } catch (PolygonAPIRequestException e) {
+                        e.printStackTrace();
+                    }
+
                     // Set values
                     LastQuoteResponse finalCurr = curr;
                     float finalClose = close;

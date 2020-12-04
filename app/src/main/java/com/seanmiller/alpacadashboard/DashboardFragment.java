@@ -85,7 +85,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
     private MaterialButton oneYear;
     private MaterialButton selectedButton;
     private AtomicInteger posOrNegColorLight;
-    private StockAdapter oneDayAdapter;
+    public static StockAdapter oneDayAdapter;
     private StockAdapter oneWeekAdapter;
     private StockAdapter oneMonthAdapter;
     private StockAdapter threeMonthAdapter;
@@ -264,6 +264,8 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
             e.printStackTrace();
         }
 
+        oneDay.callOnClick();
+
         if (marketStatus.equals("open")) {
 
             Thread t3 = new Thread(() -> {
@@ -284,6 +286,9 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
                         double amount = Double.parseDouble(currentValue);
 
                         getActivity().runOnUiThread(() -> tickerView.setText("$" + formatter.format(amount)));
+                        oneDayAdapter.addVal(Float.parseFloat(currentValue));
+                        oneDayAdapter.notifyDataSetChanged();
+
                         Thread.sleep(60000 * 5);
 
                     } catch (InterruptedException e) {
@@ -587,7 +592,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
                 assert calendar != null;
                 LocalDate lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 1).getDate());
                 if (LocalTime.of(Integer.parseInt(calendar.get(calendar.size() - 1).getOpen().substring(0, 2)),
-                                 Integer.parseInt(calendar.get(calendar.size() - 1).getOpen().substring(3, 5))).compareTo(LocalTime.now()) > 0) {
+                        Integer.parseInt(calendar.get(calendar.size() - 1).getOpen().substring(3, 5))).compareTo(LocalTime.now()) > 0) {
                     lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 2).getDate());
                 }
 
@@ -660,25 +665,17 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
 
     public void setDashboardValues() {
 
-        // Create thread for updating the values on history switch
+        // Updating the values on history switch
         // Set colors
-        Thread t1 = new Thread(() -> {
+        requireActivity().runOnUiThread(() -> {
+            if (selectedAdapter.getProfit() >= 0) {
+                setDashboardColors(true, selectedAdapter.getProfit(), selectedAdapter.getPercent());
 
-            requireActivity().runOnUiThread(() -> {
+            } else {
+                setDashboardColors(false, selectedAdapter.getProfit(), selectedAdapter.getPercent());
 
-                // Set colors
-                if (selectedAdapter.getProfit() >= 0) {
-                    setDashboardColors(true, selectedAdapter.getProfit(), selectedAdapter.getPercent());
-
-                } else {
-                    setDashboardColors(false, selectedAdapter.getProfit(), selectedAdapter.getPercent());
-
-                }
-
-            });
-
+            }
         });
-        t1.start();
     }
 
 }

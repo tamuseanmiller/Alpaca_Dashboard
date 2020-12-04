@@ -51,6 +51,7 @@ public class RecyclerViewAdapterOrders extends RecyclerView.Adapter<RecyclerView
     public void onBindViewHolder(@NonNull RecyclerViewAdapterOrders.ViewHolder holder, int position) {
 
         holder.stockName.setText(mData.get(position).getSymbol());
+        holder.setIsRecyclable(false);
 //        holder.shrQty.setText(mData.get(position).getQty());
 //        holder.timeClosed.setText(mData.get(position).getFilledAt().getMonth().getValue() + "/" + mData.get(position).getFilledAt().getDayOfMonth() + "/" + mData.get(position).getFilledAt().getYear() /*+ "\n" + mData.get(position).getFilledAt().getHour() + ":" + mData.get(position).getFilledAt().getMinute()*/);
 
@@ -118,10 +119,14 @@ public class RecyclerViewAdapterOrders extends RecyclerView.Adapter<RecyclerView
             super(itemView);
             itemView.setOnClickListener(this);
             pricePlaced = itemView.findViewById(R.id.pricePlaced);
+            pricePlaced.setTag(this);
 //            shrQty = itemView.findViewById(R.id.shrQty);
             stockName = itemView.findViewById(R.id.stockNameOrder);
+            stockName.setTag(this);
             price = itemView.findViewById(R.id.price);
+            price.setTag(this);
             timeClosed = itemView.findViewById(R.id.timeClosed);
+            timeClosed.setTag(this);
         }
 
         @Override
