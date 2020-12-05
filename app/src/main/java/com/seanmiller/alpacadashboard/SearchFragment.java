@@ -20,7 +20,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.anjlab.android.iab.v3.BillingProcessor;
 import com.bumptech.glide.Glide;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonArray;
@@ -63,6 +66,7 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
     private RecyclerView newsRecycler;
     private RecyclerViewAdapterNews newsAdapter;
     private SharedPreferencesManager prefs;
+    private BillingProcessor bp;
 
 
     @Nullable
@@ -71,6 +75,8 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
 
         View mView = inflater.inflate(R.layout.search_fragment, null);
         prefs = new SharedPreferencesManager(getActivity());
+        bp = new BillingProcessor(getActivity(), Properties.getPlayLicenseKey(), (BillingProcessor.IBillingHandler) requireActivity());
+        bp.initialize();
 
         materialSearch = mView.findViewById(R.id.material_search_view);
         materialSearch.setAdapterLayoutManager(new LinearLayoutManager(getActivity()));
@@ -265,7 +271,17 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
             });
 
         });
-        thread.start();
+        if (prefs.retrieveBoolean("premium", false)) {
+            thread.start();
+
+        } else {
+            MaterialCardView searchCard = mView.findViewById(R.id.searchCard);
+            searchCard.setVisibility(View.VISIBLE);
+            MaterialButton buy_premium = mView.findViewById(R.id.buy_premium_search);
+            buy_premium.setOnClickListener(v -> {
+                bp.subscribe(requireActivity(), "premium_sub");
+            });
+        }
 
         return mView;
     }

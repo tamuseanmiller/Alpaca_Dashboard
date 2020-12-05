@@ -7,16 +7,17 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
 import net.jacobpeterson.abstracts.websocket.client.WebsocketClient;
+import net.jacobpeterson.abstracts.websocket.exception.WebsocketException;
 import net.jacobpeterson.abstracts.websocket.listener.StreamListener;
 import net.jacobpeterson.abstracts.websocket.message.StreamMessage;
 import net.jacobpeterson.abstracts.websocket.message.StreamMessageType;
-import net.jacobpeterson.alpaca.websocket.listener.AlpacaStreamListener;
-import net.jacobpeterson.alpaca.websocket.message.AlpacaStreamMessageType;
-import net.jacobpeterson.domain.alpaca.websocket.AlpacaStreamMessage;
-import net.jacobpeterson.domain.alpaca.websocket.account.AccountUpdateMessage;
-import net.jacobpeterson.domain.alpaca.websocket.authorization.AuthorizationMessage;
-import net.jacobpeterson.domain.alpaca.websocket.listening.ListeningMessage;
-import net.jacobpeterson.domain.alpaca.websocket.trade.TradeUpdateMessage;
+import net.jacobpeterson.alpaca.websocket.broker.listener.AlpacaStreamListener;
+import net.jacobpeterson.alpaca.websocket.broker.message.AlpacaStreamMessageType;
+import net.jacobpeterson.domain.alpaca.streaming.AlpacaStreamMessage;
+import net.jacobpeterson.domain.alpaca.streaming.account.AccountUpdateMessage;
+import net.jacobpeterson.domain.alpaca.streaming.authorization.AuthorizationMessage;
+import net.jacobpeterson.domain.alpaca.streaming.listening.ListeningMessage;
+import net.jacobpeterson.domain.alpaca.streaming.trade.TradeUpdateMessage;
 import net.jacobpeterson.util.gson.GsonUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -48,8 +49,11 @@ public class AlpacaWebsocketClient implements WebsocketClient {
     /** The secret. */
     private final String secret;
 
+    /** The OAuth token. */
+    private final String oAuthToken;
+
     /** The Base api url. */
-    private final String baseAPIURL;
+    private final String streamAPIURL;
 
     /** The observers. */
     private final List<AlpacaStreamListener> listeners;
@@ -61,26 +65,46 @@ public class AlpacaWebsocketClient implements WebsocketClient {
     private boolean authenticated;
 
     /**
-     * Instantiates a new Alpaca websocket client.
+     * Instantiates a new AlpacaWebsocketClient.
      *
-     * @param keyId      the key id
+     * @param keyId      the key ID
      * @param secret     the secret
-     * @param baseAPIURL the base apiurl
+     * @param baseAPIURL the base API URL
      */
     public AlpacaWebsocketClient(String keyId, String secret, String baseAPIURL) {
         this.keyId = keyId;
         this.secret = secret;
-        this.baseAPIURL = baseAPIURL.replace("https", "wss") + "/stream";
+        this.oAuthToken = null;
+        this.streamAPIURL = baseAPIURL.replace("https", "wss") + "/stream";
+
+        this.listeners = new ArrayList<>();
+    }
+
+    /**
+     * Instantiates a new AlpacaWebsocketClient.
+     *
+     * @param oAuthToken the OAuth token
+     * @param baseAPIURL the base API URL
+     */
+    public AlpacaWebsocketClient(String oAuthToken, String baseAPIURL) {
+        this.keyId = null;
+        this.secret = null;
+        this.oAuthToken = oAuthToken;
+        this.streamAPIURL = baseAPIURL.replace("https", "wss") + "/stream";
 
         this.listeners = new ArrayList<>();
     }
 
     @Override
-    public void addListener(StreamListener streamListener) {
+    public void addListener(StreamListener<?, ?> streamListener) throws WebsocketException {
         Preconditions.checkState(streamListener instanceof AlpacaStreamListener);
 
         if (listeners.isEmpty()) {
-            connect();
+            try {
+                connect();
+            } catch (IOException | URISyntaxException | DeploymentException exception) {
+                throw new WebsocketException(exception);
+            }
         }
 
         listeners.add((AlpacaStreamListener) streamListener);
@@ -89,43 +113,40 @@ public class AlpacaWebsocketClient implements WebsocketClient {
     }
 
     @Override
-    public void removeListener(StreamListener streamListener) {
+    public void removeListener(StreamListener<?, ?> streamListener) throws WebsocketException {
         Preconditions.checkState(streamListener instanceof AlpacaStreamListener);
 
         listeners.remove(streamListener);
 
-        submitStreamRequestUpdate();
-
         if (listeners.isEmpty()) {
-            disconnect();
+            try {
+                disconnect();
+            } catch (Exception exception) {
+                throw new WebsocketException(exception);
+            }
+        } else {
+            submitStreamRequestUpdate();
         }
     }
 
     @Override
-    public void connect() {
+    public void connect() throws URISyntaxException, IOException, DeploymentException {
         LOGGER.info("Connecting...");
 
-        try {
-            alpacaWebsocketClientEndpoint = new AlpacaWebsocketClientEndpoint(this, new URI(baseAPIURL));
-            alpacaWebsocketClientEndpoint.connect();
+        alpacaWebsocketClientEndpoint = new AlpacaWebsocketClientEndpoint(this, new URI(streamAPIURL));
+        alpacaWebsocketClientEndpoint.setAutomaticallyReconnect(true);
+        alpacaWebsocketClientEndpoint.connect();
 
-            LOGGER.info("Connected.");
-        } catch (URISyntaxException | DeploymentException | IOException e) {
-            LOGGER.throwing(e);
-        }
+        LOGGER.info("Connected.");
     }
 
     @Override
-    public void disconnect() {
+    public void disconnect() throws Exception {
         LOGGER.info("Disconnecting...");
 
-        try {
-            alpacaWebsocketClientEndpoint.getUserSession().close();
+        alpacaWebsocketClientEndpoint.disconnect();
 
-            LOGGER.info("Disconnected.");
-        } catch (IOException e) {
-            LOGGER.throwing(e);
-        }
+        LOGGER.info("Disconnected.");
     }
 
     @Override
@@ -144,8 +165,13 @@ public class AlpacaWebsocketClient implements WebsocketClient {
         authRequest.addProperty("action", "authenticate");
 
         JsonObject payload = new JsonObject();
-        payload.addProperty("key_id", keyId);
-        payload.addProperty("secret_key", secret);
+
+        if (oAuthToken != null) {
+            payload.addProperty("oauth_token", oAuthToken);
+        } else {
+            payload.addProperty("key_id", keyId);
+            payload.addProperty("secret_key", secret);
+        }
 
         authRequest.add("data", payload);
 
@@ -172,13 +198,6 @@ public class AlpacaWebsocketClient implements WebsocketClient {
                         AlpacaStreamMessageType.class);
 
                 switch (alpacaStreamMessageType) {
-                    case LISTENING:
-                        ListeningMessage listeningMessage = GsonUtil.GSON.fromJson(messageJsonObject,
-                                ListeningMessage.class);
-                        sendStreamMessageToListeners(alpacaStreamMessageType, listeningMessage);
-
-                        LOGGER.debug(listeningMessage);
-                        break;
                     case AUTHORIZATION:
                         AuthorizationMessage authorizationMessage = GsonUtil.GSON.fromJson(messageJsonObject,
                                 AuthorizationMessage.class);
@@ -187,6 +206,13 @@ public class AlpacaWebsocketClient implements WebsocketClient {
                         authenticated = isAuthorizationMessageSuccess(authorizationMessage);
 
                         LOGGER.debug(authorizationMessage);
+                        break;
+                    case LISTENING:
+                        ListeningMessage listeningMessage = GsonUtil.GSON.fromJson(messageJsonObject,
+                                ListeningMessage.class);
+                        sendStreamMessageToListeners(alpacaStreamMessageType, listeningMessage);
+
+                        LOGGER.debug(listeningMessage);
                         break;
                     case TRADE_UPDATES:
                         sendStreamMessageToListeners(alpacaStreamMessageType, GsonUtil.GSON.fromJson(messageJsonObject,
@@ -199,8 +225,8 @@ public class AlpacaWebsocketClient implements WebsocketClient {
                     default:
                         LOGGER.error("Unhandled stream type: " + alpacaStreamMessageType);
                 }
-            } catch (JsonSyntaxException e) {
-                LOGGER.throwing(e);
+            } catch (JsonSyntaxException exception) {
+                LOGGER.error("Could not parse message: " + messageJsonObject, exception);
             }
         } else {
             LOGGER.error("Unknown stream message: " + messageJsonObject);
@@ -215,7 +241,7 @@ public class AlpacaWebsocketClient implements WebsocketClient {
         AlpacaStreamMessageType alpacaStreamMessageType = (AlpacaStreamMessageType) streamMessageType;
         AlpacaStreamMessage alpacaStreamMessage = (AlpacaStreamMessage) streamMessage;
 
-        for (AlpacaStreamListener alpacaStreamListener : listeners) {
+        for (AlpacaStreamListener alpacaStreamListener : new ArrayList<>(listeners)) {
             if (alpacaStreamListener.getStreamMessageTypes() == null ||
                     alpacaStreamListener.getStreamMessageTypes().isEmpty() ||
                     alpacaStreamListener.getStreamMessageTypes().contains(alpacaStreamMessageType)) {
@@ -283,7 +309,7 @@ public class AlpacaWebsocketClient implements WebsocketClient {
     public Set<AlpacaStreamMessageType> getRegisteredMessageTypes() {
         Set<AlpacaStreamMessageType> registeredStreamMessageTypes = new HashSet<>();
 
-        for (AlpacaStreamListener alpacaStreamListener : listeners) {
+        for (AlpacaStreamListener alpacaStreamListener : new ArrayList<>(listeners)) {
             Set<AlpacaStreamMessageType> alpacaStreamMessageTypes = alpacaStreamListener.getStreamMessageTypes();
 
             // if its empty, assume they want everything

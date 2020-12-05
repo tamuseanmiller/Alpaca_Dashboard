@@ -198,19 +198,34 @@
         <com.google.android.material.button.MaterialButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/logout"
+            android:id="@+id/buy_premium"
             android:clickable="true"
             android:focusable="true"
-            android:textColor="@color/colorPrimary"
+            android:textColor="?attr/color_positive"
             android:layout_below="@id/tradingSinceLabel"
             app:layout_constraintTop_toBottomOf="@id/tradingSinceLabel"
             app:layout_constraintLeft_toLeftOf="parent"
             android:layout_marginTop="40dp"
             app:cornerRadius="15dp"
+            android:text="Buy Premium"
+            android:stateListAnimator="@null"
+            android:backgroundTint="?attr/color_positive_light"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/logout"
+            android:clickable="true"
+            android:focusable="true"
+            android:textColor="@color/colorPrimary"
+            android:layout_below="@id/tradingSinceLabel"
+            app:layout_constraintTop_toBottomOf="@id/buy_premium"
+            app:layout_constraintLeft_toLeftOf="parent"
+            android:layout_marginTop="10dp"
+            app:cornerRadius="15dp"
             android:text="@string/log_out"
             android:stateListAnimator="@null"
             android:backgroundTint="@color/yellow"/>
-
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

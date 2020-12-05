@@ -3,6 +3,8 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Alpaca Dashboard" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Alpaca_Dashboard" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/alpaca-java" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/play-licensing" vcs="Git" />
   </component>
 </project>

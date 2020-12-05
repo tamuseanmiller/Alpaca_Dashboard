@@ -1,6 +1,7 @@
 package com.seanmiller.alpacadashboard;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -10,8 +11,11 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.util.Log;
 import android.view.MenuItem;
 
+import com.anjlab.android.iab.v3.BillingProcessor;
+import com.anjlab.android.iab.v3.TransactionDetails;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.database.DatabaseReference;
@@ -41,7 +45,9 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.URL;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
@@ -50,7 +56,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, BillingProcessor.IBillingHandler {
 
     public static AtomicReference<String> ticker;
     private DashboardFragment dashboardFragment;
@@ -64,8 +70,76 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public static AuthorizationResponse resp;
     private Thread t1;
     private SharedPreferencesManager prefs;
+    private BillingProcessor bp;
 
-    // onCreate
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (!bp.handleActivityResult(requestCode, resultCode, data)) {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    /*private void setUpBillingClient() {
+
+        BillingClient billingClient = BillingClient.newBuilder(this)
+                .setListener(purchaseUpdateListener)
+                .enablePendingPurchases()
+                .build();
+
+        billingClient.startConnection(new BillingClientStateListener() {
+
+            @Override
+            public void onBillingSetupFinished(@NonNull BillingResult billingResult) {
+
+                if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                    Log.v("TAG_INAPP", "Setup Billing Done");
+                    // The BillingClient is ready. You can query purchases here.
+                    queryAvailableProducts(billingClient);
+                }
+
+            }
+
+            @Override
+            public void onBillingServiceDisconnected() {
+                Log.v("TAG_INAPP", "Billing client Disconnected");
+                // Try to restart the connection on the next request to
+                // Google Play by calling the startConnection() method.
+            }
+        });
+    }
+
+    private void queryAvailableProducts(BillingClient billingClient) {
+        ArrayList<String> skuList = new ArrayList<>();
+        skuList.add("premium_sub");
+        SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
+        params.setSkusList(skuList).setType(BillingClient.SkuType.INAPP);
+
+        billingClient.querySkuDetailsAsync(new SkuDetailsParams(), (billingResult, list) -> {
+            // Process the result.
+            if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && list != null && !list.isEmpty()) {
+                for (SkuDetails skuDetails : list) {
+                    Log.v("TAG_INAPP", "skuDetailsList : ${list}");
+                    //This list should contain the products added above
+                    BillingFlowParams billingFlowParams = BillingFlowParams.newBuilder()
+                            .setSkuDetails(skuDetails)
+                            .build();
+                    billingClient.launchBillingFlow(this, billingFlowParams);
+
+                }
+            }
+        });
+    }
+
+
+    private final PurchasesUpdatedListener purchaseUpdateListener = (billingResult, list) -> {
+
+    };*/
+
+    private void setUpBilling() {
+
+    }
+
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -74,13 +148,17 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         prefs = new SharedPreferencesManager(this);
 
         Utils.startTheme(MainActivity.this, prefs.retrieveInt("theme", Utils.THEME_DEFAULT));
+//        setUpBillingClient();
+
+        bp = new BillingProcessor(this, Properties.getPlayLicenseKey(), this);
+        bp.initialize();
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         boolean check = false;
 
         if (prefs.retrieveString("auth_token", "NULL").equals("NULL") ||
-            prefs.retrieveString("polygon_id", "NULL").equals("NULL")) {
+                prefs.retrieveString("polygon_id", "NULL").equals("NULL")) {
 
             performAuthentication();
             check = true;
@@ -113,6 +191,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             pagerAdapter.addFragments(searchFragment);
             pagerAdapter.addFragments(profileFragment);
             pagerAdapter.addFragments(emergencyFragment);
+
+            InformationFragment informationFragment = new InformationFragment();
+            pagerAdapter.addFragments(informationFragment);
 
             runOnUiThread(() -> {
                 viewPager.setAdapter(pagerAdapter);
@@ -278,7 +359,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 //                } catch (JSONException e) {
 //                    e.printStackTrace();
 
-                // If account is not funded
+                    // If account is not funded
                 } else {
 
                     AtomicReference<MaterialAlertDialogBuilder> dialogBuilder = new AtomicReference<>(new MaterialAlertDialogBuilder(this, R.style.DialogThemePositive));
@@ -313,4 +394,48 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     }
 
+    // IBillingHandler implementation
+
+    @Override
+    public void onBillingInitialized() {
+        /*
+         * Called when BillingProcessor was initialized and it's ready to purchase
+         */
+    }
+
+    @Override
+    public void onProductPurchased(String productId, TransactionDetails details) {
+        /*
+         * Called when requested PRODUCT ID was successfully purchased
+         */
+        prefs.storeBoolean("premium", true);
+    }
+
+    @Override
+    public void onBillingError(int errorCode, Throwable error) {
+        /*
+         * Called when some error occurred. See Constants class for more details
+         *
+         * Note - this includes handling the case where the user canceled the buy dialog:
+         * errorCode = Constants.BILLING_RESPONSE_RESULT_USER_CANCELED
+         */
+        prefs.storeBoolean("premium", false);
+        Log.v("Billing Error", String.valueOf(errorCode), error);
+    }
+
+    @Override
+    public void onPurchaseHistoryRestored() {
+        /*
+         * Called when purchase history was restored and the list of all owned PRODUCT ID's
+         * was loaded from Google Play
+         */
+    }
+
+    @Override
+    public void onDestroy() {
+        if (bp != null) {
+            bp.release();
+        }
+        super.onDestroy();
+    }
 }

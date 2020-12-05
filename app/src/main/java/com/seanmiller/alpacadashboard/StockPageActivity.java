@@ -653,7 +653,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 } else {
 
                     try {
-                        aggs = polygonAPI.getAggregates(ticker.get(), multiplier, Timespan.DAY, datetime.toLocalDate(), LocalDate.now(), false).getResults();
+                        aggs = polygonAPI.getAggregates(ticker.get(), multiplier, timeFrame, datetime.toLocalDate(), LocalDate.now(), false).getResults();
 //                        bars = alpacaAPI.getBars(timeFrame, ticker.get(), 1000, datetime, null, null, ZonedDateTime.now());
 
                     } catch (PolygonAPIRequestException e) {

@@ -99,28 +99,30 @@ public class RecyclerViewAdapterPositions extends RecyclerView.Adapter<RecyclerV
                 e.printStackTrace();
             }
 
-            while (true) {
+//            while (true) {
 
-                // Get Amount of shares owned
-                Position shrOwned = null;
-                try {
-                    shrOwned = alpacaAPI.getOpenPositionBySymbol(mData.get(position));
-                } catch (AlpacaAPIRequestException e) {
-                    e.printStackTrace();
-                }
+            // Get Amount of shares owned
+            Position shrOwned = null;
+            try {
+                shrOwned = alpacaAPI.getOpenPositionBySymbol(mData.get(position));
+            } catch (AlpacaAPIRequestException e) {
+                e.printStackTrace();
+            }
 
-                // Set shares owned
-                Position finalShrOwned = shrOwned;
-                mainActivity.runOnUiThread(() -> {
-                    if (finalShrOwned.getQty() != null) {
+            // Set shares owned
+            Position finalShrOwned = shrOwned;
+            mainActivity.runOnUiThread(() -> {
+                if (finalShrOwned.getQty() != null) {
 
-                        if (finalShrOwned.getQty().equals("1")) {
-                            holder.sharesOwned.setText(finalShrOwned.getQty() + " share owned");
-                        } else {
-                            holder.sharesOwned.setText(finalShrOwned.getQty() + " shares owned");
-                        }
+                    if (finalShrOwned.getQty().equals("1")) {
+                        holder.sharesOwned.setText(finalShrOwned.getQty() + " share owned");
+                    } else {
+                        holder.sharesOwned.setText(finalShrOwned.getQty() + " shares owned");
                     }
-                });
+                }
+            });
+
+            while (true) {
 
                 // Get market status
                 String marketStatus = null;
@@ -171,27 +173,27 @@ public class RecyclerViewAdapterPositions extends RecyclerView.Adapter<RecyclerV
                         }
                     });
 
-                // Market isn't open
+                    // Market isn't open
                 } else {
 
                     // Fetch Daily Open Close endpoint for prev day
                     // https://api.polygon.io/v1/open-close/AAPL/2020-10-14?apiKey=
-                    JSONObject nodeHttpResponse = null;
+                    /*JSONObject nodeHttpResponse = null;
                     try {
-                        nodeHttpResponse = Unirest.get("https://api.polygon.io/v1/open-close/" + mData.get(position) + "/" + calendar.get(calendar.size() - 1).getDate() + "?apiKey=" + prefs.retrieveString("polygon_id", "NULL")).asJson().getBody().getObject();
+                        nodeHttpResponse = Unirest.get("https://api.polygon.io/v1/open-close/" + mData.get(position) + "/" + calendar.get(calendar.size() - 2).getDate() + "?apiKey=" + prefs.retrieveString("polygon_id", "NULL")).asJson().getBody().getObject();
 
                     } catch (UnirestException e) {
                         e.printStackTrace();
-                    }
+                    }*/
 
                     // Get last open day's close
-                    if (nodeHttpResponse != null) {
-                        try {
-                            closeCurr = Float.parseFloat(nodeHttpResponse.get("close").toString());
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+//                    if (nodeHttpResponse != null) {
+                    try {
+                        closeCurr = polygonAPI.getLastQuote(mData.get(position)).getLast().getAskprice().floatValue();
+                    } catch (PolygonAPIRequestException e) {
+                        e.printStackTrace();
                     }
+//                    }
 
                     // Set values
                     float finalClose = close;

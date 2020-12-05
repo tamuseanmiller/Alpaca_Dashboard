@@ -15,12 +15,14 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.anjlab.android.iab.v3.BillingProcessor;
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.formatter.PercentFormatter;
+import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 import com.google.android.material.button.MaterialButton;
 
 import net.jacobpeterson.alpaca.AlpacaAPI;
@@ -31,6 +33,9 @@ import net.jacobpeterson.polygon.PolygonAPI;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
+import mehdi.sakout.aboutpage.AboutPage;
 
 public class ProfileFragment extends Fragment {
 
@@ -41,6 +46,7 @@ public class ProfileFragment extends Fragment {
     private TextView tradingSince;
     private Thread t1;
     private PieChart portVsCash;
+    BillingProcessor bp;
 
     @Nullable
     @Override
@@ -48,6 +54,8 @@ public class ProfileFragment extends Fragment {
         Utils.startTheme(getActivity(), new SharedPreferencesManager(getActivity()).retrieveInt("theme", Utils.THEME_DEFAULT));
         View mView = inflater.inflate(R.layout.profile_fragment, null);
         SharedPreferencesManager prefs = new SharedPreferencesManager(getActivity());
+        bp = new BillingProcessor(getActivity(), Properties.getPlayLicenseKey(), (BillingProcessor.IBillingHandler) getActivity());
+        bp.initialize();
 
         Thread thread = new Thread(() -> {
 
@@ -132,14 +140,11 @@ public class ProfileFragment extends Fragment {
         });
 
         // Settings
-        ImageButton settings = mView.findViewById(R.id.settingsGear);
-        settings.setOnClickListener(v -> {
-//            LibsBuilder libsBuilder = new LibsBuilder();
-//            libsBuilder.withLicenseShown(true);
-//            libsBuilder.supportFragment();
-//            libsBuilder.withAboutAppName("Alpaca Dashboard");
-//            libsBuilder.withEdgeToEdge(true);
-//            libsBuilder.start(requireActivity());
+        ImageButton information = mView.findViewById(R.id.settingsGear);
+        information.setOnClickListener(v -> {
+
+            MainActivity.lastItem = 2;
+            MainActivity.viewPager.setCurrentItem(4);
         });
 
         // Logout
@@ -150,6 +155,11 @@ public class ProfileFragment extends Fragment {
             Intent intent = new Intent(getActivity(), LoginActivity.class);
             startActivity(intent);
             requireActivity().finish();
+        });
+
+        MaterialButton buy_premium = mView.findViewById(R.id.buy_premium);
+        buy_premium.setOnClickListener(v -> {
+            bp.subscribe(requireActivity(), "premium_sub");
         });
 
         return mView;
