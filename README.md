@@ -19,7 +19,7 @@ You may need to sign up as a tester for now, still looking to garner a few more 
 
 ## Libraries Used
 
-* [Alpaca Java Wrapper](https://github.com/Petersoj/alpaca-javaa)
+* [Alpaca Java Wrapper](https://github.com/Petersoj/alpaca-java)
 * [Robinhood's Tickerview](https://github.com/robinhood/ticker)
 * [Robinhood's Sparkline Graph](https://github.com/robinhood/spark)
 * [Decorator for RecyclerViews](https://github.com/rubensousa/Decorator)
