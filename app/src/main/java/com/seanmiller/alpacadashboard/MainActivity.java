@@ -66,11 +66,17 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public static EmergencyFragment emergencyFragment;
     public static int lastItem = 0;
     public static BottomBarAdapter pagerAdapter;
-    public static DatabaseReference myRef;
+//    public static DatabaseReference myRef;
     public static AuthorizationResponse resp;
     private Thread t1;
     private SharedPreferencesManager prefs;
     private BillingProcessor bp;
+
+    public static final int DASHBOARD_FRAGMENT = 0;
+    public static final int SEARCH_FRAGMENT = 1;
+    public static final int PROFILE_FRAGMENT = 2;
+    public static final int EMERGENCY_FRAGMENT = 3;
+    public static final int INFORMATION_FRAGMENT = 4;
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -78,67 +84,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             super.onActivityResult(requestCode, resultCode, data);
         }
     }
-
-    /*private void setUpBillingClient() {
-
-        BillingClient billingClient = BillingClient.newBuilder(this)
-                .setListener(purchaseUpdateListener)
-                .enablePendingPurchases()
-                .build();
-
-        billingClient.startConnection(new BillingClientStateListener() {
-
-            @Override
-            public void onBillingSetupFinished(@NonNull BillingResult billingResult) {
-
-                if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                    Log.v("TAG_INAPP", "Setup Billing Done");
-                    // The BillingClient is ready. You can query purchases here.
-                    queryAvailableProducts(billingClient);
-                }
-
-            }
-
-            @Override
-            public void onBillingServiceDisconnected() {
-                Log.v("TAG_INAPP", "Billing client Disconnected");
-                // Try to restart the connection on the next request to
-                // Google Play by calling the startConnection() method.
-            }
-        });
-    }
-
-    private void queryAvailableProducts(BillingClient billingClient) {
-        ArrayList<String> skuList = new ArrayList<>();
-        skuList.add("premium_sub");
-        SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
-        params.setSkusList(skuList).setType(BillingClient.SkuType.INAPP);
-
-        billingClient.querySkuDetailsAsync(new SkuDetailsParams(), (billingResult, list) -> {
-            // Process the result.
-            if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && list != null && !list.isEmpty()) {
-                for (SkuDetails skuDetails : list) {
-                    Log.v("TAG_INAPP", "skuDetailsList : ${list}");
-                    //This list should contain the products added above
-                    BillingFlowParams billingFlowParams = BillingFlowParams.newBuilder()
-                            .setSkuDetails(skuDetails)
-                            .build();
-                    billingClient.launchBillingFlow(this, billingFlowParams);
-
-                }
-            }
-        });
-    }
-
-
-    private final PurchasesUpdatedListener purchaseUpdateListener = (billingResult, list) -> {
-
-    };*/
-
-    private void setUpBilling() {
-
-    }
-
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
@@ -157,18 +102,17 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         setContentView(R.layout.activity_main);
         boolean check = false;
 
+        // Check if authentication has already been performed
         if (prefs.retrieveString("auth_token", "NULL").equals("NULL") ||
                 prefs.retrieveString("polygon_id", "NULL").equals("NULL")) {
 
-            performAuthentication();
+            finishAuthentication();
             check = true;
         }
 
         // Write a message to the database
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        myRef = database.getReference();
-
-//        runOnUiThread(() -> {
+//        FirebaseDatabase database = FirebaseDatabase.getInstance();
+//        myRef = database.getReference();
 
         // Create viewpager for bottombar fragments
         viewPager = findViewById(R.id.viewPager);
@@ -178,8 +122,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         BottomNavigationView bottomNavigation = findViewById(R.id.bottom_navigation);
         bottomNavigation.bringToFront();
         bottomNavigation.setOnNavigationItemSelectedListener(this);
-
-//        });
 
         t1 = new Thread(() -> {
 
@@ -197,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
             runOnUiThread(() -> {
                 viewPager.setAdapter(pagerAdapter);
-                viewPager.setCurrentItem(0);
+                viewPager.setCurrentItem(DASHBOARD_FRAGMENT);
             });
         });
 
@@ -207,7 +149,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             t1.start();
         }
 
-//        t1.start();
     }
 
 
@@ -220,28 +161,29 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         switch (item.getItemId()) {
             case R.id.dashboard_page:
                 lastItem = viewPager.getCurrentItem();
-                viewPager.setCurrentItem(0);
+                viewPager.setCurrentItem(DASHBOARD_FRAGMENT);
                 return true;
 
             case R.id.search_page:
                 lastItem = viewPager.getCurrentItem();
-                viewPager.setCurrentItem(1);
+                viewPager.setCurrentItem(SEARCH_FRAGMENT);
                 return true;
 
             case R.id.profile_page:
                 lastItem = viewPager.getCurrentItem();
-                viewPager.setCurrentItem(2);
+                viewPager.setCurrentItem(PROFILE_FRAGMENT);
                 profileFragment.animateWhenCalled();
                 return true;
 
             case R.id.emergency_page:
                 lastItem = viewPager.getCurrentItem();
-                viewPager.setCurrentItem(3);
+                viewPager.setCurrentItem(EMERGENCY_FRAGMENT);
                 return true;
         }
         return false;
     }
 
+    // Makes sure that swiping back will always go to the last focused item in the viewpager
     @Override
     public void onBackPressed() {
 
@@ -255,7 +197,10 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     }
 
-    public void performAuthentication() {
+    // Finish authentication method
+    public void finishAuthentication() {
+
+        // Reinitialize the service configuration for continued use
         AuthorizationServiceConfiguration serviceConfig =
                 new AuthorizationServiceConfiguration(
                         Uri.parse("https://app.alpaca.markets/oauth/authorize"), // authorindeization endpoint
@@ -266,6 +211,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         resp = AuthorizationResponse.fromIntent(getIntent());
         AuthorizationException ex = AuthorizationException.fromIntent(getIntent());
 
+        // Check if the response received was null, and if so then go back to LoginActivity
         if (resp != null) {
             // authorization completed
             authState.updateAfterAuthorization(resp, ex);
@@ -295,24 +241,24 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 .setRedirectUri(Uri.parse(Properties.getRedirectURI()))
                 .build();
 
-
+        // Perform the request for the token
         AtomicReference<String> authenticationResponse = new AtomicReference<>();
-
         AuthorizationService authService = new AuthorizationService(this);
+        authService.performTokenRequest(tokenRequest, (tokenResponse, ex1) -> {
 
-        authService.performTokenRequest(tokenRequest, (tokenResponse1, ex1) -> {
+            // Check to see if a token was returned
+            if (tokenResponse != null) {
 
-            if (tokenResponse1 != null) {
-
-                // exchange succeeded
+                // Exchange succeeded
                 System.out.println("Authentication Done");
-                authState.updateAfterTokenResponse(tokenResponse1, ex1);
-                prefs.storeString("auth_token", tokenResponse1.accessToken);
-                System.out.println(tokenResponse1.accessToken);
-                authenticationResponse.set(tokenResponse1.accessToken);
+                authState.updateAfterTokenResponse(tokenResponse, ex1);
+                prefs.storeString("auth_token", tokenResponse.accessToken);
+                System.out.println(tokenResponse.accessToken);
+                authenticationResponse.set(tokenResponse.accessToken);
 
+                // Fetch account using alpaca-java
                 Account account = null;
-                AlpacaAPI alpacaAPI = new AlpacaAPI(tokenResponse1.accessToken);
+                AlpacaAPI alpacaAPI = new AlpacaAPI(tokenResponse.accessToken);
                 try {
                     account = alpacaAPI.getAccount();
                 } catch (AlpacaAPIRequestException e) {
@@ -329,7 +275,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                         OkHttpClient client = new OkHttpClient();
                         Request request = new Request.Builder()
                                 .url("https://api.alpaca.markets/oauth/token")
-                                .addHeader("Authorization", "Bearer " + tokenResponse1.accessToken).build();
+                                .addHeader("Authorization", "Bearer " + tokenResponse.accessToken).build();
 
                         // Catch response after execution
                         Response response = client.newCall(request).execute();
@@ -343,23 +289,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                         e.printStackTrace();
                     }
 
-                    // Authenticate Polygon as well
-//                HttpResponse<JsonNode> nodeHttpResponse = null;
-//                try {
-//                    nodeHttpResponse = Unirest.get("https://api.alpaca.markets/oauth/token")
-//                            .header("Authorization", "Bearer " + tokenResponse1.accessToken).asJson();
-//                } catch (UnirestException e) {
-//                    e.printStackTrace();
-//                }
-
-                    // Add Polygon ID to SharedPreferences
-//                try {
-//                    prefs.storeString("polygon_id", nodeHttpResponse.getBody().getObject().get("id").toString());
-//
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-
-                    // If account is not funded
+                    // If account is not funded, send back to Login Activity with dialog
                 } else {
 
                     AtomicReference<MaterialAlertDialogBuilder> dialogBuilder = new AtomicReference<>(new MaterialAlertDialogBuilder(this, R.style.DialogThemePositive));
@@ -374,19 +304,22 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                     });
                     dialogBuilder.get().create().show();
                 }
-//                }
 
             } else {
+
                 // authorization failed, check ex for more details
                 System.out.println(ex1);
             }
 
+            // Check if both are still the default values, then send back to LoginActivity
+            // This helps for crashes
             if (prefs.retrieveString("auth_token", "NULL").equals("NULL") || prefs.retrieveString("polygon_id", "NULL").equals("NULL")) {
                 Intent intent = new Intent(MainActivity.this, LoginActivity.class);
                 startActivity(intent);
                 finish();
             }
 
+            // Start main thread, after authorization is complete
             t1.start();
 
         });

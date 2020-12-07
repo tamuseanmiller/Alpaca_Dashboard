@@ -92,6 +92,7 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
         materialSearch.setBackgroundColor(color);
         materialSearch.setBackgroundStrokeColor(strokeColor);
         materialSearch.setBackgroundStrokeWidth(2);
+        materialSearch.setTextColor(colorLight);
         materialSearch.setBackgroundRadius(60);
         materialSearch.setTextHintColor(colorLight);
         materialSearch.setNavigationIconColorFilter(colorLight);

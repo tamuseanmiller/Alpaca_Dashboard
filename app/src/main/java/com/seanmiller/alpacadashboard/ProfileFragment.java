@@ -136,15 +136,17 @@ public class ProfileFragment extends Fragment {
             requireActivity().runOnUiThread(() -> {
                 tradingSince.setText(account.getCreatedAt().toLocalDate().toString());
                 buyingPower.setText(formatter.format(buyingPowerVal));
+
             });
+
         });
 
-        // Settings
+        // Information
         ImageButton information = mView.findViewById(R.id.settingsGear);
         information.setOnClickListener(v -> {
+            MainActivity.lastItem = MainActivity.viewPager.getCurrentItem();
+            MainActivity.viewPager.setCurrentItem(MainActivity.INFORMATION_FRAGMENT, false);
 
-            MainActivity.lastItem = 2;
-            MainActivity.viewPager.setCurrentItem(4);
         });
 
         // Logout

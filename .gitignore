@@ -18,8 +18,6 @@
 .cxx
 local.properties
 
-*.properties
-
 *.default
 
 app/src/main/java/com/bedefined/alpaca_dashboard/Properties.java

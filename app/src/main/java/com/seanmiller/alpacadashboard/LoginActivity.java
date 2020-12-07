@@ -57,16 +57,19 @@ public class LoginActivity extends AppCompatActivity {
 
     public void authenticate() {
 
+        // Create success and fail PendingIntents to next Activity
         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
         Intent intent2 = new Intent(LoginActivity.this, LoginActivity.class);
         PendingIntent ifSuccess = PendingIntent.getActivity(LoginActivity.this, 0, intent, 0);
         PendingIntent ifFail = PendingIntent.getActivity(LoginActivity.this, 0, intent2, 0);
 
+        // Initialze ServiceConfig for the different OAuth Endpoints
         AuthorizationServiceConfiguration serviceConfig =
                 new AuthorizationServiceConfiguration(
-                        Uri.parse("https://app.alpaca.markets/oauth/authorize"), // authorindeization endpoint
+                        Uri.parse("https://app.alpaca.markets/oauth/authorize"), // authorization endpoint
                         Uri.parse("https://api.alpaca.markets/oauth/token")); // token endpoint
 
+        // Start building request to obtain initial key
         AuthorizationRequest.Builder authRequestBuilder =
                 new AuthorizationRequest.Builder(
                         serviceConfig, // the authorization service configuration
@@ -74,6 +77,7 @@ public class LoginActivity extends AppCompatActivity {
                         ResponseTypeValues.CODE, // the response_type value: we want a code
                         Uri.parse(Properties.getRedirectURI())); // the redirect URI to which the auth response is sent
 
+        // Build the request in custom tabs and switch activities with PendingIntent
         AuthorizationRequest authRequest = authRequestBuilder
                 .setScope("account:write trading data")
                 .build();
