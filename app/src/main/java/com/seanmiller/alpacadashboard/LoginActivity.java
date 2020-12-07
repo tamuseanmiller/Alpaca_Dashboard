@@ -29,8 +29,6 @@ import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private AuthorizationService authService;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -82,7 +80,7 @@ public class LoginActivity extends AppCompatActivity {
                 .setScope("account:write trading data")
                 .build();
 
-        authService = new AuthorizationService(this);
+        AuthorizationService authService = new AuthorizationService(this);
 
 
         CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();

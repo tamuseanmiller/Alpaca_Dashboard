@@ -93,8 +93,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         prefs = new SharedPreferencesManager(this);
 
         Utils.startTheme(MainActivity.this, prefs.retrieveInt("theme", Utils.THEME_DEFAULT));
-//        setUpBillingClient();
 
+        // Set up billing client
         bp = new BillingProcessor(this, Properties.getPlayLicenseKey(), this);
         bp.initialize();
 
@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         setContentView(R.layout.activity_main);
         boolean check = false;
 
-        // Check if authentication has already been performed
+        // Check to see if pending OAuth
         if (prefs.retrieveString("auth_token", "NULL").equals("NULL") ||
                 prefs.retrieveString("polygon_id", "NULL").equals("NULL")) {
 
@@ -125,6 +125,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         t1 = new Thread(() -> {
 
+            // Initialize fragments and pagerAdapter
             dashboardFragment = new DashboardFragment();
             searchFragment = new SearchFragment();
             profileFragment = new ProfileFragment();
@@ -149,6 +150,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             t1.start();
         }
 
+//        t1.start();
     }
 
 
@@ -334,14 +336,18 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         /*
          * Called when BillingProcessor was initialized and it's ready to purchase
          */
+
+        // Check to see if premium has been purchased
+        prefs.storeBoolean("premium", bp.isPurchased("premium_sub"));
     }
 
     @Override
-    public void onProductPurchased(String productId, TransactionDetails details) {
+    public void onProductPurchased(@NonNull String productId, TransactionDetails details) {
         /*
          * Called when requested PRODUCT ID was successfully purchased
          */
         prefs.storeBoolean("premium", true);
+        searchFragment = new SearchFragment();
     }
 
     @Override
@@ -362,6 +368,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
          * Called when purchase history was restored and the list of all owned PRODUCT ID's
          * was loaded from Google Play
          */
+        prefs.storeBoolean("premium", bp.isPurchased("premium_sub"));
     }
 
     @Override

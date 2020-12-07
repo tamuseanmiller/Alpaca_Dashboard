@@ -12,10 +12,6 @@ import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
-/**
- * Created by AbhiAndroid
- */
-
 public class SplashActivity extends Activity {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
