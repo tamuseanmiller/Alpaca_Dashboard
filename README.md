@@ -16,3 +16,22 @@ You may need to sign up as a tester for now, still looking to garner a few more 
 <img src="images/place_orders.png" alt="drawing" width="200"/><img src="images/profile.png" alt="drawing" width="200"/>
 
 <img src="images/search.png" alt="drawing" width="200"/><img src="images/stocks_page.png" alt="drawing" width="200"/>
+
+## Libraries Used
+
+* [Alpaca Java Wrapper](https://github.com/Petersoj/alpaca-javaa)
+* [Robinhood's Tickerview](https://github.com/robinhood/ticker)
+* [Robinhood's Sparkline Graph](https://github.com/robinhood/spark)
+* [Decorator for RecyclerViews](https://github.com/rubensousa/Decorator)
+* [MPAndroid Chart PieChart](https://github.com/PhilJay/MPAndroidChart)
+* [FAB Order Menu](https://github.com/Krupen/FabulousFilter)
+* [Search Component](https://github.com/lapism/search)
+* [AppAuth for OAuth](https://github.com/openid/AppAuth-Android)
+* [News Article Viewer](https://github.com/klinker41/article-android)
+* [Glide for Photos](https://github.com/bumptech/glide)
+
+## Credits
+
+Thanks to @Petersoj for creating the [Java wrapper for Alpaca](https://github.com/Petersoj/alpaca-java) and helping with OAuth integration
+
+Thanks to @tommy_emo on Twitter for help with iconography
