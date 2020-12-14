@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -13,6 +14,7 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.anjlab.android.iab.v3.BillingProcessor;
 import com.anjlab.android.iab.v3.TransactionDetails;
@@ -66,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public static EmergencyFragment emergencyFragment;
     public static int lastItem = 0;
     public static BottomBarAdapter pagerAdapter;
-//    public static DatabaseReference myRef;
+    //    public static DatabaseReference myRef;
     public static AuthorizationResponse resp;
     private Thread t1;
     private SharedPreferencesManager prefs;
@@ -83,6 +85,19 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         if (!bp.handleActivityResult(requestCode, resultCode, data)) {
             super.onActivityResult(requestCode, resultCode, data);
         }
+        for (Fragment fragment : getSupportFragmentManager().getFragments()) {
+            if (fragment != null) {
+                fragment.onActivityResult(requestCode, resultCode, data);
+            }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        if (!(pagerAdapter == null)) {
+            pagerAdapter.notifyDataSetChanged();
+        }
+        super.onResume();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -219,7 +234,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             authState.updateAfterAuthorization(resp, ex);
 
         } else {
-            System.out.println("Failed: " + ex);
+            Log.v("Exception", "Failed: ", ex);
             Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
             finish();
@@ -338,7 +353,21 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
          */
 
         // Check to see if premium has been purchased
-        prefs.storeBoolean("premium", bp.isPurchased("premium_sub"));
+        boolean purchaseResult = bp.loadOwnedPurchasesFromGoogle();
+
+        if (purchaseResult) {
+            TransactionDetails subscriptionTransactionDetails = bp.getSubscriptionTransactionDetails("premium_sub");
+            if (subscriptionTransactionDetails != null) {
+                //User is still subscribed
+                prefs.storeBoolean("premium", true);
+                Log.d("BILLING ", "Subscription is valid");
+            } else {
+                //Not subscribed
+                prefs.storeBoolean("premium", false);
+                Log.d("BILLING ", "Subscription is NOT valid");
+            }
+
+        }
     }
 
     @Override
@@ -347,7 +376,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
          * Called when requested PRODUCT ID was successfully purchased
          */
         prefs.storeBoolean("premium", true);
-        searchFragment = new SearchFragment();
+        SearchFragment.startNews(prefs, this);
+        SearchFragment.searchCard.setVisibility(View.INVISIBLE);
     }
 
     @Override

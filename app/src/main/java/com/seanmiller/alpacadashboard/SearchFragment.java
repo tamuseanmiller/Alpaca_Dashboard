@@ -6,7 +6,9 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.app.Activity;
 import android.app.ActivityOptions;
 import android.content.Intent;
 import android.graphics.drawable.shapes.Shape;
@@ -14,6 +16,7 @@ import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +24,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.anjlab.android.iab.v3.BillingProcessor;
+import com.anjlab.android.iab.v3.TransactionDetails;
 import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
@@ -58,16 +62,17 @@ import xyz.klinker.android.article.ArticleUtils;
 import static android.app.Activity.RESULT_OK;
 import static android.os.FileUtils.copy;
 
-public class SearchFragment extends Fragment implements SearchLayout.OnQueryTextListener, SearchableAdapter.ItemClickListener {
+public class SearchFragment extends Fragment implements SearchLayout.OnQueryTextListener, SearchableAdapter.ItemClickListener/*, BillingProcessor.IBillingHandler*/ {
 
     private static final int SPEECH_REQUEST_CODE = 0;
     private MaterialSearchView materialSearch;
     private SearchableAdapter searchableAdapter;
-    private RecyclerView newsRecycler;
-    private RecyclerViewAdapterNews newsAdapter;
+    private static RecyclerView newsRecycler;
+    private static RecyclerViewAdapterNews newsAdapter;
     private SharedPreferencesManager prefs;
     private BillingProcessor bp;
-
+    public static MaterialCardView searchCard;
+    private static SwipeRefreshLayout refreshLayout;
 
     @Nullable
     @Override
@@ -75,7 +80,7 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
 
         View mView = inflater.inflate(R.layout.search_fragment, null);
         prefs = new SharedPreferencesManager(getActivity());
-        bp = new BillingProcessor(getActivity(), Properties.getPlayLicenseKey(), (BillingProcessor.IBillingHandler) requireActivity());
+        bp = new BillingProcessor(requireActivity(), Properties.getPlayLicenseKey(), (BillingProcessor.IBillingHandler) requireActivity());
         bp.initialize();
 
         materialSearch = mView.findViewById(R.id.material_search_view);
@@ -118,7 +123,6 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
         // If the navigation button is clicked
         materialSearch.setOnNavigationClickListener(v -> {
             if (materialSearch.hasFocus()) {
-//                requireActivity().findViewById(R.id.containerFragSearch).requestFocus();
                 getActivity().getCurrentFocus().clearFocus();
 
             } else {
@@ -126,41 +130,49 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
             }
         });
 
+        // News Recycler
+        refreshLayout = mView.findViewById(R.id.refreshSearch);
+        newsRecycler = mView.findViewById(R.id.newsRecycler);
+        searchCard = mView.findViewById(R.id.searchCard);
+        if (prefs.retrieveBoolean("premium", false)) {
+            startNews(prefs, getActivity());
+
+        } else {
+            searchCard.setVisibility(View.VISIBLE);
+            MaterialButton buy_premium = mView.findViewById(R.id.buy_premium_search);
+            buy_premium.setOnClickListener(v -> {
+                bp.subscribe(requireActivity(), "premium_sub");
+            });
+        }
+
+        refreshLayout.setProgressViewOffset(true, 0, 260);
+        refreshLayout.setOnRefreshListener(() -> {
+            if (prefs.retrieveBoolean("premium", false)) {
+                startNews(prefs, getActivity());
+            } else {
+                refreshLayout.setRefreshing(false);
+            }
+        });
+
+        return mView;
+    }
+
+    public static void startNews(SharedPreferencesManager prefs, Activity activity) {
+
         Thread thread = new Thread(() -> {
 
-
-            // Formats the response into an array
-//            if (nodeHttpResponse != null) {
-//                String innerJson = nodeHttpResponse.getBody().substring(42, nodeHttpResponse.getBody().length() - 2);
-//                JsonParser parse = new JsonParser();
-//                JsonObject jsonObject = (JsonObject) parse.parse(innerJson);
-//                JsonArray stocks = jsonObject.get("ResultSet").getAsJsonObject().get("Result").getAsJsonArray();
-//                ArrayList<Ticker> tickers = new ArrayList<>();
-//
-//                for (JsonElement i : stocks) {
-//                    Ticker t = new Ticker();
-//                    t.setName(i.getAsJsonObject().get("name").getAsString());
-//                    t.setTicker(i.getAsJsonObject().get("symbol").getAsString());
-//                    tickers.add(t);
-//                }
-//
-//                // Sets adapter
-//                searchableAdapter = new SearchableAdapter(tickers);
-//                searchableAdapter.setClickListener(this);
-//                requireActivity().runOnUiThread(() -> materialSearch.setAdapter(searchableAdapter));
-//            }
-
-            // Fetch news for positions
-//            PolygonAPI polygonAPI = new PolygonAPI(prefs.retrieveString("polygon_id", "NULL"));
+            // Initialize Alpaca's API
             AlpacaAPI alpacaAPI = new AlpacaAPI(prefs.retrieveString("auth_token", "NULL"));
+            activity.runOnUiThread(() -> refreshLayout.setRefreshing(true));
             ArrayList<Position> positions = null;
             try {
                 positions = alpacaAPI.getOpenPositions();
+
             } catch (AlpacaAPIRequestException e) {
                 e.printStackTrace();
             }
-
             ArrayList<JSONObject> news = new ArrayList<>();
+
             // If no positions, show news for AAPL and AMD
             if (positions == null || positions.isEmpty()) {
                 ArrayList<String> stocks = new ArrayList<>();
@@ -179,7 +191,7 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
                 });
                 Collections.reverse(news);
 
-                // If positions exist show news for your positions
+            // If positions exist show news for your positions
             } else {
 
                 for (Position stock : positions) {
@@ -196,58 +208,7 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
                 Collections.reverse(news);
             }
 
-
-            /*ArrayList<TickerNews> news = new ArrayList<>();
-
-            // If no positions, show news for AAPL and AMD
-            if (positions == null || positions.isEmpty()) {
-                ArrayList<String> stocks = new ArrayList<>();
-                stocks.add("AAPL");
-                stocks.add("AMD");
-                for (String stock : stocks) {
-                    try {
-                        news.addAll(polygonAPI.getTickerNews(stock, 100, 1));
-                        Collections.sort(news,
-                                (o1, o2) -> o1.getTimestamp().toLocalDate().compareTo(o2.getTimestamp().toLocalDate()));
-                        Collections.reverse(news);
-                    } catch (PolygonAPIRequestException e) {
-                        e.printStackTrace();
-                    }
-                }
-                
-            // If positions exist show news for your positions
-            } else {
-                
-                for (Position stock : positions) {
-                    try {
-                        news.addAll(polygonAPI.getTickerNews(stock.getSymbol(), 100, 1));
-                        news.sort((o1, o2) -> o1.getTimestamp().toLocalDate().compareTo(o2.getTimestamp().toLocalDate()));
-                        Collections.reverse(news);
-
-                    } catch (PolygonAPIRequestException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-
-    //                http://feeds.finance.yahoo.com/rss/2.0/headline?s=a&region=US&lang=en-US
-//                for (Position stock : positions) {
-//                    String url = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=" + stock.getSymbol() + "&region=US&lang=en-US";
-//                    try {
-//                        feed.addAll(new SyndFeedInput().build(new XmlReader(new URL(url))).getEntries());
-//
-//                    } catch (FeedException | IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-
-            }
-
-            // Show the most recent 20 articles
-            ArrayList<TickerNews> temp = new ArrayList<>(news.subList(0, 20));
-            news.clear();
-            news.addAll(temp);
-            temp.clear();*/
+            // Make sure that there is enough news returned, grab first 21 articles
             if (news.size() >= 21) {
                 try {
                     news = removeDuplicates(news);
@@ -259,35 +220,24 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
                 news.addAll(set);
                 set.clear();
             }
-            newsRecycler = mView.findViewById(R.id.newsRecycler);
 
+            // Initialize news recyclerview
             ArrayList<JSONObject> finalNews = news;
-            requireActivity().runOnUiThread(() -> {
+            activity.runOnUiThread(() -> {
 
-                newsRecycler.setLayoutManager(new LinearLayoutManager(getActivity()));
+                newsRecycler.setLayoutManager(new LinearLayoutManager(activity));
                 newsRecycler.addItemDecoration(new LinearMarginDecoration());
-                newsAdapter = new RecyclerViewAdapterNews(getContext(), finalNews);
+                newsAdapter = new RecyclerViewAdapterNews(activity, finalNews);
                 newsRecycler.setAdapter(newsAdapter);
+                refreshLayout.setRefreshing(false);
 
             });
 
         });
-        if (prefs.retrieveBoolean("premium", false)) {
-            thread.start();
-
-        } else {
-            MaterialCardView searchCard = mView.findViewById(R.id.searchCard);
-            searchCard.setVisibility(View.VISIBLE);
-            MaterialButton buy_premium = mView.findViewById(R.id.buy_premium_search);
-            buy_premium.setOnClickListener(v -> {
-                bp.subscribe(requireActivity(), "premium_sub");
-            });
-        }
-
-        return mView;
+        thread.start();
     }
 
-    public ArrayList<JSONObject> getNews(String ticker) {
+    public static ArrayList<JSONObject> getNews(String ticker) {
 
         // Call get news endpoint from IEX Cloud
         JSONArray nodeHttpResponse = null;
@@ -314,7 +264,7 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
     }
 
     // Remove duplicate articles
-    public ArrayList<JSONObject> removeDuplicates(ArrayList<JSONObject> news) throws JSONException {
+    public static ArrayList<JSONObject> removeDuplicates(ArrayList<JSONObject> news) throws JSONException {
         for (int i = 0; i < news.size(); i++) {
             for (int j = i; j < news.size(); j++) {
                 if (i != j && news.get(i).get("headline").toString().equals(news.get(j).get("headline").toString())) {
@@ -435,9 +385,60 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
             List<String> results = data.getStringArrayListExtra(
                     RecognizerIntent.EXTRA_RESULTS);
             String spokenText = results.get(0);
+
             // Do something with spokenText
             materialSearch.setTextQuery(spokenText, false);
         }
-        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    // IBillingHandler implementation
+
+    /*@Override
+    public void onBillingInitialized() {
+        *//*
+         * Called when BillingProcessor was initialized and it's ready to purchase
+         *//*
+
+        // Check to see if premium has been purchased
+        prefs.storeBoolean("premium", bp.isPurchased("premium_sub"));
+    }
+
+    @Override
+    public void onProductPurchased(@NonNull String productId, TransactionDetails details) {
+        *//*
+         * Called when requested PRODUCT ID was successfully purchased
+         *//*
+        prefs.storeBoolean("premium", true);
+        startNews();
+        searchCard.setVisibility(View.INVISIBLE);
+    }
+
+    @Override
+    public void onBillingError(int errorCode, Throwable error) {
+        *//*
+         * Called when some error occurred. See Constants class for more details
+         *
+         * Note - this includes handling the case where the user canceled the buy dialog:
+         * errorCode = Constants.BILLING_RESPONSE_RESULT_USER_CANCELED
+         *//*
+        prefs.storeBoolean("premium", false);
+        Log.v("Billing Error", String.valueOf(errorCode), error);
+    }
+
+    @Override
+    public void onPurchaseHistoryRestored() {
+        *//*
+         * Called when purchase history was restored and the list of all owned PRODUCT ID's
+         * was loaded from Google Play
+         *//*
+        prefs.storeBoolean("premium", bp.isPurchased("premium_sub"));
+    }*/
+
+    @Override
+    public void onDestroy() {
+        if (bp != null) {
+            bp.release();
+        }
+        super.onDestroy();
     }
 }

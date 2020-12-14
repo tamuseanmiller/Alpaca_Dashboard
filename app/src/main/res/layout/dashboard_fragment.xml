@@ -17,6 +17,10 @@
         android:paddingTop="@dimen/activity_vertical_margin"
         android:paddingRight="@dimen/activity_horizontal_margin">
 
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
         <androidx.core.widget.NestedScrollView
             android:id="@+id/scrollID"
             android:layout_width="match_parent"
@@ -303,6 +307,8 @@
             </LinearLayout>
 
         </androidx.core.widget.NestedScrollView>
+
+        </FrameLayout>
 
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

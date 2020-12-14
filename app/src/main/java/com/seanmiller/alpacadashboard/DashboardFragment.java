@@ -379,11 +379,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
         recyclerOrders.addItemDecoration(LinearMarginDecoration.create(0, LinearLayoutManager.VERTICAL, false, null));
 
         // Swipe to refresh recycler data
-        swipeRefresh.setOnRefreshListener(() -> {
-
-            onRefresh();
-            swipeRefresh.setNestedScrollingEnabled(false);
-        });
+        swipeRefresh.setOnRefreshListener(this::onRefresh);
 
         return mView;
     }

@@ -64,8 +64,8 @@ public class StockAdapter extends SparkAdapter {
             e.printStackTrace();
         }
         assert calendar != null;
-        LocalDate lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 1).getDate());
-        LocalTime lastOpenTime = LocalTime.parse(calendar.get(calendar.size() - 1).getOpen());
+        LocalDate lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 2).getDate());
+        LocalTime lastOpenTime = LocalTime.parse(calendar.get(calendar.size() - 2).getOpen());
 
         // Set baseline values
         ArrayList<Calendar> finalCalendar = calendar;
@@ -106,7 +106,7 @@ public class StockAdapter extends SparkAdapter {
                     // Gather old portfolio data
                     history.set(new ArrayList<>());
                     try {
-                        history.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, LocalDate.parse(finalCalendar.get(finalCalendar.size() - 2).getDate()), false).getEquity());
+                        history.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, lastOpenDate, false).getEquity());
 
                     } catch (AlpacaAPIRequestException e) {
                         e.printStackTrace();
@@ -132,8 +132,8 @@ public class StockAdapter extends SparkAdapter {
                         JSONObject nodeHttpResponse = null;
                         try {
                             nodeHttpResponse = Unirest.get("https://api.polygon.io/v1/open-close/" +
-                                    ticker + "/" + finalCalendar.get(finalCalendar.size() - 2).getDate() +
-                                    "?apiKey=" + prefs.retrieveString("polygon_id", "NULL"))
+                                    ticker + "/" + lastOpenDate + "?apiKey=" +
+                                    prefs.retrieveString("polygon_id", "NULL"))
                                     .asJson().getBody().getObject();
 
                         } catch (UnirestException e) {
@@ -159,7 +159,7 @@ public class StockAdapter extends SparkAdapter {
                     history.set(new ArrayList<>());
 
                     try {
-                        history.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, LocalDate.parse(finalCalendar.get(finalCalendar.size() - 2).getDate()), false).getEquity());
+                        history.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, lastOpenDate, false).getEquity());
 
                     } catch (AlpacaAPIRequestException e) {
                         e.printStackTrace();
