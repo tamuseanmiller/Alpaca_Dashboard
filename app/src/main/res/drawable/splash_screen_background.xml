@@ -1,21 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android"
     android:opacity="opaque">
-<!--    <item android:drawable="@drawable/ic_launcher_background" android:gravity="center" />-->
-<!--    <item>-->
-<!--<shape android:shape="rectangle">-->
-<!--    <size android:width="400dp" android:height="400dp"/>-->
-<!--<solid android:color="?attr/colorPrimary"/>-->
-
-<!--</shape>-->
-<!--        </item>-->
-<!--    <item android:drawable="@android:color/background_light" />-->
     <item>
-<!--        <bitmap-->
-<!--            android:gravity="center"-->
-<!--            android:src="@drawable/ic_launcher_background" />-->
-<!--        <bitmap android:src="@drawable/ic_launcher_background" />-->
         <shape android:shape="rectangle" android:tint="?attr/colorPrimary" android:innerRadius="40dp"/>
     </item>
-    <item android:gravity="center" android:height="250dp" android:width="350dp" android:drawable="@drawable/stonks"/>
+    <item android:gravity="center" android:height="200dp" android:width="200dp" android:drawable="@drawable/ic_launcher"/>
 </layer-list>

@@ -22,7 +22,6 @@ import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.formatter.PercentFormatter;
-import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 import com.google.android.material.button.MaterialButton;
 
 import net.jacobpeterson.alpaca.AlpacaAPI;
@@ -116,7 +115,7 @@ public class ProfileFragment extends Fragment {
             PieDataSet set = new PieDataSet(data, "");
             set.setValueTextSize(12);
             set.setValueTextColor(colorPrimary);
-            set.setColors(posColor, negColor);
+            set.setColors(ContextCompat.getColor(getActivity(), R.color.green_blue), ContextCompat.getColor(getActivity(), R.color.purple_blue));
             set.setValueFormatter(new PercentFormatter(portVsCash));
             portVsCash.setUsePercentValues(true);
             PieData date = new PieData(set);

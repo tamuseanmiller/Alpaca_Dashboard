@@ -33,4 +33,7 @@
     <color name="color_negative_light_light">#ffecf5</color>
     <color name="colorPrimarySlightLight_light">#B1B1B1</color>
 
+    <color name="purple_blue">#6c54ff</color>
+    <color name="green_blue">#26f2c1</color>
+
 </resources>

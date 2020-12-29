@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.app.ActivityOptions;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
@@ -95,10 +96,11 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
 
 
     public int fetchHeight() {
-        WindowMetrics windowMetrics = requireActivity().getWindowManager().getCurrentWindowMetrics();
-        Insets insets = windowMetrics.getWindowInsets()
-                .getInsetsIgnoringVisibility(WindowInsets.Type.systemBars());
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            WindowMetrics windowMetrics = requireActivity().getWindowManager().getCurrentWindowMetrics();
+            Insets insets = windowMetrics.getWindowInsets()
+                    .getInsetsIgnoringVisibility(WindowInsets.Type.systemBars());
             return windowMetrics.getBounds().height() - insets.top - insets.bottom;
 
         } else {
@@ -174,11 +176,11 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
         sparkView.setAdapter(selectedAdapter);
 
         // Initalize all graphs
-        initializeDashboardValues(1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.FIVE_MINUTE, oneDayAdapter);
-        initializeDashboardValues(1, PortfolioPeriodUnit.WEEK, PortfolioTimeFrame.ONE_HOUR, oneWeekAdapter);
-        initializeDashboardValues(1, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY, oneMonthAdapter);
-        initializeDashboardValues(3, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY, threeMonthAdapter);
-        initializeDashboardValues(1, PortfolioPeriodUnit.YEAR, PortfolioTimeFrame.ONE_DAY, oneYearAdapter);
+//        initializeDashboardValues(1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.FIVE_MINUTE, oneDayAdapter, getActivity());
+        initializeDashboardValues(1, PortfolioPeriodUnit.WEEK, PortfolioTimeFrame.ONE_HOUR, oneWeekAdapter, getActivity());
+        initializeDashboardValues(1, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY, oneMonthAdapter, getActivity());
+        initializeDashboardValues(3, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY, threeMonthAdapter, getActivity());
+        initializeDashboardValues(1, PortfolioPeriodUnit.YEAR, PortfolioTimeFrame.ONE_DAY, oneYearAdapter, getActivity());
 
         // Set colors on click, for toggle buttons
         requireActivity().getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
@@ -565,9 +567,9 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
         }
     }
 
-    public void initializeDashboardValues(int periodLength, PortfolioPeriodUnit periodUnit, PortfolioTimeFrame timeFrame, StockAdapter selectedAdapterInitial) {
+    public static void initializeDashboardValues(int periodLength, PortfolioPeriodUnit periodUnit, PortfolioTimeFrame timeFrame, StockAdapter selectedAdapterInitial, Context mContext) {
 
-        AlpacaAPI alpacaAPI = new AlpacaAPI(prefs.retrieveString("auth_token", "NULL"));
+        AlpacaAPI alpacaAPI = new AlpacaAPI(new SharedPreferencesManager(mContext).retrieveString("auth_token", "NULL"));
 
         Thread t2 = new Thread(() -> {
 
@@ -653,7 +655,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
                 selectedAdapterInitial.smoothGraph();
             }
 
-            setDashboardValues(); // Set here to allow ample time for instantiation
+//            setDashboardValues(); // Set here to allow ample time for instantiation
 
         });
         t2.start();
