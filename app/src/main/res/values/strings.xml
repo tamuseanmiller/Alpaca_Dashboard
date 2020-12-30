@@ -62,4 +62,5 @@
     <string name="price_to_earnings_ratio">Price to Earnings Ratio</string>
     <string name="price_to_earnings">Price to Earnings</string>
     <string name="revenues">Revenues</string>
+    <string name="zero_shares">0 shares owned</string>
 </resources>

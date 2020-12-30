@@ -9,6 +9,8 @@ import android.os.Bundle;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import com.robinhood.spark.SparkView;
 import com.robinhood.ticker.TickerUtils;
 import com.robinhood.ticker.TickerView;
@@ -55,6 +57,8 @@ import net.jacobpeterson.polygon.rest.exception.PolygonAPIRequestException;
 import net.jacobpeterson.polygon.websocket.listener.PolygonStreamListenerAdapter;
 import net.jacobpeterson.polygon.websocket.message.PolygonStreamMessageType;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 import java.lang.reflect.Type;
@@ -97,7 +101,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
     private MaterialButton oneYearStock;
     private MaterialButton selectedButton;
     private AtomicInteger posOrNegColorLight;
-    private StockAdapter oneDayStockAdapter;
+    public static StockAdapter oneDayStockAdapter;
     private StockAdapter oneWeekStockAdapter;
     private StockAdapter oneMonthStockAdapter;
     private StockAdapter threeMonthStockAdapter;
@@ -151,10 +155,10 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
     }
 
     public int fetchHeight() {
-        WindowMetrics windowMetrics = getWindowManager().getCurrentWindowMetrics();
-        Insets insets = windowMetrics.getWindowInsets()
-                .getInsetsIgnoringVisibility(WindowInsets.Type.systemBars());
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            WindowMetrics windowMetrics = getWindowManager().getCurrentWindowMetrics();
+            Insets insets = windowMetrics.getWindowInsets()
+                    .getInsetsIgnoringVisibility(WindowInsets.Type.systemBars());
             return windowMetrics.getBounds().height() - insets.top - insets.bottom;
 
         } else {
@@ -221,8 +225,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 viewPagerStocks.setCurrentItem(0);
             });
         });
-        t1.start()*/
-        ;
+        t1.start();*/
 
         Thread t3 = new Thread(() -> {
 
@@ -232,9 +235,9 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             try {
                 numPosition = alpacaAPI.getOpenPositionBySymbol(ticker.get()).getQty();
                 String finalNumPosition = numPosition;
-                runOnUiThread(() -> numPos.setText(finalNumPosition + " shares owned"));
+                runOnUiThread(() -> numPos.setText(String.format("%s shares owned", finalNumPosition)));
             } catch (AlpacaAPIRequestException e) {
-                runOnUiThread(() -> numPos.setText(0 + " shares owned"));
+                runOnUiThread(() -> numPos.setText(R.string.zero_shares));
                 e.printStackTrace();
             }
         });
@@ -298,7 +301,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 selectedButton.setBackgroundTintList(ColorStateList.valueOf(posOrNegColorLight.get()));
                 selectedAdapterStock = oneDayStockAdapter;
                 sparkViewStock.setAdapter(selectedAdapterStock);
-                setStockValues();
+                setStockValues(selectedAdapterStock);
             });
             oneWeekStock.setOnClickListener(v -> {
                 selectedButton.setBackgroundTintList(ColorStateList.valueOf(colorPrimary));
@@ -306,7 +309,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 selectedButton.setBackgroundTintList(ColorStateList.valueOf(posOrNegColorLight.get()));
                 selectedAdapterStock = oneWeekStockAdapter;
                 sparkViewStock.setAdapter(selectedAdapterStock);
-                setStockValues();
+                setStockValues(selectedAdapterStock);
             });
             oneMonthStock.setOnClickListener(v -> {
                 selectedButton.setBackgroundTintList(ColorStateList.valueOf(colorPrimary));
@@ -314,7 +317,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 selectedButton.setBackgroundTintList(ColorStateList.valueOf(posOrNegColorLight.get()));
                 selectedAdapterStock = oneMonthStockAdapter;
                 sparkViewStock.setAdapter(selectedAdapterStock);
-                setStockValues();
+                setStockValues(selectedAdapterStock);
             });
             threeMonthStock.setOnClickListener(v -> {
                 selectedButton.setBackgroundTintList(ColorStateList.valueOf(colorPrimary));
@@ -322,7 +325,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 selectedButton.setBackgroundTintList(ColorStateList.valueOf(posOrNegColorLight.get()));
                 selectedAdapterStock = threeMonthStockAdapter;
                 sparkViewStock.setAdapter(selectedAdapterStock);
-                setStockValues();
+                setStockValues(selectedAdapterStock);
             });
             oneYearStock.setOnClickListener(v -> {
                 selectedButton.setBackgroundTintList(ColorStateList.valueOf(colorPrimary));
@@ -330,7 +333,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 selectedButton.setBackgroundTintList(ColorStateList.valueOf(posOrNegColorLight.get()));
                 selectedAdapterStock = oneYearStockAdapter;
                 sparkViewStock.setAdapter(selectedAdapterStock);
-                setStockValues();
+                setStockValues(selectedAdapterStock);
             });
 
         });
@@ -406,7 +409,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                     float finalAskingPrice1 = finalAskingPrice;
                     runOnUiThread(() -> selectedAdapterStock.addVal(finalAskingPrice1));
 
-                    runOnUiThread(this::setStockValues);
+//                    runOnUiThread(() -> setStockValues(selectedAdapterStock));
 
                     try {
                         Thread.sleep(60000);
@@ -581,6 +584,17 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
 
         Thread thread = new Thread(() -> {
 
+            // Fetch last open day's information
+            ArrayList<Calendar> calendarInitial = null;
+            try {
+                calendarInitial = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(1), LocalDate.now());
+            } catch (AlpacaAPIRequestException e) {
+                e.printStackTrace();
+            }
+            assert calendarInitial != null;
+            LocalDate lastOpenDate = LocalDate.parse(calendarInitial.get(calendarInitial.size() - 2).getDate());
+
+            AtomicReference<Float> lastClose = new AtomicReference<>((float) 0);
             Map<String, ArrayList<Bar>> bars = null;
             ArrayList<Aggregate> aggs = null;
 
@@ -594,6 +608,22 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
 
             assert marketStatus != null;
             if (marketStatus.equals("open")) {
+
+                // If you're looking at a single day, set baseline value
+                if (datetime.toLocalDate().equals(ZonedDateTime.now().toLocalDate())) {
+                    try {
+                        lastClose.set(polygonAPI.getPreviousClose(String.valueOf(ticker),
+                                false).getResults().get(0).getC().floatValue());
+
+                    } catch (PolygonAPIRequestException e) {
+                        e.printStackTrace();
+                    }
+
+                    selectedAdapterInitial.setBaseline(lastClose.get());
+                    selectedAdapterInitial.push_front(lastClose.get());
+//                    oneDayStockAdapter.notifyDataSetChanged();
+
+                }
 
                 if (datetime.toLocalDate().toString().equals(ZonedDateTime.now().toLocalDate().toString())) {
 
@@ -619,6 +649,39 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
 
             } else {
 
+                // If it's a day adapter and set baseline value
+                if (datetime.toLocalDate().equals(ZonedDateTime.now().toLocalDate())) {
+
+                    float temp = 0;
+
+                    // Fetch Daily Open Close endpoint
+//                  https://api.polygon.io/v1/open-close/AAPL/2020-10-14?apiKey=
+                    JSONObject nodeHttpResponse = null;
+                    try {
+                        nodeHttpResponse = Unirest.get("https://api.polygon.io/v1/open-close/" +
+                                ticker + "/" + lastOpenDate + "?apiKey=" +
+                                prefs.retrieveString("polygon_id", "NULL"))
+                                .asJson().getBody().getObject();
+
+                    } catch (UnirestException e) {
+                        e.printStackTrace();
+                    }
+
+                    // Add the close value to temp
+                    if (nodeHttpResponse != null) {
+                        try {
+                            temp = Float.parseFloat(nodeHttpResponse.get("close").toString());
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    selectedAdapterInitial.push_front(temp);
+                    selectedAdapterInitial.setBaseline(temp);
+                    oneDayStockAdapter.notifyDataSetChanged();
+
+                }
+
                 if (datetime.toLocalDate().toString().equals(ZonedDateTime.now().toLocalDate().toString())) {
 
                     // Fetch last open day's information
@@ -631,18 +694,18 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
 
                     // Assign last open datetime and check for if it is the morning of
                     assert calendar != null;
-                    LocalDate lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 1).getDate());
+                    LocalDate lastOpenDate2 = LocalDate.parse(calendar.get(calendar.size() - 1).getDate());
                     LocalTime lastOpenTimeStart = LocalTime.parse(calendar.get(calendar.size() - 1).getOpen());
                     if (LocalTime.of(Integer.parseInt(calendar.get(calendar.size() - 1).getOpen().substring(0, 2)),
                             Integer.parseInt(calendar.get(calendar.size() - 1).getOpen().substring(3, 5))).compareTo(LocalTime.now()) > 0) {
-                        lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 2).getDate());
+                        lastOpenDate2 = LocalDate.parse(calendar.get(calendar.size() - 2).getDate());
                         lastOpenTimeStart = LocalTime.parse(calendar.get(calendar.size() - 2).getOpen());
                     }
 
 
                     try {
                         bars = alpacaAPI.getBars(BarsTimeFrame.FIVE_MINUTE, ticker.get(), 1000,
-                                ZonedDateTime.of(lastOpenDate, lastOpenTimeStart, ZoneId.of("UTC-4")), null, null, null);
+                                ZonedDateTime.of(lastOpenDate2, lastOpenTimeStart, ZoneId.of("UTC-4")), null, null, null);
 
 //                        aggs = polygonAPI.getAggregates(ticker.get(), multiplier, timeFrame, datetime.toLocalDate().minusDays(1), LocalDate.now(), false).getResults();
 
@@ -653,7 +716,12 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 } else {
 
                     try {
-                        aggs = polygonAPI.getAggregates(ticker.get(), multiplier, timeFrame, datetime.toLocalDate(), LocalDate.now(), false).getResults();
+                        aggs = polygonAPI.getAggregates(ticker.get(),
+                                multiplier,
+                                timeFrame,
+                                datetime.toLocalDate(),
+                                LocalDate.now(),
+                                false).getResults();
 //                        bars = alpacaAPI.getBars(timeFrame, ticker.get(), 1000, datetime, null, null, ZonedDateTime.now());
 
                     } catch (PolygonAPIRequestException e) {
@@ -678,7 +746,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 runOnUiThread(selectedAdapterInitial::smoothGraph);
             }
 
-            runOnUiThread(this::setStockValues); // Set here to allow ample time for instantiation
+            runOnUiThread(() -> /*setStockValues(selectedAdapterInitial)*/oneDayStock.callOnClick()); // Set here to allow ample time for instantiation
         });
         thread.start();
     }
@@ -715,7 +783,6 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             oneYearStock.setRippleColor(ColorStateList.valueOf(color));
 
             getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
-            posOrNegColorLight.set(ContextCompat.getColor(this, typedValue.resourceId));
 
         } else {
             percentChangeStock.setText(String.format("-$%.2f (%.2f%%)", Math.abs(profitLoss), percentageChange));
@@ -741,17 +808,17 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             oneYearStock.setRippleColor(ColorStateList.valueOf(color));
 
             getTheme().resolveAttribute(R.attr.color_negative_light, typedValue, true);
-            posOrNegColorLight.set(ContextCompat.getColor(this, typedValue.resourceId));
         }
+        posOrNegColorLight.set(ContextCompat.getColor(this, typedValue.resourceId));
     }
 
-    public void setStockValues() {
+    public void setStockValues(StockAdapter selectedAdapter) {
 
         // Set Line and Ticker Info
-        float oldVal = selectedAdapterStock.getValue(0);
-        float newVal = selectedAdapterStock.getValue(selectedAdapterStock.getCount() - 1);
+        float oldVal = selectedAdapter.getValue(0);
+        float newVal = selectedAdapter.getValue(selectedAdapter.getCount() - 1);
         float percentageChange = (newVal - oldVal) / oldVal * 100;
-        float profitLoss = selectedAdapterStock.getValue(selectedAdapterStock.getCount() - 1) - selectedAdapterStock.getValue(0);
+        float profitLoss = selectedAdapter.getValue(selectedAdapter.getCount() - 1) - selectedAdapter.getValue(0);
 
         if (selectedAdapterStock.getCount() != 0) {
 

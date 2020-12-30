@@ -33,6 +33,8 @@ import android.widget.TextView;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import com.robinhood.spark.SparkView;
 import com.robinhood.ticker.TickerUtils;
 import com.robinhood.ticker.TickerView;
@@ -50,6 +52,9 @@ import net.jacobpeterson.domain.alpaca.position.Position;
 import net.jacobpeterson.polygon.PolygonAPI;
 import net.jacobpeterson.polygon.rest.exception.PolygonAPIRequestException;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -63,6 +68,7 @@ import io.cabriole.decorator.ColumnProvider;
 import io.cabriole.decorator.GridMarginDecoration;
 import io.cabriole.decorator.LinearMarginDecoration;
 
+import static com.seanmiller.alpacadashboard.StockAdapter.getLastFilledIndex;
 import static com.seanmiller.alpacadashboard.Utils.THEME_DARK;
 import static com.seanmiller.alpacadashboard.Utils.THEME_LIGHT;
 
@@ -176,7 +182,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
         sparkView.setAdapter(selectedAdapter);
 
         // Initalize all graphs
-//        initializeDashboardValues(1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.FIVE_MINUTE, oneDayAdapter, getActivity());
+        initializeDashboardValues(1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.FIVE_MINUTE, oneDayAdapter, getActivity());
         initializeDashboardValues(1, PortfolioPeriodUnit.WEEK, PortfolioTimeFrame.ONE_HOUR, oneWeekAdapter, getActivity());
         initializeDashboardValues(1, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY, oneMonthAdapter, getActivity());
         initializeDashboardValues(3, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY, threeMonthAdapter, getActivity());
@@ -567,9 +573,10 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
         }
     }
 
-    public static void initializeDashboardValues(int periodLength, PortfolioPeriodUnit periodUnit, PortfolioTimeFrame timeFrame, StockAdapter selectedAdapterInitial, Context mContext) {
+    private void initializeDashboardValues(int periodLength, PortfolioPeriodUnit periodUnit, PortfolioTimeFrame timeFrame, StockAdapter selectedAdapterInitial, Context mContext) {
 
-        AlpacaAPI alpacaAPI = new AlpacaAPI(new SharedPreferencesManager(mContext).retrieveString("auth_token", "NULL"));
+        AlpacaAPI alpacaAPI = new AlpacaAPI(prefs.retrieveString("auth_token", "NULL"));
+        PolygonAPI polygonAPI = new PolygonAPI(prefs.retrieveString("polygon_id", "NULL"));
 
         Thread t2 = new Thread(() -> {
 
@@ -596,9 +603,8 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
 
                 // Gather old portfolio data
                 history = new ArrayList<>();
-                int finalLength = periodLength;
                 try {
-                    PortfolioHistory portVal = alpacaAPI.getPortfolioHistory(finalLength, periodUnit, timeFrame, lastOpenDate, true);
+                    PortfolioHistory portVal = alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, lastOpenDate, true);
                     history = portVal.getEquity();
 
                 } catch (AlpacaAPIRequestException e) {
@@ -655,7 +661,69 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
                 selectedAdapterInitial.smoothGraph();
             }
 
-//            setDashboardValues(); // Set here to allow ample time for instantiation
+
+            AtomicReference<Float> lastClose = new AtomicReference<>((float) 0);
+            AtomicReference<ArrayList<Double>> historyInitial = new AtomicReference<>(new ArrayList<>());
+
+            // Fetch last open day's information
+            ArrayList<Calendar> calendar = null;
+            try {
+                calendar = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(1), LocalDate.now());
+            } catch (AlpacaAPIRequestException e) {
+                e.printStackTrace();
+            }
+            assert calendar != null;
+            LocalDate lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 2).getDate());
+            LocalTime lastOpenTime = LocalTime.parse(calendar.get(calendar.size() - 2).getOpen());
+
+            // Set baseline values
+            ArrayList<Calendar> finalCalendar = calendar;
+
+            // Get market status
+            String marketStatus = null;
+            try {
+                marketStatus = polygonAPI.getMarketStatus().getMarket();
+
+            } catch (PolygonAPIRequestException e) {
+                e.printStackTrace();
+            }
+
+            // Check if market is open
+            if (marketStatus.equals("open")) {
+
+                // Gather old portfolio data
+                historyInitial.set(new ArrayList<>());
+                try {
+                    historyInitial.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, lastOpenDate, false).getEquity());
+
+                } catch (AlpacaAPIRequestException e) {
+                    e.printStackTrace();
+                }
+
+                double temp = historyInitial.get().get(historyInitial.get().size() - 1);
+                selectedAdapterInitial.push_front((float) temp);
+                selectedAdapterInitial.setBaseline(selectedAdapterInitial.getValue(0));
+                oneDayAdapter.notifyDataSetChanged();
+
+            } else {
+
+                historyInitial.set(new ArrayList<>());
+
+                try {
+                    historyInitial.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, lastOpenDate, false).getEquity());
+
+                } catch (AlpacaAPIRequestException e) {
+                    e.printStackTrace();
+                }
+
+                double temp = getLastFilledIndex(historyInitial.get());
+                selectedAdapterInitial.push_front((float) temp);
+                selectedAdapterInitial.setBaseline(selectedAdapterInitial.getValue(0));
+                oneDayAdapter.notifyDataSetChanged();
+
+            }
+
+            setDashboardValues(); // Set here to allow ample time for instantiation
 
         });
         t2.start();

@@ -50,132 +50,14 @@ public class StockAdapter extends SparkAdapter {
         this.ticker = ticker;
         baseline = 0;
         prefs = new SharedPreferencesManager(context);
+    }
 
-        PolygonAPI polygonAPI = new PolygonAPI(prefs.retrieveString("polygon_id", "NULL"));
-        AlpacaAPI alpacaAPI = new AlpacaAPI(prefs.retrieveString("auth_token", "NULL"));
-        AtomicReference<Float> lastClose = new AtomicReference<>((float) 0);
-        AtomicReference<ArrayList<Double>> history = new AtomicReference<>(new ArrayList<>());
+    public void push_front(float val) {
+        yData.add(0, val);
+    }
 
-        // Fetch last open day's information
-        ArrayList<Calendar> calendar = null;
-        try {
-            calendar = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(1), LocalDate.now());
-        } catch (AlpacaAPIRequestException e) {
-            e.printStackTrace();
-        }
-        assert calendar != null;
-        LocalDate lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 2).getDate());
-        LocalTime lastOpenTime = LocalTime.parse(calendar.get(calendar.size() - 2).getOpen());
-
-        // Set baseline values
-        ArrayList<Calendar> finalCalendar = calendar;
-        Thread thread = new Thread(() -> {
-
-            // Get market status
-            String marketStatus = null;
-            try {
-                marketStatus = polygonAPI.getMarketStatus().getMarket();
-
-            } catch (PolygonAPIRequestException e) {
-                e.printStackTrace();
-            }
-
-            // Check if market is open
-            if (marketStatus.equals("open")) {
-
-                // If you are rendering a stockpage
-                if (!ticker.get().equals("NOTICKER")) {
-
-                    // If you're looking at a single day
-                    if (periodUnit == PortfolioPeriodUnit.DAY) {
-                        try {
-                            lastClose.set(polygonAPI.getPreviousClose(String.valueOf(ticker), false).getResults().get(0).getC().floatValue());
-
-                        } catch (PolygonAPIRequestException e) {
-                            e.printStackTrace();
-                        }
-
-                        baseline = lastClose.get();
-                        yData.add(0, lastClose.get());
-
-                    }
-
-                    // Else you're on equity stock
-                } else if (periodUnit == PortfolioPeriodUnit.DAY) {
-
-                    // Gather old portfolio data
-                    history.set(new ArrayList<>());
-                    try {
-                        history.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, lastOpenDate, false).getEquity());
-
-                    } catch (AlpacaAPIRequestException e) {
-                        e.printStackTrace();
-                    }
-
-                    double temp = history.get().get(history.get().size() - 1);
-                    yData.add(0, (float) temp);
-                    baseline = yData.get(0);
-
-                }
-
-            } else {
-
-                // If you are rendering a stockpage
-                if (!ticker.get().equals("NOTICKER")) {
-
-                    if (periodUnit == PortfolioPeriodUnit.DAY) {
-
-                        float temp = 0;
-
-                        // Fetch Daily Open Close endpoint
-//                      https://api.polygon.io/v1/open-close/AAPL/2020-10-14?apiKey=
-                        JSONObject nodeHttpResponse = null;
-                        try {
-                            nodeHttpResponse = Unirest.get("https://api.polygon.io/v1/open-close/" +
-                                    ticker + "/" + lastOpenDate + "?apiKey=" +
-                                    prefs.retrieveString("polygon_id", "NULL"))
-                                    .asJson().getBody().getObject();
-
-                        } catch (UnirestException e) {
-                            e.printStackTrace();
-                        }
-
-                        // Add the close value to temp
-                        if (nodeHttpResponse != null) {
-                            try {
-                                temp = Float.parseFloat(nodeHttpResponse.get("close").toString());
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }
-
-                        yData.add(0, temp);
-                        baseline = yData.get(0);
-                    }
-
-                    // If it is a one day stock adapter for equity
-                } else if (periodUnit == PortfolioPeriodUnit.DAY) {
-
-                    history.set(new ArrayList<>());
-
-                    try {
-                        history.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, lastOpenDate, false).getEquity());
-
-                    } catch (AlpacaAPIRequestException e) {
-                        e.printStackTrace();
-                    }
-
-                    double temp = getLastFilledIndex(history.get());
-                    yData.add(0, (float) temp);
-                    baseline = yData.get(0);
-
-                }
-            }
-
-            DashboardFragment.oneDayAdapter.notifyDataSetChanged();
-
-        });
-        thread.start();
+    public void setBaseline(float baseline) {
+        this.baseline = baseline;
     }
 
     public float getPercent() {
@@ -219,7 +101,7 @@ public class StockAdapter extends SparkAdapter {
     }
 
     // finds last non-null value in arraylist
-    private static Double getLastFilledIndex(ArrayList<Double> p) {
+    public static Double getLastFilledIndex(ArrayList<Double> p) {
         for (int i = p.size() - 1; i >= 0; i--) {
             if (p.get(i) != null) {
                 return p.get(i);
@@ -286,7 +168,6 @@ public class StockAdapter extends SparkAdapter {
         return true;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public float getBaseLine() {
         return yData.get(0);

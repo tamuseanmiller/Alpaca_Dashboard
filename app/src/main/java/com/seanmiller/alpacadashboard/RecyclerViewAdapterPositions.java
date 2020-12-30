@@ -115,9 +115,9 @@ public class RecyclerViewAdapterPositions extends RecyclerView.Adapter<RecyclerV
                 if (finalShrOwned.getQty() != null) {
 
                     if (finalShrOwned.getQty().equals("1")) {
-                        holder.sharesOwned.setText(finalShrOwned.getQty() + " share owned");
+                        holder.sharesOwned.setText(String.format("%s share owned", finalShrOwned.getQty()));
                     } else {
-                        holder.sharesOwned.setText(finalShrOwned.getQty() + " shares owned");
+                        holder.sharesOwned.setText(String.format("%s shares owned", finalShrOwned.getQty()));
                     }
                 }
             });
@@ -134,89 +134,91 @@ public class RecyclerViewAdapterPositions extends RecyclerView.Adapter<RecyclerV
                 }
 
                 // Check if market is open
-                if (marketStatus.equals("open")) {
+                if (marketStatus != null) {
+                    if (marketStatus.equals("open")) {
 
-                    // Get the last quote
-                    LastQuoteResponse curr = null;
-                    try {
-                        curr = polygonAPI.getLastQuote(mData.get(position));
+                        // Get the last quote
+                        LastQuoteResponse curr = null;
+                        try {
+                            curr = polygonAPI.getLastQuote(mData.get(position));
 
-                    } catch (PolygonAPIRequestException e) {
-                        e.printStackTrace();
-                    }
-
-                    try {
-                        close = polygonAPI.getPreviousClose(mData.get(position), false).getResults().get(0).getC().floatValue();
-                    } catch (PolygonAPIRequestException e) {
-                        e.printStackTrace();
-                    }
-
-                    // Set values
-                    LastQuoteResponse finalCurr = curr;
-                    float finalClose = close;
-                    mainActivity.runOnUiThread(() -> {
-
-                        if (finalCurr != null && finalClose != 0) {
-                            holder.priceOfStock.setText(String.format("$%.2f", finalCurr.getLast().getAskprice().floatValue()));
-                            float temp = (finalCurr.getLast().getAskprice().floatValue() - finalClose) / finalClose * 100;
-
-                            // Sets the precision and adds to view, then changes color
-                            if (temp >= 0) {
-                                holder.percentChange.setText(String.format("+%.2f%%", temp));
-                                mClickListener.switchColors(holder, true);
-
-                            } else {
-                                holder.percentChange.setText(String.format("%.2f%%", temp));
-                                mClickListener.switchColors(holder, false);
-                            }
-
+                        } catch (PolygonAPIRequestException e) {
+                            e.printStackTrace();
                         }
-                    });
 
-                    // Market isn't open
-                } else {
-
-                    // Fetch Daily Open Close endpoint for prev day
-                    // https://api.polygon.io/v1/open-close/AAPL/2020-10-14?apiKey=
-                    /*JSONObject nodeHttpResponse = null;
-                    try {
-                        nodeHttpResponse = Unirest.get("https://api.polygon.io/v1/open-close/" + mData.get(position) + "/" + calendar.get(calendar.size() - 2).getDate() + "?apiKey=" + prefs.retrieveString("polygon_id", "NULL")).asJson().getBody().getObject();
-
-                    } catch (UnirestException e) {
-                        e.printStackTrace();
-                    }*/
-
-                    // Get last open day's close
-//                    if (nodeHttpResponse != null) {
-                    try {
-                        closeCurr = polygonAPI.getLastQuote(mData.get(position)).getLast().getAskprice().floatValue();
-                    } catch (PolygonAPIRequestException e) {
-                        e.printStackTrace();
-                    }
-//                    }
-
-                    // Set values
-                    float finalClose = close;
-                    float finalCurr = closeCurr;
-                    mainActivity.runOnUiThread(() -> {
-
-                        if (finalCurr != 0 && finalClose != 0) {
-                            holder.priceOfStock.setText(String.format("$%.2f", finalCurr));
-                            float temp = (finalCurr - finalClose) / finalClose * 100;
-
-                            // Sets the precision and adds to view, then changes color
-                            if (temp >= 0) {
-                                holder.percentChange.setText(String.format("+%.2f%%", temp));
-                                mClickListener.switchColors(holder, true);
-
-                            } else {
-                                holder.percentChange.setText(String.format("%.2f%%", temp));
-                                mClickListener.switchColors(holder, false);
-                            }
-
+                        try {
+                            close = polygonAPI.getPreviousClose(mData.get(position), false).getResults().get(0).getC().floatValue();
+                        } catch (PolygonAPIRequestException e) {
+                            e.printStackTrace();
                         }
-                    });
 
+                        // Set values
+                        LastQuoteResponse finalCurr = curr;
+                        float finalClose = close;
+                        mainActivity.runOnUiThread(() -> {
+
+                            if (finalCurr != null && finalClose != 0) {
+                                holder.priceOfStock.setText(String.format("$%.2f", finalCurr.getLast().getAskprice().floatValue()));
+                                float temp = (finalCurr.getLast().getAskprice().floatValue() - finalClose) / finalClose * 100;
+
+                                // Sets the precision and adds to view, then changes color
+                                if (temp >= 0) {
+                                    holder.percentChange.setText(String.format("+%.2f%%", temp));
+                                    mClickListener.switchColors(holder, true);
+
+                                } else {
+                                    holder.percentChange.setText(String.format("%.2f%%", temp));
+                                    mClickListener.switchColors(holder, false);
+                                }
+
+                            }
+                        });
+
+                        // Market isn't open
+                    } else {
+
+                        // Fetch Daily Open Close endpoint for prev day
+                        // https://api.polygon.io/v1/open-close/AAPL/2020-10-14?apiKey=
+                        /*JSONObject nodeHttpResponse = null;
+                        try {
+                            nodeHttpResponse = Unirest.get("https://api.polygon.io/v1/open-close/" + mData.get(position) + "/" + calendar.get(calendar.size() - 2).getDate() + "?apiKey=" + prefs.retrieveString("polygon_id", "NULL")).asJson().getBody().getObject();
+
+                        } catch (UnirestException e) {
+                            e.printStackTrace();
+                        }*/
+
+                        // Get last open day's close
+    //                    if (nodeHttpResponse != null) {
+                        try {
+                            closeCurr = polygonAPI.getLastQuote(mData.get(position)).getLast().getAskprice().floatValue();
+                        } catch (PolygonAPIRequestException e) {
+                            e.printStackTrace();
+                        }
+    //                    }
+
+                        // Set values
+                        float finalClose = close;
+                        float finalCurr = closeCurr;
+                        mainActivity.runOnUiThread(() -> {
+
+                            if (finalCurr != 0 && finalClose != 0) {
+                                holder.priceOfStock.setText(String.format("$%.2f", finalCurr));
+                                float temp = (finalCurr - finalClose) / finalClose * 100;
+
+                                // Sets the precision and adds to view, then changes color
+                                if (temp >= 0) {
+                                    holder.percentChange.setText(String.format("+%.2f%%", temp));
+                                    mClickListener.switchColors(holder, true);
+
+                                } else {
+                                    holder.percentChange.setText(String.format("%.2f%%", temp));
+                                    mClickListener.switchColors(holder, false);
+                                }
+
+                            }
+                        });
+
+                    }
                 }
 
                 // Sleep for 1 minute

@@ -56,7 +56,7 @@ dependencies {
 
     implementation 'com.anjlab.android.iab.v3:library:1.0.44'
 
-    implementation platform('com.google.firebase:firebase-bom:25.12.0')
+//    implementation platform('com.google.firebase:firebase-bom:25.12.0')
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.android.material:material:1.2.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
@@ -64,7 +64,7 @@ dependencies {
     implementation 'androidx.navigation:navigation-ui:2.3.0'
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
 //    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'com.google.firebase:firebase-database:19.3.0'
+//    implementation 'com.google.firebase:firebase-database:19.3.0'
     implementation 'androidx.preference:preference:1.1.1'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     testImplementation 'junit:junit:4.+'
@@ -83,7 +83,7 @@ dependencies {
     implementation 'com.allattentionhere:fabulousfilter:0.0.5'
     implementation 'com.lapism:search:2.3.0@aar'
     implementation "androidx.viewpager2:viewpager2:1.0.0"
-    implementation 'com.google.firebase:firebase-analytics'
+//    implementation 'com.google.firebase:firebase-analytics'
     implementation 'com.google.android:flexbox:2.0.1'
     implementation 'net.openid:appauth:0.7.1'
     implementation "com.squareup.okhttp3:okhttp:4.9.0"
