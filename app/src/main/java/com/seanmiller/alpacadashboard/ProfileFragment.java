@@ -1,11 +1,5 @@
 package com.seanmiller.alpacadashboard;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.IntentCompat;
-import androidx.fragment.app.Fragment;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.TypedValue;
@@ -14,6 +8,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 
 import com.anjlab.android.iab.v3.BillingProcessor;
 import com.github.mikephil.charting.animation.Easing;
@@ -27,14 +26,10 @@ import com.google.android.material.button.MaterialButton;
 import net.jacobpeterson.alpaca.AlpacaAPI;
 import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
 import net.jacobpeterson.domain.alpaca.account.Account;
-import net.jacobpeterson.polygon.PolygonAPI;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-
-import mehdi.sakout.aboutpage.AboutPage;
 
 public class ProfileFragment extends Fragment {
 
@@ -53,7 +48,7 @@ public class ProfileFragment extends Fragment {
         Utils.startTheme(getActivity(), new SharedPreferencesManager(getActivity()).retrieveInt("theme", Utils.THEME_DEFAULT));
         View mView = inflater.inflate(R.layout.profile_fragment, null);
         SharedPreferencesManager prefs = new SharedPreferencesManager(getActivity());
-        bp = new BillingProcessor(getActivity(), Properties.getPlayLicenseKey(), (BillingProcessor.IBillingHandler) getActivity());
+        bp = new BillingProcessor(requireActivity(), Properties.getPlayLicenseKey(), (BillingProcessor.IBillingHandler) getActivity());
         bp.initialize();
 
         Thread thread = new Thread(() -> {

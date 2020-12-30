@@ -11,9 +11,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
 
-import net.jacobpeterson.alpaca.AlpacaAPI;
-import net.jacobpeterson.polygon.PolygonAPI;
-
 import java.util.List;
 
 public class RecyclerViewAdapterStocks extends RecyclerView.Adapter<RecyclerViewAdapterStocks.ViewHolder> {

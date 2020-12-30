@@ -2,8 +2,6 @@ package com.seanmiller.alpacadashboard;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
-import android.widget.ImageButton;
 
 public class Utils {
     private static int sTheme;

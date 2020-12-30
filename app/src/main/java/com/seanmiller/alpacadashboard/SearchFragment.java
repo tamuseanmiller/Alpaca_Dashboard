@@ -1,5 +1,15 @@
 package com.seanmiller.alpacadashboard;
 
+import android.app.Activity;
+import android.app.ActivityOptions;
+import android.content.Intent;
+import android.os.Bundle;
+import android.speech.RecognizerIntent;
+import android.util.TypedValue;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -8,27 +18,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import android.app.Activity;
-import android.app.ActivityOptions;
-import android.content.Intent;
-import android.graphics.drawable.shapes.Shape;
-import android.media.Image;
-import android.net.Uri;
-import android.os.Bundle;
-import android.speech.RecognizerIntent;
-import android.util.Log;
-import android.util.TypedValue;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-
 import com.anjlab.android.iab.v3.BillingProcessor;
-import com.anjlab.android.iab.v3.TransactionDetails;
-import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
-import com.google.android.material.imageview.ShapeableImageView;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -44,7 +36,6 @@ import net.jacobpeterson.alpaca.AlpacaAPI;
 import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
 import net.jacobpeterson.domain.alpaca.position.Position;
 import net.jacobpeterson.domain.polygon.tickers.ticker.Ticker;
-import net.jacobpeterson.polygon.PolygonAPI;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -57,10 +48,8 @@ import java.util.List;
 import java.util.Set;
 
 import io.cabriole.decorator.LinearMarginDecoration;
-import xyz.klinker.android.article.ArticleUtils;
 
 import static android.app.Activity.RESULT_OK;
-import static android.os.FileUtils.copy;
 
 public class SearchFragment extends Fragment implements SearchLayout.OnQueryTextListener, SearchableAdapter.ItemClickListener/*, BillingProcessor.IBillingHandler*/ {
 

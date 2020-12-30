@@ -5,27 +5,15 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 
-import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.browser.customtabs.CustomTabsIntent;
 
 import com.google.android.material.button.MaterialButton;
 
-import net.jacobpeterson.alpaca.AlpacaAPI;
-import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
-import net.openid.appauth.AuthState;
-import net.openid.appauth.AuthorizationException;
 import net.openid.appauth.AuthorizationRequest;
-import net.openid.appauth.AuthorizationResponse;
 import net.openid.appauth.AuthorizationService;
 import net.openid.appauth.AuthorizationServiceConfiguration;
-import net.openid.appauth.RedirectUriReceiverActivity;
 import net.openid.appauth.ResponseTypeValues;
-import net.openid.appauth.TokenRequest;
-import net.openid.appauth.TokenResponse;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
 
