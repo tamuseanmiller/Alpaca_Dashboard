@@ -172,7 +172,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
         }
         sparkView.setAdapter(selectedAdapter);
 
-        // Initalize all graphs
+        // Initialize all graphs
         initializeDashboardValues(1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.FIVE_MINUTE, oneDayAdapter, getActivity());
         initializeDashboardValues(1, PortfolioPeriodUnit.WEEK, PortfolioTimeFrame.ONE_HOUR, oneWeekAdapter, getActivity());
         initializeDashboardValues(1, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY, oneMonthAdapter, getActivity());
@@ -357,7 +357,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
             // Fetch curent orders
             orders = new ArrayList<>();
             try {
-                orders = alpacaAPI.getOrders(OrderStatus.CLOSED, 10, null, ZonedDateTime.now().plusDays(1), Direction.DESCENDING, false);
+                orders = alpacaAPI.getOrders(OrderStatus.CLOSED, 10, null, ZonedDateTime.now().plusDays(1), Direction.DESCENDING, false, null);
             } catch (AlpacaAPIRequestException e) {
                 e.printStackTrace();
             }
@@ -450,7 +450,6 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
             stocks.clear();
             stocks.addAll(temp);
             temp.clear();
-            temp = null;
 
             // Set Recycle Adapter for positions
             requireActivity().runOnUiThread(() -> recycleAdapter.notifyDataSetChanged());
@@ -465,7 +464,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
             // Fetch curent orders
             ArrayList<Order> temp = new ArrayList<>();
             try {
-                temp = alpacaAPI.getOrders(OrderStatus.CLOSED, 10, null, ZonedDateTime.now().plusDays(1), Direction.DESCENDING, false);
+                temp = alpacaAPI.getOrders(OrderStatus.CLOSED, 10, null, ZonedDateTime.now().plusDays(1), Direction.DESCENDING, false, null);
 
             } catch (AlpacaAPIRequestException e) {
                 e.printStackTrace();
@@ -571,18 +570,77 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
 
         Thread t2 = new Thread(() -> {
 
+            AtomicReference<ArrayList<Double>> historyInitial = new AtomicReference<>(new ArrayList<>());
+
+            // Fetch last open day's information
+            ArrayList<Calendar> calendar = null;
+            try {
+                calendar = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(1), LocalDate.now());
+            } catch (AlpacaAPIRequestException e) {
+                e.printStackTrace();
+            }
+            // Assign last open datetime and check for if it is the morning of
+            assert calendar != null;
+            LocalDate lastOpenDate2 = LocalDate.parse(calendar.get(calendar.size() - 2).getDate());
+            if (LocalTime.of(Integer.parseInt(calendar.get(calendar.size() - 2).getOpen().substring(0, 2)),
+                    Integer.parseInt(calendar.get(calendar.size() - 2).getOpen().substring(3, 5))).compareTo(LocalTime.now()) > 0) {
+                lastOpenDate2 = LocalDate.parse(calendar.get(calendar.size() - 3).getDate());
+            }
+
+            // Set baseline values
+            // Get market status
+            String marketStatus = null;
+            try {
+                marketStatus = polygonAPI.getMarketStatus().getMarket();
+
+            } catch (PolygonAPIRequestException e) {
+                e.printStackTrace();
+            }
+
+            // Check if market is open
+            if (marketStatus.equals("open")) {
+
+                if (PortfolioTimeFrame.FIVE_MINUTE == timeFrame) {
+
+                    // Gather old portfolio data
+                    historyInitial.set(new ArrayList<>());
+                    try {
+                        historyInitial.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, lastOpenDate2, false).getEquity());
+
+                    } catch (AlpacaAPIRequestException e) {
+                        e.printStackTrace();
+                    }
+
+                    double temp = historyInitial.get().get(historyInitial.get().size() - 1);
+                    selectedAdapterInitial.push_front((float) temp);
+                    selectedAdapterInitial.setBaseline(selectedAdapterInitial.getValue(0));
+                    oneDayAdapter.notifyDataSetChanged();
+                }
+
+            } else {
+
+                if (PortfolioTimeFrame.FIVE_MINUTE == timeFrame) {
+
+                    historyInitial.set(new ArrayList<>());
+
+                    try {
+                        historyInitial.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, lastOpenDate2, false).getEquity());
+
+                    } catch (AlpacaAPIRequestException e) {
+                        e.printStackTrace();
+                    }
+
+                    double temp = getLastFilledIndex(historyInitial.get());
+                    selectedAdapterInitial.push_front((float) temp);
+                    selectedAdapterInitial.setBaseline(selectedAdapterInitial.getValue(0));
+                    oneDayAdapter.notifyDataSetChanged();
+                }
+
+            }
+
             ArrayList<Double> history = null;
 
             if (periodUnit == PortfolioPeriodUnit.DAY) {
-
-                // Fetch last open day's information
-                ArrayList<Calendar> calendar = null;
-                try {
-                    calendar = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(1), LocalDate.now());
-
-                } catch (AlpacaAPIRequestException e) {
-                    e.printStackTrace();
-                }
 
                 // Assign last open datetime and check for if it is the morning of
                 assert calendar != null;
@@ -650,68 +708,6 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
             // Smooth year graph
             if (periodUnit == PortfolioPeriodUnit.YEAR) {
                 selectedAdapterInitial.smoothGraph();
-            }
-
-
-            AtomicReference<Float> lastClose = new AtomicReference<>((float) 0);
-            AtomicReference<ArrayList<Double>> historyInitial = new AtomicReference<>(new ArrayList<>());
-
-            // Fetch last open day's information
-            ArrayList<Calendar> calendar = null;
-            try {
-                calendar = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(1), LocalDate.now());
-            } catch (AlpacaAPIRequestException e) {
-                e.printStackTrace();
-            }
-            assert calendar != null;
-            LocalDate lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 2).getDate());
-            LocalTime lastOpenTime = LocalTime.parse(calendar.get(calendar.size() - 2).getOpen());
-
-            // Set baseline values
-            ArrayList<Calendar> finalCalendar = calendar;
-
-            // Get market status
-            String marketStatus = null;
-            try {
-                marketStatus = polygonAPI.getMarketStatus().getMarket();
-
-            } catch (PolygonAPIRequestException e) {
-                e.printStackTrace();
-            }
-
-            // Check if market is open
-            if (marketStatus.equals("open")) {
-
-                // Gather old portfolio data
-                historyInitial.set(new ArrayList<>());
-                try {
-                    historyInitial.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, lastOpenDate, false).getEquity());
-
-                } catch (AlpacaAPIRequestException e) {
-                    e.printStackTrace();
-                }
-
-                double temp = historyInitial.get().get(historyInitial.get().size() - 1);
-                selectedAdapterInitial.push_front((float) temp);
-                selectedAdapterInitial.setBaseline(selectedAdapterInitial.getValue(0));
-                oneDayAdapter.notifyDataSetChanged();
-
-            } else {
-
-                historyInitial.set(new ArrayList<>());
-
-                try {
-                    historyInitial.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, lastOpenDate, false).getEquity());
-
-                } catch (AlpacaAPIRequestException e) {
-                    e.printStackTrace();
-                }
-
-                double temp = getLastFilledIndex(historyInitial.get());
-                selectedAdapterInitial.push_front((float) temp);
-                selectedAdapterInitial.setBaseline(selectedAdapterInitial.getValue(0));
-                oneDayAdapter.notifyDataSetChanged();
-
             }
 
             setDashboardValues(); // Set here to allow ample time for instantiation

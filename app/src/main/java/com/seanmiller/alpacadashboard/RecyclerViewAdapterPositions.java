@@ -28,13 +28,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public class RecyclerViewAdapterPositions extends RecyclerView.Adapter<RecyclerViewAdapterPositions.ViewHolder> {
 
     private static List<String> mData;
-    private LayoutInflater mInflater;
+    private final LayoutInflater mInflater;
     private ItemClickListener mClickListener;
 
     // data is passed into the constructor
@@ -74,6 +75,11 @@ public class RecyclerViewAdapterPositions extends RecyclerView.Adapter<RecyclerV
                 e.printStackTrace();
             }
             assert calendar != null;
+            LocalDate lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 2).getDate());
+            if (LocalTime.of(Integer.parseInt(calendar.get(calendar.size() - 2).getOpen().substring(0, 2)),
+                    Integer.parseInt(calendar.get(calendar.size() - 2).getOpen().substring(3, 5))).compareTo(LocalTime.now()) > 0) {
+                lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 3).getDate());
+            }
 
             // Get Last value
             float close = 0;
@@ -84,7 +90,7 @@ public class RecyclerViewAdapterPositions extends RecyclerView.Adapter<RecyclerV
                 // https://api.polygon.io/v1/open-close/AAPL/2020-10-14?apiKey=
                 JSONObject nodeHttpResponse = null;
                 try {
-                    nodeHttpResponse = Unirest.get("https://api.polygon.io/v1/open-close/" + mData.get(position) + "/" + calendar.get(calendar.size() - 2).getDate() + "?apiKey=" + prefs.retrieveString("polygon_id", "NULL")).asJson().getBody().getObject();
+                    nodeHttpResponse = Unirest.get("https://api.polygon.io/v1/open-close/" + mData.get(position) + "/" + lastOpenDate + "?apiKey=" + prefs.retrieveString("polygon_id", "NULL")).asJson().getBody().getObject();
 
                 } catch (UnirestException e) {
                     e.printStackTrace();

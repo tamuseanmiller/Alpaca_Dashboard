@@ -15,8 +15,8 @@ plugins {
 }
 
 // Calling 'apply' here because jsonschema2pojo doesn't exist in Gradle Central Plugin Repository
-apply plugin: 'jsonschema2pojo'
-tasks.getByName("generateJsonSchema2Pojo").enabled(false) // Disable default jsonSchema2Pojo task
+//apply plugin: 'jsonschema2pojo'
+//tasks.getByName("generateJsonSchema2Pojo").enabled(false) // Disable default jsonSchema2Pojo task
 
 startScripts {
     classpath += files('src/main/resources')
@@ -67,55 +67,55 @@ mainClassName = 'net.jacobpeterson.alpaca.AlpacaExample'
 // START publishing
 //
 
-modifyPom {
-    project {
-        name = 'alpaca-java'
-        description = 'Java API for Alpaca and Polygon'
-        url = 'https://github.com/Petersoj/alpaca-java'
-        inceptionYear = '2018'
+//modifyPom {
+//    project {
+//        name = 'alpaca-java'
+//        description = 'Java API for Alpaca and Polygon'
+//        url = 'https://github.com/Petersoj/alpaca-java'
+//        inceptionYear = '2018'
+//
+//        licenses {
+//            license {
+//                name = 'MIT License'
+//                url = 'https://opensource.org/licenses/MIT'
+//            }
+//        }
+//
+//        developers {
+//            developer {
+//                id = 'Petersoj'
+//                name = 'Jacob Peterson'
+//            }
+//
+//            developer {
+//                id = 'mainstringargs'
+//                name = 'main(String[] args)'
+//            }
+//        }
+//
+//        scm {
+//            url = "https://github.com/Petersoj/alpaca-java.git"
+//            connection = "scm:git:https://github.com/Petersoj/alpaca-java.git"
+//            developerConnection = "scm:git:git@github.com/Petersoj/alpaca-java.git"
+//        }
+//    }
+//}
 
-        licenses {
-            license {
-                name = 'MIT License'
-                url = 'https://opensource.org/licenses/MIT'
-            }
-        }
+//extraArchive {
+//    sources = true
+//    tests = true
+//    javadoc = true
+//}
 
-        developers {
-            developer {
-                id = 'Petersoj'
-                name = 'Jacob Peterson'
-            }
+//nexus {
+//    sign = true
+//    repositoryUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+//    snapshotRepositoryUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
+//}
 
-            developer {
-                id = 'mainstringargs'
-                name = 'main(String[] args)'
-            }
-        }
-
-        scm {
-            url = "https://github.com/Petersoj/alpaca-java.git"
-            connection = "scm:git:https://github.com/Petersoj/alpaca-java.git"
-            developerConnection = "scm:git:git@github.com/Petersoj/alpaca-java.git"
-        }
-    }
-}
-
-extraArchive {
-    sources = true
-    tests = true
-    javadoc = true
-}
-
-nexus {
-    sign = true
-    repositoryUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
-    snapshotRepositoryUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
-}
-
-nexusStaging {
-    packageGroup = "net.jacobpeterson"
-}
+//nexusStaging {
+//    packageGroup = "net.jacobpeterson"
+//}
 
 // Used to prevent accidental publication of Alpaca keys
 processResources {
@@ -171,27 +171,27 @@ sourceSets {
     }
 }
 
-jsonSchema2Pojo {
-    includeAdditionalProperties = true
-
-    targetDirectory = file('build/generated-sources/schemajson')
-
-    propertyWordDelimiters = ['-', '_'] as char[]
-
-    annotationStyle = 'gson'
-
-    sourceType = 'jsonschema'
-
-    customDateTimePattern = "yyyy-MM-ddTHH:mm:ssZ"
-
-    includeConstructors = true
-
-    serializable = true
-
-    includeGetters = true
-
-    includeSetters = true
-}
+//jsonSchema2Pojo {
+//    includeAdditionalProperties = true
+//
+//    targetDirectory = file('build/generated-sources/schemajson')
+//
+//    propertyWordDelimiters = ['-', '_'] as char[]
+//
+//    annotationStyle = 'gson'
+//
+//    sourceType = 'jsonschema'
+//
+//    customDateTimePattern = "yyyy-MM-ddTHH:mm:ssZ"
+//
+//    includeConstructors = true
+//
+//    serializable = true
+//
+//    includeGetters = true
+//
+//    includeSetters = true
+//}
 //
 // END POJO generation
 //

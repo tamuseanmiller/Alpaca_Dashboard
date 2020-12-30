@@ -90,7 +90,7 @@ public class EmergencyFragment extends Fragment {
             // Fetch all open orders
             ArrayList<Order> openOrders = null;
             try {
-                openOrders = alpacaAPI.getOrders(OrderStatus.OPEN, 1000, null, ZonedDateTime.now(), Direction.ASCENDING, true);
+                openOrders = alpacaAPI.getOrders(OrderStatus.OPEN, 1000, null, ZonedDateTime.now(), Direction.ASCENDING, true, null);
             } catch (AlpacaAPIRequestException e) {
                 e.printStackTrace();
             }

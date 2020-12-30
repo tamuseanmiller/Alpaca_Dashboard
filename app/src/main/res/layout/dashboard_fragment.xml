@@ -91,7 +91,7 @@
                         android:clickable="true"
                         android:src="@drawable/brightness_6"
                         android:id="@+id/themeChange"
-                        android:paddingEnd="10dp"
+                        android:padding="10dp"
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:backgroundTint="?attr/colorPrimary"
                         android:stateListAnimator="@null"

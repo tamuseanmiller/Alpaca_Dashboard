@@ -437,17 +437,22 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             ordersStock = new ArrayList<>();
             order = new ArrayList();
             try {
-                ordersStock = alpacaAPI.getOrders(OrderStatus.CLOSED, 1000, null, ZonedDateTime.now().plusDays(1), Direction.DESCENDING, false);
+                ArrayList<String> symbols = new ArrayList<>();
+                symbols.add(ticker.get());
+                ordersStock = alpacaAPI.getOrders(OrderStatus.CLOSED, 10, null, ZonedDateTime.now().plusDays(1), Direction.DESCENDING, false, symbols);
             } catch (AlpacaAPIRequestException e) {
                 e.printStackTrace();
             }
-            int i = 0;
-            while (i < ordersStock.size() && order.size() <= 10) {
-                if (ordersStock.get(i).getSymbol().equals(ticker.get())) {
-                    order.add(ordersStock.get(i));
-                }
-                i++;
-            }
+            order.clear();
+            order.addAll(ordersStock);
+            ordersStock.clear();
+//            int i = 0;
+//            while (i < ordersStock.size() && order.size() <= 10) {
+//                if (ordersStock.get(i).getSymbol().equals(ticker.get())) {
+//                    order.add(ordersStock.get(i));
+//                }
+//                i++;
+//            }
 
             recyclerOrdersStock = findViewById(R.id.ordersStock);
             if (!order.isEmpty()) {
@@ -530,21 +535,18 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
 
             AlpacaAPI alpacaAPI = new AlpacaAPI(prefs.retrieveString("auth_token", "NULL"));
 
-            // Fetch curent orders
+            // Fetch current orders
             ordersStock = new ArrayList<>();
             try {
-                ordersStock = alpacaAPI.getOrders(OrderStatus.CLOSED, 1000, null, ZonedDateTime.now().plusDays(1), Direction.DESCENDING, false);
+                ArrayList<String> symbols = new ArrayList<>();
+                symbols.add(ticker.get());
+                ordersStock = alpacaAPI.getOrders(OrderStatus.CLOSED, 10, null, ZonedDateTime.now().plusDays(1), Direction.DESCENDING, false, symbols);
             } catch (AlpacaAPIRequestException e) {
                 e.printStackTrace();
             }
             order.clear();
-            int i = 0;
-            while (i < ordersStock.size() && order.size() <= 10) {
-                if (ordersStock.get(i).getSymbol().equals(ticker.get())) {
-                    order.add(ordersStock.get(i));
-                }
-                i++;
-            }
+            order.addAll(ordersStock);
+            ordersStock.clear();
 
             // Set number of stocks textview
             String numPosition = null;
@@ -585,7 +587,12 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 e.printStackTrace();
             }
             assert calendarInitial != null;
+//            LocalDate lastOpenDate = LocalDate.parse(calendarInitial.get(calendarInitial.size() - 2).getDate());
             LocalDate lastOpenDate = LocalDate.parse(calendarInitial.get(calendarInitial.size() - 2).getDate());
+            if (LocalTime.of(Integer.parseInt(calendarInitial.get(calendarInitial.size() - 2).getOpen().substring(0, 2)),
+                    Integer.parseInt(calendarInitial.get(calendarInitial.size() - 2).getOpen().substring(3, 5))).compareTo(LocalTime.now()) > 0) {
+                lastOpenDate = LocalDate.parse(calendarInitial.get(calendarInitial.size() - 3).getDate());
+            }
 
             AtomicReference<Float> lastClose = new AtomicReference<>((float) 0);
             Map<String, ArrayList<Bar>> bars = null;
