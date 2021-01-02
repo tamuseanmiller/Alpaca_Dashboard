@@ -501,10 +501,10 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             StockFinancialsResponse finalFinancials = financials;
             runOnUiThread(() -> {
 
-                if (finalFinancials != null) {
+                if (finalFinancials != null && !finalFinancials.getResults().isEmpty()) {
                     DecimalFormat format = new DecimalFormat("$#,###.##");
                     StockFinancials result = finalFinancials.getResults().get(0);
-                    financial_date.setText("Last Updated: " + result.getUpdated());
+                    financial_date.setText(String.format("Last Updated: %s", result.getUpdated()));
                     dividend_yield.setText(result.getDividendYield().toString());
                     assets.setText(format.format(result.getAssets().floatValue()));
                     debt.setText(format.format(result.getDebt().floatValue()));

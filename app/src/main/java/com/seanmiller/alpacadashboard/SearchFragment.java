@@ -34,6 +34,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 
 import net.jacobpeterson.alpaca.AlpacaAPI;
 import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
+import net.jacobpeterson.domain.alpaca.asset.Asset;
 import net.jacobpeterson.domain.alpaca.position.Position;
 import net.jacobpeterson.domain.polygon.tickers.ticker.Ticker;
 
@@ -269,6 +270,8 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
 
         Thread thread = new Thread(() -> {
 
+            AlpacaAPI alpacaAPI = new AlpacaAPI(prefs.retrieveString("auth_token", "NULL"));
+
             // Calls yahoo finance api
             // http://d.yimg.com/aq/autoc?query=y&region=US&lang=en-US&callback=YAHOO.util.ScriptNodeDataSource.callbacks
             HttpResponse<String> nodeHttpResponse = null;
@@ -289,10 +292,17 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
                 ArrayList<Ticker> tickers = new ArrayList<>();
 
                 for (JsonElement i : stocks) {
-                    Ticker t = new Ticker();
-                    t.setName(i.getAsJsonObject().get("name").getAsString());
-                    t.setTicker(i.getAsJsonObject().get("symbol").getAsString());
-                    tickers.add(t);
+//                    try {
+//                        Asset asset = alpacaAPI.getAssetBySymbol(i.getAsJsonObject().get("symbol").getAsString());
+//                        if (asset.getStatus().equals("active")) {
+                            Ticker t = new Ticker();
+                            t.setName(i.getAsJsonObject().get("name").getAsString());
+                            t.setTicker(i.getAsJsonObject().get("symbol").getAsString());
+                            tickers.add(t);
+//                        }
+//                    } catch (AlpacaAPIRequestException e) {
+//                        e.printStackTrace();
+//                    }
                 }
 
                 // Sets adapter
@@ -311,6 +321,8 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
 
         Thread thread = new Thread(() -> {
 
+            AlpacaAPI alpacaAPI = new AlpacaAPI(prefs.retrieveString("auth_token", "NULL"));
+
             // Calls yahoo finance api
             // http://d.yimg.com/aq/autoc?query=y&region=US&lang=en-US&callback=YAHOO.util.ScriptNodeDataSource.callbacks
             HttpResponse<String> nodeHttpResponse = null;
@@ -331,10 +343,17 @@ public class SearchFragment extends Fragment implements SearchLayout.OnQueryText
                 ArrayList<Ticker> tickers = new ArrayList<>();
 
                 for (JsonElement i : stocks) {
-                    Ticker t = new Ticker();
-                    t.setName(i.getAsJsonObject().get("name").getAsString());
-                    t.setTicker(i.getAsJsonObject().get("symbol").getAsString());
-                    tickers.add(t);
+//                    try {
+//                        Asset asset = alpacaAPI.getAssetBySymbol(i.getAsJsonObject().get("symbol").getAsString());
+//                        if (asset.getStatus().equals("active")) {
+                            Ticker t = new Ticker();
+                            t.setName(i.getAsJsonObject().get("name").getAsString());
+                            t.setTicker(i.getAsJsonObject().get("symbol").getAsString());
+                            tickers.add(t);
+//                        }
+//                    } catch (AlpacaAPIRequestException e) {
+//                        e.printStackTrace();
+//                    }
                 }
 
                 // Sets adapter
