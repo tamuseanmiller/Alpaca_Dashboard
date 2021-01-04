@@ -396,7 +396,6 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                     float finalAskingPrice = 0;
                     if (askingPrice != null) {
                         finalAskingPrice = askingPrice.getLast().getAskprice().floatValue();
-                        ;
                     }
 
                     float finalAskingPrice1 = finalAskingPrice;
