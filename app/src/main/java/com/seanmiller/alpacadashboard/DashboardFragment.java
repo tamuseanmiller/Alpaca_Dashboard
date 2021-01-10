@@ -4,6 +4,7 @@ import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.content.res.Configuration;
 import android.graphics.Insets;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -90,10 +91,10 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
     private StockAdapter oneYearAdapter;
     public static ArrayList<String> stocks;
     private SharedPreferencesManager prefs;
+    private MaterialCardView sparkCard;
 
 
     public int fetchHeight() {
-
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
             WindowMetrics windowMetrics = requireActivity().getWindowManager().getCurrentWindowMetrics();
             Insets insets = windowMetrics.getWindowInsets()
@@ -105,6 +106,32 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
             requireActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
             return displayMetrics.heightPixels;
         }
+    }
+
+    // To determine number of columns necessary for GridLayoutManager
+    public static int calculateNoOfColumns(Context context, float columnWidthDp) {
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+        float screenWidthDp = displayMetrics.widthPixels / displayMetrics.density;
+        int noOfColumns = (int) (screenWidthDp / columnWidthDp + 0.5); // +0.5 for correct rounding to int.
+        return noOfColumns - 1;
+    }
+
+    // Changes number of columns and graph height based on orientation change
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        // Vary number of columns based on screen size
+        int numColumns = calculateNoOfColumns(getContext(), 137);
+        ColumnProvider col = () -> numColumns;
+        recyclerView.setLayoutManager(new GridLayoutManager(getContext(), numColumns));
+        recyclerView.addItemDecoration(new GridMarginDecoration(0, col,
+                GridLayoutManager.VERTICAL, false, null));
+        recyclerView.setAdapter(recycleAdapter);
+
+        // Vary size of spark view by height of screen size
+        int height = fetchHeight();
+        sparkCard.setMinimumHeight((int) (height / 1.75));
     }
 
 
@@ -119,7 +146,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
         // Vary size of spark view by height of screen size
         int height = fetchHeight();
         sparkView = mView.findViewById(R.id.sparkview);
-        MaterialCardView sparkCard = mView.findViewById(R.id.sparkCard);
+        sparkCard = mView.findViewById(R.id.sparkCard);
         sparkCard.setMinimumHeight((int) (height / 1.75));
 
         // Set theme and icon
@@ -370,8 +397,9 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
         });
         thread2.start();
 
-        ColumnProvider col = () -> 3;
-        recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
+        int numColumns = calculateNoOfColumns(requireContext(), 137);
+        ColumnProvider col = () -> numColumns;
+        recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), numColumns));
         recyclerView.addItemDecoration(new GridMarginDecoration(0, col, GridLayoutManager.VERTICAL, false, null));
 
         recyclerOrders.setLayoutManager(new LinearLayoutManager(getActivity()));

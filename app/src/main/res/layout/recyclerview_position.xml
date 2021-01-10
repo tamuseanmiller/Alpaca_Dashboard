@@ -33,7 +33,7 @@
     <!--        android:textColor="?attr/colorLight"/>-->
 
     <com.google.android.material.card.MaterialCardView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:id="@+id/positionCard"
         android:layout_height="wrap_content"
         grid:cardCornerRadius="15dp"
@@ -48,8 +48,8 @@
         android:focusable="true">
 
             <GridLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:rowCount="4"
                 android:columnCount="2">
 
@@ -61,6 +61,7 @@
                     android:layout_column="0"
                     android:layout_columnWeight="1"
                     android:layout_rowWeight="1"
+                    grid:iconGravity="textStart"
                     android:backgroundTint="?attr/colorAccentTransparent"
                     android:stateListAnimator="@null"
                     android:text="@string/loading"

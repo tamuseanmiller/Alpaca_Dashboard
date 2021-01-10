@@ -34,12 +34,14 @@ public class CustomSparkView extends SparkView {
     public void onScrubEnded() {
         super.onScrubEnded();
 
-        double amount = Double.parseDouble(String.valueOf(getAdapter().getItem(getAdapter().getCount() - 1)));
-        DecimalFormat formatter = new DecimalFormat("#,###.00");
-        if (!StockPageActivity.isInFront)
-            DashboardFragment.tickerView.setText("$" + formatter.format(amount));
-        else {
-            StockPageActivity.tickerViewStock.setText("$" + formatter.format(amount));
+        if (getAdapter().getCount() > 0) {
+            double amount = Double.parseDouble(String.valueOf(getAdapter().getItem(getAdapter().getCount() - 1)));
+            DecimalFormat formatter = new DecimalFormat("#,###.00");
+            if (!StockPageActivity.isInFront)
+                DashboardFragment.tickerView.setText("$" + formatter.format(amount));
+            else {
+                StockPageActivity.tickerViewStock.setText("$" + formatter.format(amount));
+            }
         }
 
     }
