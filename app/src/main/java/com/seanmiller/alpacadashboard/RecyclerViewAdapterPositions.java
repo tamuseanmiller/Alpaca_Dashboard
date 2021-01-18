@@ -20,8 +20,10 @@ import net.jacobpeterson.alpaca.AlpacaAPI;
 import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException;
 import net.jacobpeterson.domain.alpaca.calendar.Calendar;
 import net.jacobpeterson.domain.alpaca.position.Position;
+import net.jacobpeterson.domain.polygon.aggregates.Aggregate;
 import net.jacobpeterson.domain.polygon.lastquote.LastQuoteResponse;
 import net.jacobpeterson.polygon.PolygonAPI;
+import net.jacobpeterson.polygon.enums.Timespan;
 import net.jacobpeterson.polygon.rest.exception.PolygonAPIRequestException;
 
 import org.json.JSONException;
@@ -179,7 +181,7 @@ public class RecyclerViewAdapterPositions extends RecyclerView.Adapter<RecyclerV
                             }
                         });
 
-                        // Market isn't open
+                    // Market isn't open
                     } else {
 
                         // Fetch Daily Open Close endpoint for prev day
@@ -195,7 +197,9 @@ public class RecyclerViewAdapterPositions extends RecyclerView.Adapter<RecyclerV
                         // Get last open day's close
     //                    if (nodeHttpResponse != null) {
                         try {
-                            closeCurr = polygonAPI.getLastQuote(mData.get(position)).getLast().getAskprice().floatValue();
+//                            closeCurr = polygonAPI.getLastQuote(mData.get(position)).getLast().getAskprice().floatValue();
+                            ArrayList<Aggregate> aggs = polygonAPI.getAggregates(mData.get(position), 1, Timespan.DAY, lastOpenDate, lastOpenDate.plusDays(1), false).getResults();
+                            closeCurr = aggs.get(aggs.size() - 1).getC().floatValue();
                         } catch (PolygonAPIRequestException e) {
                             e.printStackTrace();
                         }
