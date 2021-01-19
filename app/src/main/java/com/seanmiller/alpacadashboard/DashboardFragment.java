@@ -300,26 +300,24 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
                 // Run forever to get the new equities
                 while (true) {
                     try {
-                        String currentValue = null;
-                        try {
-                            currentValue = alpacaAPI.getAccount().getPortfolioValue();
-
-                        } catch (AlpacaAPIRequestException e) {
-                            e.printStackTrace();
-                        }
-
-                        // Format amount
-                        double amount = Double.parseDouble(currentValue);
-
-                        getActivity().runOnUiThread(() -> tickerView.setText("$" + formatter.format(amount)));
-                        oneDayAdapter.addVal(Float.parseFloat(currentValue));
-                        oneDayAdapter.notifyDataSetChanged();
-
                         Thread.sleep(60000 * 5);
-
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
+                    String currentValue = null;
+                    try {
+                        currentValue = alpacaAPI.getAccount().getPortfolioValue();
+
+                    } catch (AlpacaAPIRequestException e) {
+                        e.printStackTrace();
+                    }
+
+                    // Format amount
+                    double amount = Double.parseDouble(currentValue);
+
+                    requireActivity().runOnUiThread(() -> tickerView.setText("$" + formatter.format(amount)));
+                    oneDayAdapter.addVal(Float.parseFloat(currentValue));
+                    oneDayAdapter.notifyDataSetChanged();
                 }
             });
             t3.start();
@@ -737,6 +735,22 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
             if (periodUnit == PortfolioPeriodUnit.YEAR) {
                 selectedAdapterInitial.smoothGraph();
             }
+
+            String currentValue = null;
+            try {
+                currentValue = alpacaAPI.getAccount().getPortfolioValue();
+
+            } catch (AlpacaAPIRequestException e) {
+                e.printStackTrace();
+            }
+
+            // Format amount
+            double amount = Double.parseDouble(currentValue);
+
+            DecimalFormat formatter = new DecimalFormat("#,###.00");
+            requireActivity().runOnUiThread(() -> tickerView.setText("$" + formatter.format(amount)));
+            selectedAdapterInitial.addVal(Float.parseFloat(currentValue));
+            selectedAdapterInitial.notifyDataSetChanged();
 
             setDashboardValues(); // Set here to allow ample time for instantiation
 

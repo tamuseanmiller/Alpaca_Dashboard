@@ -56,6 +56,7 @@ public class RecyclerViewAdapterOrders extends RecyclerView.Adapter<RecyclerView
 //        holder.shrQty.setText(mData.get(position).getQty());
 //        holder.timeClosed.setText(mData.get(position).getFilledAt().getMonth().getValue() + "/" + mData.get(position).getFilledAt().getDayOfMonth() + "/" + mData.get(position).getFilledAt().getYear() /*+ "\n" + mData.get(position).getFilledAt().getHour() + ":" + mData.get(position).getFilledAt().getMinute()*/);
 
+        MainActivity mainActivity = new MainActivity();
         Thread thread = new Thread(() -> {
 
             // Fetches 12hour hour:minute format including am/pm
@@ -72,7 +73,7 @@ public class RecyclerViewAdapterOrders extends RecyclerView.Adapter<RecyclerView
                     minute = minute.substring(0, minute.length() - 2);
                     minute += "pm";
                 }
-                MainActivity mainActivity = new MainActivity();
+
                 int finalHourTemp = hourTemp;
                 String finalMinute = minute;
                 mainActivity.runOnUiThread(() -> {
@@ -96,7 +97,6 @@ public class RecyclerViewAdapterOrders extends RecyclerView.Adapter<RecyclerView
                     minute += "pm";
                 }
 
-                MainActivity mainActivity = new MainActivity();
                 int finalHourTemp = hourTemp;
                 String finalMinute = minute;
                 mainActivity.runOnUiThread(() -> {

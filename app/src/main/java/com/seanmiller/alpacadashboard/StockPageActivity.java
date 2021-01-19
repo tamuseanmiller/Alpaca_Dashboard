@@ -385,6 +385,12 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
 
                 while (true) {
 
+                    try {
+                        Thread.sleep(60000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
                     LastQuoteResponse askingPrice = null;
                     try {
                         askingPrice = polygonAPI.getLastQuote(ticker.get());
@@ -402,12 +408,6 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                     runOnUiThread(() -> selectedAdapterStock.addVal(finalAskingPrice1));
 
 //                    runOnUiThread(() -> setStockValues(selectedAdapterStock));
-
-                    try {
-                        Thread.sleep(60000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
                 }
             });
             t4.start();
@@ -745,7 +745,23 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 runOnUiThread(selectedAdapterInitial::smoothGraph);
             }
 
-            runOnUiThread(() -> /*setStockValues(selectedAdapterInitial)*/oneDayStock.callOnClick()); // Set here to allow ample time for instantiation
+            LastQuoteResponse askingPrice = null;
+            try {
+                askingPrice = polygonAPI.getLastQuote(ticker.get());
+
+            } catch (PolygonAPIRequestException e) {
+                e.printStackTrace();
+            }
+
+            float finalAskingPrice = 0;
+            if (askingPrice != null) {
+                finalAskingPrice = askingPrice.getLast().getAskprice().floatValue();
+            }
+
+            float finalAskingPrice1 = finalAskingPrice;
+            runOnUiThread(() -> selectedAdapterInitial.addVal(finalAskingPrice1));
+
+            runOnUiThread(() -> oneDayStock.callOnClick()); // Set here to allow ample time for instantiation
         });
         thread.start();
     }
