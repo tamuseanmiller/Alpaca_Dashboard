@@ -78,9 +78,13 @@ public class RecyclerViewAdapterOrders extends RecyclerView.Adapter<RecyclerView
                     minute = "0" + minute;
                 }
                 minute += "am";
+                String minSub = minute.substring(0, minute.length() - 2);
                 if (hourTemp > 12) {
                     hourTemp -= 12;
-                    minute = minute.substring(0, minute.length() - 2);
+                    minute = minSub;
+                    minute += "pm";
+                } else if (hourTemp == 12) {
+                    minute = minSub;
                     minute += "pm";
                 }
 
@@ -104,9 +108,13 @@ public class RecyclerViewAdapterOrders extends RecyclerView.Adapter<RecyclerView
                     minute = "0" + minute;
                 }
                 minute += "am";
+                String minSub = minute.substring(0, minute.length() - 2);
                 if (hourTemp > 12) {
                     hourTemp -= 12;
-                    minute = minute.substring(0, minute.length() - 2);
+                    minute = minSub;
+                    minute += "pm";
+                } else if (hourTemp == 12) {
+                    minute = minSub;
                     minute += "pm";
                 }
 
