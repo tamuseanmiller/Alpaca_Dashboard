@@ -66,10 +66,10 @@ public class RecyclerViewAdapterPositions extends RecyclerView.Adapter<RecyclerV
         holder.stock_name.setText(stockName);
         SharedPreferencesManager prefs = new SharedPreferencesManager(mInflater.getContext());
 
-        Thread thread = new Thread(() -> {
+        PolygonAPI polygonAPI = new PolygonAPI(prefs.retrieveString("polygon_id", "NULL"));
+        AlpacaAPI alpacaAPI = new AlpacaAPI(prefs.retrieveString("auth_token", "NULL"));
 
-            PolygonAPI polygonAPI = new PolygonAPI(prefs.retrieveString("polygon_id", "NULL"));
-            AlpacaAPI alpacaAPI = new AlpacaAPI(prefs.retrieveString("auth_token", "NULL"));
+        Thread thread = new Thread(() -> {
 
             // Fetch last open day's information
             ArrayList<Calendar> calendar = null;
@@ -78,7 +78,7 @@ public class RecyclerViewAdapterPositions extends RecyclerView.Adapter<RecyclerV
             } catch (AlpacaAPIRequestException e) {
                 e.printStackTrace();
             }
-            assert calendar != null;
+//            assert calendar != null;
             LocalDate lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 2).getDate());
             if (LocalTime.of(Integer.parseInt(calendar.get(calendar.size() - 2).getOpen().substring(0, 2)),
                     Integer.parseInt(calendar.get(calendar.size() - 2).getOpen().substring(3, 5))).compareTo(LocalTime.now()) > 0) {
@@ -94,7 +94,9 @@ public class RecyclerViewAdapterPositions extends RecyclerView.Adapter<RecyclerV
                 // https://api.polygon.io/v1/open-close/AAPL/2020-10-14?apiKey=
                 JSONObject nodeHttpResponse = null;
                 try {
-                    nodeHttpResponse = Unirest.get("https://api.polygon.io/v1/open-close/" + mData.get(position) + "/" + lastOpenDate + "?apiKey=" + prefs.retrieveString("polygon_id", "NULL")).asJson().getBody().getObject();
+                    nodeHttpResponse = Unirest.get("https://api.polygon.io/v1/open-close/" + mData.get(position) +
+                            "/" + lastOpenDate + "?apiKey=" + prefs.retrieveString("polygon_id", "NULL"))
+                            .asJson().getBody().getObject();
 
                 } catch (UnirestException e) {
                     e.printStackTrace();
@@ -183,7 +185,7 @@ public class RecyclerViewAdapterPositions extends RecyclerView.Adapter<RecyclerV
                             }
                         });
 
-                    // Market isn't open
+                        // Market isn't open
                     } else {
 
                         // Fetch Daily Open Close endpoint for prev day
@@ -197,15 +199,18 @@ public class RecyclerViewAdapterPositions extends RecyclerView.Adapter<RecyclerV
                         }*/
 
                         // Get last open day's close
-    //                    if (nodeHttpResponse != null) {
+                        //                    if (nodeHttpResponse != null) {
                         try {
-//                            closeCurr = polygonAPI.getLastQuote(mData.get(position)).getLast().getAskprice().floatValue();
-                            ArrayList<Aggregate> aggs = polygonAPI.getAggregates(mData.get(position), 1, Timespan.DAY, lastOpenDate, lastOpenDate.plusDays(1), false).getResults();
-                            closeCurr = aggs.get(aggs.size() - 1).getC().floatValue();
+                            if (calendar.get(calendar.size() - 1).getDate().equals(LocalDate.now().toString())) {
+                                closeCurr = polygonAPI.getLastQuote(mData.get(position)).getLast().getAskprice().floatValue();
+                            } else {
+                                ArrayList<Aggregate> aggs = polygonAPI.getAggregates(mData.get(position), 1, Timespan.DAY, lastOpenDate, lastOpenDate.plusDays(1), false).getResults();
+                                closeCurr = aggs.get(aggs.size() - 1).getC().floatValue();
+                            }
                         } catch (PolygonAPIRequestException e) {
                             e.printStackTrace();
                         }
-    //                    }
+                        //                    }
 
                         // Set values
                         float finalClose = close;
