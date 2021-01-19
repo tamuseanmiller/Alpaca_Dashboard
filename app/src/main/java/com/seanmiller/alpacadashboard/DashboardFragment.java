@@ -74,7 +74,7 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
     public static AtomicReference<String> ticker;
     private RecyclerViewAdapterPositions recycleAdapter;
     private RecyclerViewAdapterOrders recycleAdapterOrders;
-    private Button percentChange;
+    private MaterialButton percentChange;
     private SwipeRefreshLayout swipeRefresh;
     private ArrayList<Order> orders;
     private MaterialButton oneDay;
@@ -437,6 +437,8 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
             if (pos) {
                 view.percentChange.setTextColor(posColor);
                 view.percentChange.setBackgroundTintList(ColorStateList.valueOf(posColorLight));
+                view.percentChange.setRippleColor(ColorStateList.valueOf(posColor));
+                view.stockCard.setRippleColor(ColorStateList.valueOf(posColor));
 
                 Drawable downArrow = ContextCompat.getDrawable(requireActivity(), R.drawable.arrow_top_right);
                 downArrow.setTint(posColor);
@@ -444,6 +446,8 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
             } else {
                 view.percentChange.setTextColor(negColor);
                 view.percentChange.setBackgroundTintList(ColorStateList.valueOf(negColorLight));
+                view.percentChange.setRippleColor(ColorStateList.valueOf(negColor));
+                view.stockCard.setRippleColor(ColorStateList.valueOf(negColor));
 
                 Drawable downArrow = ContextCompat.getDrawable(requireActivity(), R.drawable.arrow_bottom_right);
                 downArrow.setTint(negColor);
@@ -558,8 +562,6 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
             oneYear.setRippleColor(ColorStateList.valueOf(color));
 
             requireActivity().getTheme().resolveAttribute(R.attr.color_positive_light, typedValue, true);
-            posOrNegColorLight.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
-            posOrNegColorLight.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
 
         } else {
             percentChange.setText(String.format("-$%.2f (%.2f%%)", Math.abs(profitLoss), percentageChange));
@@ -585,8 +587,8 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
             oneYear.setRippleColor(ColorStateList.valueOf(color));
 
             requireActivity().getTheme().resolveAttribute(R.attr.color_negative_light, typedValue, true);
-            posOrNegColorLight.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
         }
+        posOrNegColorLight.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId));
     }
 
     private void initializeDashboardValues(int periodLength, PortfolioPeriodUnit periodUnit, PortfolioTimeFrame timeFrame, StockAdapter selectedAdapterInitial, Context mContext) {

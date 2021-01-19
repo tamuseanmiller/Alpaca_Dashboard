@@ -13,6 +13,8 @@ import androidx.annotation.RequiresApi;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 
@@ -262,10 +264,10 @@ public class RecyclerViewAdapterPositions extends RecyclerView.Adapter<RecyclerV
     // stores and recycles views as they are scrolled off screen
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView stock_name;
-        Button percentChange;
+        MaterialButton percentChange;
         TextView sharesOwned;
         TextView priceOfStock;
-        CardView stockCard;
+        MaterialCardView stockCard;
 
         ViewHolder(View itemView) {
             super(itemView);
