@@ -552,9 +552,9 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             try {
                 numPosition = alpacaAPI.getOpenPositionBySymbol(ticker.get()).getQty();
                 String finalNumPosition = numPosition;
-                runOnUiThread(() -> numPos.setText(finalNumPosition + " shares owned"));
+                runOnUiThread(() -> numPos.setText(String.format("%s shares owned", finalNumPosition)));
             } catch (AlpacaAPIRequestException e) {
-                runOnUiThread(() -> numPos.setText(0 + " shares owned"));
+                runOnUiThread(() -> numPos.setText("0 shares owned"));
                 e.printStackTrace();
             }
 

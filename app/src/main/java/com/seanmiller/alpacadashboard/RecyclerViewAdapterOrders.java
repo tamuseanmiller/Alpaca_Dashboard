@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import net.jacobpeterson.domain.alpaca.order.Order;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class RecyclerViewAdapterOrders extends RecyclerView.Adapter<RecyclerViewAdapterOrders.ViewHolder> {
 
@@ -60,7 +61,7 @@ public class RecyclerViewAdapterOrders extends RecyclerView.Adapter<RecyclerView
             // Fetches 12hour hour:minute format including am/pm
             if (mData.get(position).getFilledAt() != null) {
                 int hourTemp = mData.get(position).getFilledAt().toLocalTime().getHour();
-                String hour = "";
+                AtomicReference<String> hour = new AtomicReference<>("");
                 String minute = String.valueOf(mData.get(position).getFilledAt().toLocalTime().getMinute());
                 if (Integer.parseInt(minute) < 10) {
                     minute = "0" + minute;
@@ -71,14 +72,19 @@ public class RecyclerViewAdapterOrders extends RecyclerView.Adapter<RecyclerView
                     minute = minute.substring(0, minute.length() - 2);
                     minute += "pm";
                 }
-                hour = String.valueOf(hourTemp);
-                holder.timeClosed.setText(hour + ":" + minute);
-                holder.price.setText("$" + mData.get(position).getFilledAvgPrice());
-                holder.pricePlaced.setText(mData.get(position).getSide() + " " + mData.get(position).getQty());
+                MainActivity mainActivity = new MainActivity();
+                int finalHourTemp = hourTemp;
+                String finalMinute = minute;
+                mainActivity.runOnUiThread(() -> {
+                    hour.set(String.valueOf(finalHourTemp));
+                    holder.timeClosed.setText(hour + ":" + finalMinute);
+                    holder.price.setText("$" + mData.get(position).getFilledAvgPrice());
+                    holder.pricePlaced.setText(mData.get(position).getSide() + " " + mData.get(position).getQty());
+                });
 
             } else {
                 int hourTemp = mData.get(position).getCanceledAt().getHour();
-                String hour = "";
+                AtomicReference<String> hour = new AtomicReference<>("");
                 String minute = String.valueOf(mData.get(position).getCanceledAt().getMinute());
                 if (Integer.parseInt(minute) < 10) {
                     minute = "0" + minute;
@@ -90,10 +96,15 @@ public class RecyclerViewAdapterOrders extends RecyclerView.Adapter<RecyclerView
                     minute += "pm";
                 }
 
-                hour = String.valueOf(hourTemp);
-                holder.timeClosed.setText(hour + ":" + minute);
-                holder.price.setText("Cancelled");
-                holder.pricePlaced.setText(mData.get(position).getSide() + " " + mData.get(position).getQty());
+                MainActivity mainActivity = new MainActivity();
+                int finalHourTemp = hourTemp;
+                String finalMinute = minute;
+                mainActivity.runOnUiThread(() -> {
+                    hour.set(String.valueOf(finalHourTemp));
+                    holder.timeClosed.setText(hour + ":" + finalMinute);
+                    holder.price.setText("Cancelled");
+                    holder.pricePlaced.setText(mData.get(position).getSide() + " " + mData.get(position).getQty());
+                });
             }
         });
         thread.start();
