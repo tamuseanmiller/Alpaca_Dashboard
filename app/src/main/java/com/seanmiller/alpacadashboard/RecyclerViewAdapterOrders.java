@@ -14,7 +14,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import net.jacobpeterson.domain.alpaca.order.Order;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class RecyclerViewAdapterOrders extends RecyclerView.Adapter<RecyclerViewAdapterOrders.ViewHolder> {
@@ -60,10 +66,14 @@ public class RecyclerViewAdapterOrders extends RecyclerView.Adapter<RecyclerView
         Thread thread = new Thread(() -> {
 
             // Fetches 12hour hour:minute format including am/pm
+            // Works by switching timezone to default then parsing
             if (mData.get(position).getFilledAt() != null) {
-                int hourTemp = mData.get(position).getFilledAt().toLocalTime().getHour();
+                ZonedDateTime zonedDateTime = mData.get(position).getFilledAt();
+                ZonedDateTime zDT = zonedDateTime.withZoneSameInstant(TimeZone.getDefault().toZoneId());
+
                 AtomicReference<String> hour = new AtomicReference<>("");
-                String minute = String.valueOf(mData.get(position).getFilledAt().toLocalTime().getMinute());
+                int hourTemp = zDT.toLocalTime().getHour();
+                String minute = String.valueOf(zDT.toLocalTime().getMinute());
                 if (Integer.parseInt(minute) < 10) {
                     minute = "0" + minute;
                 }
@@ -84,9 +94,12 @@ public class RecyclerViewAdapterOrders extends RecyclerView.Adapter<RecyclerView
                 });
 
             } else {
-                int hourTemp = mData.get(position).getCanceledAt().getHour();
+                ZonedDateTime zonedDateTime = mData.get(position).getCanceledAt();
+                ZonedDateTime zDT = zonedDateTime.withZoneSameInstant(TimeZone.getDefault().toZoneId());
+
+                int hourTemp = zDT.toLocalTime().getHour();
                 AtomicReference<String> hour = new AtomicReference<>("");
-                String minute = String.valueOf(mData.get(position).getCanceledAt().getMinute());
+                String minute = String.valueOf(zDT.toLocalTime().getMinute());
                 if (Integer.parseInt(minute) < 10) {
                     minute = "0" + minute;
                 }
