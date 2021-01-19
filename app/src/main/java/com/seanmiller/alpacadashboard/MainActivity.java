@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     private Thread t1;
     private SharedPreferencesManager prefs;
     private BillingProcessor bp;
+    private BottomNavigationView bottomNavigation;
 
     public static final int DASHBOARD_FRAGMENT = 0;
     public static final int SEARCH_FRAGMENT = 1;
@@ -122,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         viewPager.setPagingEnabled(false);
         pagerAdapter = new BottomBarAdapter(getSupportFragmentManager());
 
-        BottomNavigationView bottomNavigation = findViewById(R.id.bottom_navigation);
+        bottomNavigation = findViewById(R.id.bottom_navigation);
         bottomNavigation.bringToFront();
         bottomNavigation.setOnNavigationItemSelectedListener(this);
 
@@ -193,8 +194,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public void onBackPressed() {
 
         // If at dashboard go to home, other wise go back to last fragment
-        if (viewPager.getCurrentItem() != 0) {
+        if (viewPager.getCurrentItem() != DASHBOARD_FRAGMENT) {
             viewPager.setCurrentItem(lastItem, false);
+            bottomNavigation.getMenu().getItem(lastItem).setChecked(true);
 
         } else {
             finish();
