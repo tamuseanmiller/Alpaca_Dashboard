@@ -51,8 +51,10 @@ import net.jacobpeterson.polygon.rest.exception.PolygonAPIRequestException;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -607,11 +609,19 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
             } catch (AlpacaAPIRequestException e) {
                 e.printStackTrace();
             }
+
             // Assign last open datetime and check for if it is the morning of
             assert calendar != null;
             LocalDate lastOpenDate2 = LocalDate.parse(calendar.get(calendar.size() - 2).getDate());
-            if (LocalTime.of(Integer.parseInt(calendar.get(calendar.size() - 2).getOpen().substring(0, 2)),
-                    Integer.parseInt(calendar.get(calendar.size() - 2).getOpen().substring(3, 5))).compareTo(LocalTime.now()) > 0) {
+            LocalTime oldTime = LocalTime.of(Integer.parseInt(calendar.get(calendar.size() - 2).getOpen().substring(0, 2)),
+                    Integer.parseInt(calendar.get(calendar.size() - 2).getOpen().substring(3, 5)));
+
+            // Switch given open datetime from US/Eastern to System Default
+            ZonedDateTime zonedDateTime = ZonedDateTime.of(lastOpenDate2, oldTime, ZoneId.of("US/Eastern"));
+            ZonedDateTime standardDateTime = zonedDateTime.withZoneSameInstant(ZoneId.systemDefault());
+
+            // Check if it is the morning of
+            if (standardDateTime.toLocalTime().compareTo(LocalTime.now()) > 0) {
                 lastOpenDate2 = LocalDate.parse(calendar.get(calendar.size() - 3).getDate());
             }
 
@@ -626,44 +636,49 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
             }
 
             // Check if market is open
-            if (marketStatus.equals("open")) {
+            if (marketStatus != null) {
+                if (marketStatus.equals("open")) {
 
-                if (PortfolioTimeFrame.FIVE_MINUTE == timeFrame) {
+                    if (PortfolioTimeFrame.FIVE_MINUTE == timeFrame) {
 
-                    // Gather old portfolio data
-                    historyInitial.set(new ArrayList<>());
-                    try {
-                        historyInitial.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, lastOpenDate2, false).getEquity());
+                        // Gather old portfolio data
+                        historyInitial.set(new ArrayList<>());
+                        try {
+                            historyInitial.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, lastOpenDate2, false).getEquity());
 
-                    } catch (AlpacaAPIRequestException e) {
-                        e.printStackTrace();
+                        } catch (AlpacaAPIRequestException e) {
+                            e.printStackTrace();
+                        }
+
+                        double temp = historyInitial.get().get(historyInitial.get().size() - 3);
+                        selectedAdapterInitial.push_front((float) temp);
+                        selectedAdapterInitial.setBaseline(selectedAdapterInitial.getValue(0));
+                        oneDayAdapter.notifyDataSetChanged();
                     }
 
-                    double temp = historyInitial.get().get(historyInitial.get().size() - 1);
-                    selectedAdapterInitial.push_front((float) temp);
-                    selectedAdapterInitial.setBaseline(selectedAdapterInitial.getValue(0));
-                    oneDayAdapter.notifyDataSetChanged();
-                }
+                } else {
 
-            } else {
+                    if (PortfolioTimeFrame.FIVE_MINUTE == timeFrame) {
 
-                if (PortfolioTimeFrame.FIVE_MINUTE == timeFrame) {
+                        historyInitial.set(new ArrayList<>());
 
-                    historyInitial.set(new ArrayList<>());
+                        try {
+                            historyInitial.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, lastOpenDate2, false).getEquity());
 
-                    try {
-                        historyInitial.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, lastOpenDate2, false).getEquity());
+                        } catch (AlpacaAPIRequestException e) {
+                            e.printStackTrace();
+                        }
 
-                    } catch (AlpacaAPIRequestException e) {
-                        e.printStackTrace();
+                        ArrayList<Double> tempHistory = historyInitial.get();
+                        tempHistory.remove(tempHistory.size() - 1);
+                        tempHistory.remove(tempHistory.size() - 1);
+                        double temp = getLastFilledIndex(tempHistory);
+                        selectedAdapterInitial.push_front((float) temp);
+                        selectedAdapterInitial.setBaseline(selectedAdapterInitial.getValue(0));
+                        oneDayAdapter.notifyDataSetChanged();
                     }
 
-                    double temp = getLastFilledIndex(historyInitial.get());
-                    selectedAdapterInitial.push_front((float) temp);
-                    selectedAdapterInitial.setBaseline(selectedAdapterInitial.getValue(0));
-                    oneDayAdapter.notifyDataSetChanged();
                 }
-
             }
 
             ArrayList<Double> history = null;
@@ -671,17 +686,22 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
             if (periodUnit == PortfolioPeriodUnit.DAY) {
 
                 // Assign last open datetime and check for if it is the morning of
-                assert calendar != null;
                 LocalDate lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 1).getDate());
-                if (LocalTime.of(Integer.parseInt(calendar.get(calendar.size() - 1).getOpen().substring(0, 2)),
-                        Integer.parseInt(calendar.get(calendar.size() - 1).getOpen().substring(3, 5))).compareTo(LocalTime.now()) > 0) {
+                oldTime = LocalTime.of(Integer.parseInt(calendar.get(calendar.size() - 1).getOpen().substring(0, 2)),
+                        Integer.parseInt(calendar.get(calendar.size() - 1).getOpen().substring(3, 5)));
+
+                // Switch given open datetime from US/Eastern to System Default
+                zonedDateTime = ZonedDateTime.of(lastOpenDate2, oldTime, ZoneId.of("US/Eastern"));
+                standardDateTime = zonedDateTime.withZoneSameInstant(ZoneId.systemDefault());
+                if (standardDateTime.toLocalTime().compareTo(LocalTime.now()) > 0) {
                     lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 2).getDate());
                 }
 
                 // Gather old portfolio data
                 history = new ArrayList<>();
                 try {
-                    PortfolioHistory portVal = alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, lastOpenDate, true);
+                    PortfolioHistory portVal = alpacaAPI.getPortfolioHistory(periodLength,
+                            periodUnit, timeFrame, lastOpenDate, true);
                     history = portVal.getEquity();
 
                 } catch (AlpacaAPIRequestException e) {
@@ -693,7 +713,8 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
                 // Gather old portfolio data
                 history = new ArrayList<>();
                 try {
-                    PortfolioHistory portVal = alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, LocalDate.now(), true);
+                    PortfolioHistory portVal = alpacaAPI.getPortfolioHistory(periodLength,
+                            periodUnit, timeFrame, LocalDate.now(), true);
                     history = portVal.getEquity();
 
                 } catch (AlpacaAPIRequestException e) {

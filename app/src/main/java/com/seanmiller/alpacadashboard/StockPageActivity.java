@@ -585,11 +585,18 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             } catch (AlpacaAPIRequestException e) {
                 e.printStackTrace();
             }
+            // Assign last open datetime and check for if it is the morning of
             assert calendarInitial != null;
-//            LocalDate lastOpenDate = LocalDate.parse(calendarInitial.get(calendarInitial.size() - 2).getDate());
             LocalDate lastOpenDate = LocalDate.parse(calendarInitial.get(calendarInitial.size() - 2).getDate());
-            if (LocalTime.of(Integer.parseInt(calendarInitial.get(calendarInitial.size() - 2).getOpen().substring(0, 2)),
-                    Integer.parseInt(calendarInitial.get(calendarInitial.size() - 2).getOpen().substring(3, 5))).compareTo(LocalTime.now()) > 0) {
+            LocalTime oldTime = LocalTime.of(Integer.parseInt(calendarInitial.get(calendarInitial.size() - 2).getOpen().substring(0, 2)),
+                    Integer.parseInt(calendarInitial.get(calendarInitial.size() - 2).getOpen().substring(3, 5)));
+
+            // Switch given open datetime from US/Eastern to System Default
+            ZonedDateTime zonedDateTime = ZonedDateTime.of(lastOpenDate, oldTime, ZoneId.of("US/Eastern"));
+            ZonedDateTime standardDateTime = zonedDateTime.withZoneSameInstant(ZoneId.systemDefault());
+
+            // Check if it is the morning of
+            if (standardDateTime.toLocalTime().compareTo(LocalTime.now()) > 0) {
                 lastOpenDate = LocalDate.parse(calendarInitial.get(calendarInitial.size() - 3).getDate());
             }
 
@@ -694,13 +701,16 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                     // Assign last open datetime and check for if it is the morning of
                     assert calendar != null;
                     LocalDate lastOpenDate2 = LocalDate.parse(calendar.get(calendar.size() - 1).getDate());
-                    LocalTime lastOpenTimeStart = LocalTime.parse(calendar.get(calendar.size() - 1).getOpen());
-                    if (LocalTime.of(Integer.parseInt(calendar.get(calendar.size() - 1).getOpen().substring(0, 2)),
-                            Integer.parseInt(calendar.get(calendar.size() - 1).getOpen().substring(3, 5))).compareTo(LocalTime.now()) > 0) {
-                        lastOpenDate2 = LocalDate.parse(calendar.get(calendar.size() - 2).getDate());
-                        lastOpenTimeStart = LocalTime.parse(calendar.get(calendar.size() - 2).getOpen());
-                    }
+                    oldTime = LocalTime.of(Integer.parseInt(calendar.get(calendar.size() - 1).getOpen().substring(0, 2)),
+                            Integer.parseInt(calendar.get(calendar.size() - 1).getOpen().substring(3, 5)));
 
+                    // Switch given open datetime from US/Eastern to System Default
+                    zonedDateTime = ZonedDateTime.of(lastOpenDate2, oldTime, ZoneId.of("US/Eastern"));
+                    standardDateTime = zonedDateTime.withZoneSameInstant(ZoneId.systemDefault());
+                    LocalTime lastOpenTimeStart = LocalTime.now();
+                    if (standardDateTime.toLocalTime().compareTo(LocalTime.now()) > 0) {
+                        lastOpenTimeStart = LocalTime.from(LocalDate.parse(calendar.get(calendar.size() - 2).getOpen()));
+                    }
 
                     try {
                         bars = alpacaAPI.getBars(BarsTimeFrame.FIVE_MINUTE, ticker.get(), 1000,

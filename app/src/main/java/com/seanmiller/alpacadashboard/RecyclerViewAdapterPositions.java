@@ -33,6 +33,8 @@ import org.json.JSONObject;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,10 +80,19 @@ public class RecyclerViewAdapterPositions extends RecyclerView.Adapter<RecyclerV
             } catch (AlpacaAPIRequestException e) {
                 e.printStackTrace();
             }
-//            assert calendar != null;
+
+            // Assign last open datetime and check for if it is the morning of
+            assert calendar != null;
             LocalDate lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 2).getDate());
-            if (LocalTime.of(Integer.parseInt(calendar.get(calendar.size() - 2).getOpen().substring(0, 2)),
-                    Integer.parseInt(calendar.get(calendar.size() - 2).getOpen().substring(3, 5))).compareTo(LocalTime.now()) > 0) {
+            LocalTime oldTime = LocalTime.of(Integer.parseInt(calendar.get(calendar.size() - 2).getOpen().substring(0, 2)),
+                    Integer.parseInt(calendar.get(calendar.size() - 2).getOpen().substring(3, 5)));
+
+            // Switch given open datetime from US/Eastern to System Default
+            ZonedDateTime zonedDateTime = ZonedDateTime.of(lastOpenDate, oldTime, ZoneId.of("US/Eastern"));
+            ZonedDateTime standardDateTime = zonedDateTime.withZoneSameInstant(ZoneId.systemDefault());
+
+            // Check if it is the morning of
+            if (standardDateTime.toLocalTime().compareTo(LocalTime.now()) > 0) {
                 lastOpenDate = LocalDate.parse(calendar.get(calendar.size() - 3).getDate());
             }
 
