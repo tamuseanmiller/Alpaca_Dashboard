@@ -705,16 +705,16 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                             Integer.parseInt(calendar.get(calendar.size() - 1).getOpen().substring(3, 5)));
 
                     // Switch given open datetime from US/Eastern to System Default
-                    zonedDateTime = ZonedDateTime.of(lastOpenDate2, oldTime, ZoneId.of("US/Eastern"));
-                    standardDateTime = zonedDateTime.withZoneSameInstant(ZoneId.systemDefault());
-                    LocalTime lastOpenTimeStart = LocalTime.now();
+                    String time = calendar.get(calendar.size() - 1).getOpen();
+                    LocalTime lastOpenTimeStart = LocalTime.of(Integer.parseInt(time.substring(0, 2)), Integer.parseInt(time.substring(3)));
                     if (standardDateTime.toLocalTime().compareTo(LocalTime.now()) > 0) {
-                        lastOpenTimeStart = LocalTime.from(LocalDate.parse(calendar.get(calendar.size() - 2).getOpen()));
+                        time = calendar.get(calendar.size() - 2).getOpen();
+                        lastOpenTimeStart = LocalTime.of(Integer.parseInt(time.substring(0, 2)), Integer.parseInt(time.substring(3)));
                     }
 
                     try {
                         bars = alpacaAPI.getBars(BarsTimeFrame.FIVE_MINUTE, ticker.get(), 1000,
-                                ZonedDateTime.of(lastOpenDate2, lastOpenTimeStart, ZoneId.of("UTC-4")), null, null, null);
+                                ZonedDateTime.of(lastOpenDate2, lastOpenTimeStart, ZoneId.of("US/Eastern")), null, null, null);
 
 //                        aggs = polygonAPI.getAggregates(ticker.get(), multiplier, timeFrame, datetime.toLocalDate().minusDays(1), LocalDate.now(), false).getResults();
 
