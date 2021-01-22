@@ -320,11 +320,10 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
                     requireActivity().runOnUiThread(() -> tickerView.setText("$" + formatter.format(amount)));
                     oneDayAdapter.addVal(Float.parseFloat(currentValue));
                     oneDayAdapter.notifyDataSetChanged();
+                    requireActivity().runOnUiThread(this::setDashboardValues);
                 }
             });
             t3.start();
-
-//            setDashboardValues();
 
         } else {
 

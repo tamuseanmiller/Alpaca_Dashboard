@@ -406,8 +406,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
 
                     float finalAskingPrice1 = finalAskingPrice;
                     runOnUiThread(() -> selectedAdapterStock.addVal(finalAskingPrice1));
-
-//                    runOnUiThread(() -> setStockValues(selectedAdapterStock));
+                    runOnUiThread(() -> setStockValues(selectedAdapterStock));
                 }
             });
             t4.start();
