@@ -206,7 +206,7 @@
             android:clickable="true"
             android:focusable="true"
             android:stateListAnimator="@null"
-            android:text="Buy Premium"
+            android:text="@string/buy_premium"
             android:textColor="?attr/color_positive"
             app:cornerRadius="15dp"
             app:layout_constraintLeft_toLeftOf="parent"

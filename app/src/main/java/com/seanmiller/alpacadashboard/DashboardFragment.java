@@ -345,7 +345,6 @@ public class DashboardFragment extends Fragment implements RecyclerViewAdapterPo
                     tickerView.setText("$" + formatter.format(amount));
                 });
 
-//                setDashboardValues();
             });
             thread.start();
 

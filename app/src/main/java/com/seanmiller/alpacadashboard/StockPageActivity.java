@@ -41,6 +41,7 @@ import net.jacobpeterson.domain.alpaca.calendar.Calendar;
 import net.jacobpeterson.domain.alpaca.marketdata.Bar;
 import net.jacobpeterson.domain.alpaca.order.Order;
 import net.jacobpeterson.domain.polygon.aggregates.Aggregate;
+import net.jacobpeterson.domain.polygon.lastquote.LastQuote;
 import net.jacobpeterson.domain.polygon.lastquote.LastQuoteResponse;
 import net.jacobpeterson.domain.polygon.stockfinancials.StockFinancials;
 import net.jacobpeterson.domain.polygon.stockfinancials.StockFinancialsResponse;
@@ -709,6 +710,7 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                     if (standardDateTime.toLocalTime().compareTo(LocalTime.now()) > 0) {
                         time = calendar.get(calendar.size() - 2).getOpen();
                         lastOpenTimeStart = LocalTime.of(Integer.parseInt(time.substring(0, 2)), Integer.parseInt(time.substring(3)));
+                        lastOpenDate2 = LocalDate.parse(calendar.get(calendar.size() - 2).getDate());
                     }
 
                     try {
@@ -754,9 +756,16 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
                 runOnUiThread(selectedAdapterInitial::smoothGraph);
             }
 
+            // Get Last value, check for weekend
             LastQuoteResponse askingPrice = null;
+            float weekendLast = 0;
             try {
-                askingPrice = polygonAPI.getLastQuote(ticker.get());
+                if (calendarInitial.get(calendarInitial.size() - 1).getDate().equals(LocalDate.now().toString())) {
+                    askingPrice = polygonAPI.getLastQuote(ticker.get());
+                } else {
+                    aggs = polygonAPI.getAggregates(ticker.get(), 1, Timespan.DAY, lastOpenDate, lastOpenDate.plusDays(1), false).getResults();
+                    weekendLast = aggs.get(aggs.size() - 1).getC().floatValue();
+                }
 
             } catch (PolygonAPIRequestException e) {
                 e.printStackTrace();
@@ -765,6 +774,8 @@ public class StockPageActivity extends AppCompatActivity implements RecyclerView
             float finalAskingPrice = 0;
             if (askingPrice != null) {
                 finalAskingPrice = askingPrice.getLast().getAskprice().floatValue();
+            } else if (weekendLast != 0) {
+                finalAskingPrice = weekendLast;
             }
 
             float finalAskingPrice1 = finalAskingPrice;

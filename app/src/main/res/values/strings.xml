@@ -63,4 +63,5 @@
     <string name="price_to_earnings">Price to Earnings</string>
     <string name="revenues">Revenues</string>
     <string name="zero_shares">0 shares owned</string>
+    <string name="buy_premium">Buy Premium</string>
 </resources>
