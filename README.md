@@ -4,6 +4,8 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/tamuseanmiller/alpaca_dashboard/badge)](https://www.codefactor.io/repository/github/tamuseanmiller/alpaca_dashboard)
 [![](https://img.shields.io/endpoint?color=green&logo=google-play&logoColor=green&url=https%3A%2F%2Fplayshields.herokuapp.com%2Fplay%3Fi%3Dcom.seanmiller.alpacadashboard%26l%3DPlay%2520Store%26m%3DDownload)](https://play.google.com/store/apps/details?id=com.seanmiller.alpacadashboard)
 
+![](https://bn1301files.storage.live.com/y4mrcK6TFWRK6S_jjowsOT3cpoBOGHdZnpjjaJOE5iJwdOOw6UauPhGi8ta78EvlAo0bj6uooKhiOKqlahZDfNCGnJMeJ2l7bNDXqIXCD7zt9i6kSYEPA9GinpF41NfE-Bzpk9Od9QHaVziEbJvb1Uy-o9_5My1QTUYfzL5zQbGuY4PgwOkp-z30g2c0xu3noD8?width=192&height=192&cropmode=none)
+
 # Alpaca Dashboard
 
 Free and open source dashboard for all of your trading needs on Alpaca. If you have a funded account and an eligible android phone give it a try and download it on Google Play!
