@@ -1,2 +1,2 @@
-include ':app', 'alpaca-java'
+include ':app'
 rootProject.name = "Alpaca_Dashboard"
