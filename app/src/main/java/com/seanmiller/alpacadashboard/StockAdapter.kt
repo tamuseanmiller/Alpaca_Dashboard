@@ -10,7 +10,7 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.collections.ArrayList
 
-class StockAdapter @RequiresApi(api = Build.VERSION_CODES.O) constructor(private val ticker: AtomicReference<String>, periodLength: Int, periodUnit: PortfolioPeriodUnit?, timeFrame: PortfolioTimeFrame?, context: Context?) : SparkAdapter() {
+class StockAdapter @RequiresApi(api = Build.VERSION_CODES.O) constructor(context: Context?) : SparkAdapter() {
     private val yData: Vector<Float> = Vector()
     private val random: Random = Random()
     private var baseline: Float

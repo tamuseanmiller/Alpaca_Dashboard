@@ -18,7 +18,6 @@ import com.anjlab.android.iab.v3.BillingProcessor
 import com.anjlab.android.iab.v3.BillingProcessor.IBillingHandler
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
-import com.google.common.base.Ticker
 import com.google.common.collect.ImmutableMap
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
@@ -31,8 +30,13 @@ import com.mashape.unirest.http.Unirest
 import com.mashape.unirest.http.exceptions.UnirestException
 import io.cabriole.decorator.LinearMarginDecoration
 import net.jacobpeterson.alpaca.AlpacaAPI
+import net.jacobpeterson.alpaca.enums.api.DataAPIType
+import net.jacobpeterson.alpaca.enums.api.EndpointAPIType
 import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException
 import net.jacobpeterson.domain.alpaca.position.Position
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -126,7 +130,7 @@ class SearchFragment : Fragment(), SearchLayout.OnQueryTextListener, SearchableA
 
     override fun onQueryTextChange(newText: CharSequence): Boolean {
         val thread = Thread {
-            val alpacaAPI = AlpacaAPI(prefs!!.retrieveString("auth_token", "NULL"))
+            val alpacaAPI = AlpacaAPI(null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
 
             // Calls yahoo finance api
             // http://d.yimg.com/aq/autoc?query=y&region=US&lang=en-US&callback=YAHOO.util.ScriptNodeDataSource.callbacks
@@ -171,7 +175,7 @@ class SearchFragment : Fragment(), SearchLayout.OnQueryTextListener, SearchableA
 
     override fun onQueryTextSubmit(charSequence: CharSequence): Boolean {
         val thread = Thread {
-            val alpacaAPI = AlpacaAPI(prefs!!.retrieveString("auth_token", "NULL"))
+            val alpacaAPI = AlpacaAPI(null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
 
             // Calls yahoo finance api
             // http://d.yimg.com/aq/autoc?query=y&region=US&lang=en-US&callback=YAHOO.util.ScriptNodeDataSource.callbacks
@@ -311,7 +315,7 @@ class SearchFragment : Fragment(), SearchLayout.OnQueryTextListener, SearchableA
 
 
                 // Initialize Alpaca's API
-                val alpacaAPI = AlpacaAPI(prefs.retrieveString("auth_token", "NULL"))
+                val alpacaAPI = AlpacaAPI(null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
                 activity!!.runOnUiThread { refreshLayout!!.isRefreshing = true }
                 var positions: ArrayList<Position>? = null
                 try {
@@ -370,17 +374,18 @@ class SearchFragment : Fragment(), SearchLayout.OnQueryTextListener, SearchableA
         private fun getNews(ticker: String): ArrayList<JSONObject?> {
 
             // Call get news endpoint from IEX Cloud
-            var nodeHttpResponse: JSONArray? = null
-            try {
-                nodeHttpResponse = Unirest.get("https://cloud-sse.iexapis.com/stable/stock/" + ticker + "/news/last/10?token=" + Properties.iexApiKey).asJson().body.array
-            } catch (e: UnirestException) {
-                e.printStackTrace()
-            }
+            val nodeHttpResponse: JSONArray?
+            val okHttpClient = OkHttpClient()
+            val request: Request = Request.Builder()
+                    .url("https://cloud-sse.iexapis.com/stable/stock/" + ticker + "/news/last/10?token=" + Properties.iexApiKey)
+                    .build()
+            val response = okHttpClient.newCall(request).execute()
+            nodeHttpResponse = JSONArray(response.body!!.string())
 
             // Add to ArrayList
             val articles = ArrayList<JSONObject?>()
             try {
-                for (i in 0 until nodeHttpResponse!!.length()) {
+                for (i in 0 until nodeHttpResponse.length()) {
                     if (nodeHttpResponse.getJSONObject(i)["lang"].toString() == "en") {
                         articles.add(nodeHttpResponse.getJSONObject(i))
                     }

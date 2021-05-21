@@ -4,27 +4,26 @@ apply plugin: 'kotlin-android'
 //apply plugin: 'com.mikepenz.aboutlibraries.plugin'
 
 android {
+
     compileSdkVersion 30
 
     lintOptions {
         abortOnError false
     }
 
-    android {
-        packagingOptions {
-            exclude 'META-INF/DEPENDENCIES'
-            exclude 'META-INF/LICENSE.md'
-            exclude 'META-INF/LICENSE'
-            exclude 'META-INF/NOTICE.markdown'
-            exclude 'META-INF/NOTICE.md'
-            exclude 'META-INF/LICENSE.txt'
-            exclude 'META-INF/license.txt'
-            exclude 'META-INF/NOTICE'
-            exclude 'META-INF/NOTICE.txt'
-            exclude 'META-INF/notice.txt'
-            exclude 'META-INF/ASL2.0'
-            exclude("META-INF/*.kotlin_module")
-        }
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE.md'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/NOTICE.markdown'
+        exclude 'META-INF/NOTICE.md'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/ASL2.0'
+        exclude("META-INF/*.kotlin_module")
     }
 
     defaultConfig {
@@ -51,34 +50,165 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+//    useLibrary  'org.apache.http.legacy'
 }
 
 dependencies {
 
-    implementation 'com.anjlab.android.iab.v3:library:1.1.0'
+//    implementation 'com.anjlab.android.iab.v3:library:1.1.0'
+//
+////    implementation platform('com.google.firebase:firebase-bom:25.12.0')
+//    implementation 'androidx.appcompat:appcompat:1.3.0'
+//    implementation 'com.google.android.material:material:1.3.0'
+//    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+//    implementation 'androidx.navigation:navigation-fragment-ktx:2.3.5'
+//    implementation 'androidx.navigation:navigation-ui-ktx:2.3.5'
+//    implementation 'androidx.gridlayout:gridlayout:1.0.0'
+////    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+////    implementation 'com.google.firebase:firebase-database:19.3.0'
+//    implementation 'androidx.preference:preference-ktx:1.1.1'
+//    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+//    testImplementation 'junit:junit:4.13.2'
+//    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
+//    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+//
+//    implementation project(":alpaca-java")
+////    implementation project(path: ':alpaca-java')
+////    implementation(group: 'net.jacobpeterson', name: 'alpaca-java', version: '7.2') {
+////        exclude group: 'org.slf4j'
+////        exclude group: 'com.google.guava'
+//////        exclude group: 'com.mashape.unirest'
+////        exclude group: 'com.google.code.gson'
+////        exclude group: 'org.eclipse.jetty.websocket'
+////
+////        exclude group: 'org.junit.jupiter'
+////        exclude group: 'org.mockito'
+////    }
+////
+////    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
+////    // This is a bridge for the Jakarta Commons Logging library used in dependencies to actually use SLF4j instead
+////    implementation group: 'org.slf4j', name: 'jcl-over-slf4j', version: '1.7.30'
+////    implementation group: 'com.google.guava', name: 'guava', version: '24.1-jre'
+////    implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.6'
+////    implementation group: 'org.eclipse.jetty.websocket', name: 'javax-websocket-client-impl', version: '9.4.28.v20200408'
+//
+////    testImplementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
+////    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.7.0'
+////    testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.7.0'
+//
+//    implementation 'io.cabriole:decorator:1.2.0'
+//    implementation 'com.robinhood.ticker:ticker:2.0.2'
+//    implementation 'com.google.android.material:material:1.4.0-beta01'
+//    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
+//    implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
+//    implementation 'com.robinhood.spark:spark:1.2.0'
+//    implementation "androidx.gridlayout:gridlayout:1.0.0"
+//    implementation 'com.getbase:floatingactionbutton:1.10.1'
+//    implementation 'com.allattentionhere:fabulousfilter:0.0.5'
+//    implementation 'com.lapism:search:2.3.0@aar'
+//    implementation "androidx.viewpager2:viewpager2:1.0.0"
+////    implementation 'com.google.firebase:firebase-analytics'
+//    implementation 'com.google.android:flexbox:2.0.1'
+//    implementation 'net.openid:appauth:0.7.1'
+//    implementation 'com.squareup.okhttp3:okhttp:5.0.0-alpha.2'
+////    implementation('org.apache.httpcomponents:httpclient:4.5.6') {
+////        exclude module: "commons-logging:commons-logging:1.2"
+////    }
+//
+//    implementation("com.mashape.unirest:unirest-java:1.4.9") {
+////        transitive = false
+//        exclude module: "commons-logging"
+////        exclude module: "httpclient"
+////        exclude module:  "httpcore"
+////        exclude module:  "httpmime"
+//    }
+//
+////    implementation group: 'cz.msebera.android', name: 'httpclient', version: '4.4.1.1'
+//
+////    implementation('org.apache.httpcomponents:httpcore:4.4.10') {
+////        exclude module:
+////    }
+//
+////    implementation('org.apache.httpcomponents:httpmime:4.5.6') {
+////        exclude module: "commons-logging"
+////        exclude module: "httpclient"
+////        exclude module: "httpcore"
+////    }
+////
+//    implementation("cz.msebera.android:httpclient:4.4.1.2") {
+//        exclude module: "commons-logging"
+////        exclude module: "httpcore"
+//    }
+//
+//    implementation 'com.google.guava:guava:30.1-jre'
+//    implementation 'com.google.code.gson:gson:2.8.6'
+//    implementation "com.mikepenz:aboutlibraries:8.4.3"
+//    implementation 'com.ramotion.foldingcell:folding-cell:1.2.3'
+//    implementation "androidx.browser:browser:1.3.0"
+//    implementation 'com.klinkerapps:article_viewer:0.26.0'
+//    implementation 'com.github.bumptech.glide:glide:4.12.0'
+//    // Skip this if you don't want to use integration libraries or configure Glide.
+//    annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
+//    implementation 'com.github.medyo:android-about-page:1.3.1'
+//
+//    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.4.21'
+//
+////required support lib modules
+////    implementation "androidx.cardview:cardview:2.3.0"
+//    implementation "com.mikepenz:aboutlibraries-core:8.4.3"
+////    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
+//
+//
+////    dependencies {
+////        implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
+////        // This is a bridge for the Jakarta Commons Logging library used in dependencies to actually use SLF4j instead
+////        implementation group: 'org.slf4j', name: 'jcl-over-slf4j', version: '1.7.30'
+////        implementation group: 'com.google.guava', name: 'guava', version: '20.0'
+////        implementation group: 'com.mashape.unirest', name: 'unirest-java', version: '1.4.9'
+////        implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.5'
+////        implementation group: 'org.eclipse.jetty.websocket', name: 'javax-websocket-client-impl', version: '9.4.28.v20200408'
+////
+////        testImplementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
+////        testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.7.0'
+////        testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.7.0'
+////    }
+////
+////    dependencies {
+////        implementation 'com.google.guava:guava:24.1-jre'
+////        implementation "com.google.code.gson:gson:2.8.5"
+////        implementation "commons-lang:commons-lang:20030203.000129"
+////        implementation 'org.apache.logging.log4j:log4j-api:2.13.3'
+////        annotationProcessor 'org.apache.logging.log4j:log4j-core:2.11.1'
+////        implementation "org.eclipse.jetty.websocket:javax-websocket-client-impl:9.4.28.v20200408"
+////        implementation "com.mashape.unirest:unirest-java:1.4.8"
+//////    implementation 'org.apache.httpcomponents:httpcore:4.4.13'
+//////    implementation 'org.apache.httpcomponents:httpclient:4.5.12'
+////
+////        testImplementation 'junit:junit:4.13'
+////    }
+
+    implementation 'com.anjlab.android.iab.v3:library:1.0.44'
 
 //    implementation platform('com.google.firebase:firebase-bom:25.12.0')
-    implementation 'androidx.appcompat:appcompat:1.3.0'
-    implementation 'com.google.android.material:material:1.3.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.3.5'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.3.5'
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'com.google.android.material:material:1.2.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
+    implementation 'androidx.navigation:navigation-fragment:2.3.0'
+    implementation 'androidx.navigation:navigation-ui:2.3.0'
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
 //    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 //    implementation 'com.google.firebase:firebase-database:19.3.0'
-    implementation 'androidx.preference:preference-ktx:1.1.1'
+    implementation 'androidx.preference:preference:1.1.1'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-//    implementation project(path: ':alpaca-java')
-    implementation(group: 'net.jacobpeterson', name: 'alpaca-java', version: '7.2')/* {
-        exclude group: "org.slf4j:slf4j-api: 1.7.30"
-    }*/
-
+    implementation project(path: ':alpaca-java')
+//    implementation "net.jacobpeterson:alpaca-java:6.0.1"
     implementation 'io.cabriole:decorator:1.2.0'
     implementation 'com.robinhood.ticker:ticker:2.0.2'
-    implementation 'com.google.android.material:material:1.4.0-beta01'
+    implementation 'com.google.android.material:material:1.3.0-alpha03'
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
     implementation 'com.robinhood.spark:spark:1.2.0'
@@ -90,26 +220,23 @@ dependencies {
 //    implementation 'com.google.firebase:firebase-analytics'
     implementation 'com.google.android:flexbox:2.0.1'
     implementation 'net.openid:appauth:0.7.1'
-    implementation 'com.squareup.okhttp3:okhttp:5.0.0-alpha.2'
-    compileOnly("com.mashape.unirest:unirest-java:1.4.9") {
-        exclude group: "commons-logging:commons-logging"
+    implementation "com.squareup.okhttp3:okhttp:4.9.0"
+    implementation("com.mashape.unirest:unirest-java:1.4.9") {
+        exclude group: "commons-logging"
     }
-    implementation 'com.google.guava:guava:30.1-jre'
+    implementation "com.google.guava:guava:30.0-jre"
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation "com.mikepenz:aboutlibraries:8.4.3"
     implementation 'com.ramotion.foldingcell:folding-cell:1.2.3'
-    implementation "androidx.browser:browser:1.3.0"
+    implementation "androidx.browser:browser:1.2.0"
     implementation 'com.klinkerapps:article_viewer:0.26.0'
-    implementation 'com.github.bumptech.glide:glide:4.12.0'
+    implementation 'com.github.bumptech.glide:glide:4.11.0'
     // Skip this if you don't want to use integration libraries or configure Glide.
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
     implementation 'com.github.medyo:android-about-page:1.3.1'
-
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.4.21'
 
 //required support lib modules
 //    implementation "androidx.cardview:cardview:2.3.0"
     implementation "com.mikepenz:aboutlibraries-core:8.4.3"
-//    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
 
 }

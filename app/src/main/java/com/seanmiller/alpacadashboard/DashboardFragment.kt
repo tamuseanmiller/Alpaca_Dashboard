@@ -111,7 +111,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
     @RequiresApi(api = Build.VERSION_CODES.O)
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         Utils.startTheme(requireActivity(), SharedPreferencesManager(requireActivity()).retrieveInt("theme", Utils.THEME_DEFAULT))
-        val mView = inflater.inflate(R.layout.dashboard_fragment, null)
+        val mView = inflater.inflate(R.layout.fragment_dashboard, null)
         prefs = SharedPreferencesManager(requireActivity())
 
         // Vary size of spark view by height of screen size
@@ -119,8 +119,6 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
         sparkView = mView.findViewById(R.id.sparkview)
         sparkCard = mView.findViewById(R.id.sparkCard)
         with(sparkCard) {
-            sparkView = mView.findViewById(R.id.sparkview)
-            sparkCard = mView.findViewById(R.id.sparkCard)
             this?.setMinimumHeight((height / 1.75).toInt())
         }
 
@@ -147,7 +145,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
         negColorLight.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId))
 //        val polygonAPI = PolygonAPI(prefs!!.retrieveString("polygon_id", "NULL"))
 
-        val alpacaAPI = AlpacaAPI(prefs!!.retrieveString("auth_token", "NULL"))
+        val alpacaAPI = AlpacaAPI(null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
 
         // Set title
         val totalEquity = mView.findViewById<TextView>(R.id.stockTraded)
@@ -161,118 +159,99 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
         oneYear = mView.findViewById(R.id.oneYear)
         selectedButton = oneDay
 
+        totalEquity.text = "Total Equity"
+
+        // Set button group for timeframe
+        oneDay = mView.findViewById(R.id.oneDay)
+        oneWeek = mView.findViewById(R.id.oneWeek)
+        oneMonth = mView.findViewById(R.id.oneMonth)
+        threeMonth = mView.findViewById(R.id.threeMonths)
+        oneYear = mView.findViewById(R.id.oneYear)
+        selectedButton = oneDay
+
         // The sparkline graph data
-        try {
-            oneDayAdapter = StockAdapter(ticker!!, 1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.ONE_MIN, activity)
-            oneWeekAdapter = StockAdapter(ticker!!, 1, PortfolioPeriodUnit.WEEK, PortfolioTimeFrame.ONE_HOUR, activity)
-            oneMonthAdapter = StockAdapter(ticker!!, 1, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY, activity)
-            threeMonthAdapter = StockAdapter(ticker!!, 3, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY, activity)
-            oneYearAdapter = StockAdapter(ticker!!, 1, PortfolioPeriodUnit.YEAR, PortfolioTimeFrame.ONE_DAY, activity)
-            selectedAdapter = oneDayAdapter
-        } catch (e: AlpacaAPIRequestException) {
-            e.printStackTrace()
-        }
+        oneDayAdapter = StockAdapter(requireActivity())
+        oneWeekAdapter = StockAdapter(requireActivity())
+        oneMonthAdapter = StockAdapter(requireActivity())
+        threeMonthAdapter = StockAdapter(requireActivity())
+        oneYearAdapter = StockAdapter(requireActivity())
+        selectedAdapter = oneDayAdapter
+        sparkView!!.adapter = selectedAdapter
 
-        sparkView?.let {
-            totalEquity.text = "Total Equity"
+        val t4 = Thread {
 
-            // Set button group for timeframe
-            oneDay = mView.findViewById(R.id.oneDay)
-            oneWeek = mView.findViewById(R.id.oneWeek)
-            oneMonth = mView.findViewById(R.id.oneMonth)
-            threeMonth = mView.findViewById(R.id.threeMonths)
-            oneYear = mView.findViewById(R.id.oneYear)
-            selectedButton = oneDay
+            // Initialize all graphs
+            initializeDashboardValues(1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.FIVE_MINUTE, oneDayAdapter)
+            initializeDashboardValues(1, PortfolioPeriodUnit.WEEK, PortfolioTimeFrame.ONE_HOUR, oneWeekAdapter)
+            initializeDashboardValues(1, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY, oneMonthAdapter)
+            initializeDashboardValues(3, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY, threeMonthAdapter)
+            initializeDashboardValues(1, PortfolioPeriodUnit.YEAR, PortfolioTimeFrame.ONE_DAY, oneYearAdapter)
 
-            // The sparkline graph data
-            try {
-                oneDayAdapter = StockAdapter(ticker!!, 1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.ONE_MIN, activity)
-                oneWeekAdapter = StockAdapter(ticker!!, 1, PortfolioPeriodUnit.WEEK, PortfolioTimeFrame.ONE_HOUR, activity)
-                oneMonthAdapter = StockAdapter(ticker!!, 1, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY, activity)
-                threeMonthAdapter = StockAdapter(ticker!!, 3, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY, activity)
-                oneYearAdapter = StockAdapter(ticker!!, 1, PortfolioPeriodUnit.YEAR, PortfolioTimeFrame.ONE_DAY, activity)
-                selectedAdapter = oneDayAdapter
-            } catch (e: AlpacaAPIRequestException) {
-                e.printStackTrace()
-            }
-            sparkView!!.adapter = selectedAdapter
+            // Set colors on click, for toggle buttons
+            requireActivity().theme.resolveAttribute(R.attr.color_positive_light, typedValue, true)
+            posOrNegColorLight = AtomicInteger(ContextCompat.getColor(requireActivity(), typedValue.resourceId))
+            requireActivity().theme.resolveAttribute(R.attr.colorPrimary, typedValue, true)
+            val colorPrimary = ContextCompat.getColor(requireActivity(), typedValue.resourceId)
 
-        }
+            requireActivity()?.runOnUiThread {
 
-        // Initialize all graphs
-        initializeDashboardValues(1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.FIVE_MINUTE, oneDayAdapter)
-        initializeDashboardValues(1, PortfolioPeriodUnit.WEEK, PortfolioTimeFrame.ONE_HOUR, oneWeekAdapter)
-        initializeDashboardValues(1, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY, oneMonthAdapter)
-        initializeDashboardValues(3, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY, threeMonthAdapter)
-        initializeDashboardValues(1, PortfolioPeriodUnit.YEAR, PortfolioTimeFrame.ONE_DAY, oneYearAdapter)
-
-        // Set colors on click, for toggle buttons
-        requireActivity().theme.resolveAttribute(R.attr.color_positive_light, typedValue, true)
-        posOrNegColorLight = AtomicInteger(ContextCompat.getColor(requireActivity(), typedValue.resourceId))
-        requireActivity().theme.resolveAttribute(R.attr.colorPrimary, typedValue, true)
-        val colorPrimary = ContextCompat.getColor(requireActivity(), typedValue.resourceId)
-
-        // One Day Multibutton
-        oneDay?.let {
-            OnClickListener {
-                selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
-                selectedButton = oneDay
-                selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
-                selectedAdapter = oneDayAdapter
-                sparkView.let {
-                    sparkView!!.adapter = selectedAdapter
+                // One Day Multibutton
+                oneDay?.setOnClickListener {
+                    selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
+                    selectedButton = oneDay
+                    selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
+                    selectedAdapter = oneDayAdapter
+                    sparkView.let {
+                        sparkView!!.adapter = selectedAdapter
+                    }
+                    setDashboardValues()
                 }
-                setDashboardValues()
-            }
-        }
 
-        // One Week Multibutton
-        oneWeek?.let {
-            OnClickListener {
-                selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
-                selectedButton = oneWeek
-                selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
-                selectedAdapter = oneWeekAdapter
-                with(sparkView) { this?.setAdapter(selectedAdapter) }
-                setDashboardValues()
-            }
-        }
+                // One Week Multibutton
+                oneWeek?.setOnClickListener {
+                    selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
+                    selectedButton = oneWeek
+                    selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
+                    selectedAdapter = oneWeekAdapter
+                    sparkView?.adapter = selectedAdapter
+                    setDashboardValues()
+                }
 
-        // One Month Multibutton
-        oneMonth?.let {
-            OnClickListener {
-                selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
-                selectedButton = oneMonth
-                selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
-                selectedAdapter = oneMonthAdapter
-                with(sparkView) { this?.setAdapter(selectedAdapter) }
-                setDashboardValues()
-            }
-        }
+                // One Month Multibutton
+                oneMonth?.setOnClickListener {
+                    selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
+                    selectedButton = oneMonth
+                    selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
+                    selectedAdapter = oneMonthAdapter
+                    sparkView?.adapter = selectedAdapter
+                    setDashboardValues()
+                }
 
-        // Three Month Multibutton
-        threeMonth?.let {
-            OnClickListener {
-                selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
-                selectedButton = threeMonth
-                selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
-                selectedAdapter = threeMonthAdapter
-                with(sparkView) { this?.setAdapter(selectedAdapter) }
-                setDashboardValues()
-            }
-        }
+                // Three Month Multibutton
+                threeMonth?.setOnClickListener {
+                    selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
+                    selectedButton = threeMonth
+                    selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
+                    selectedAdapter = threeMonthAdapter
+                    with(sparkView) { this?.setAdapter(selectedAdapter) }
+                    setDashboardValues()
+                }
 
-        // One Year Multibutton
-        oneYear?.let {
-            OnClickListener {
-                selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
-                selectedButton = oneYear
-                selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
-                selectedAdapter = oneYearAdapter
-                with(sparkView) { this?.setAdapter(selectedAdapter) }
-                setDashboardValues()
+
+                // One Year Multibutton
+                oneYear?.setOnClickListener {
+                    selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
+                    selectedButton = oneYear
+                    selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
+                    selectedAdapter = oneYearAdapter
+                    with(sparkView) { this?.setAdapter(selectedAdapter) }
+                    setDashboardValues()
+                }
             }
+
         }
+        t4.start()
+
 
         // Set percent change
         percentChange = mView.findViewById(R.id.percentChange)
@@ -347,11 +326,12 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             }
 
             // Fetch the Recycler View
-            recycleAdapter = RecyclerViewAdapterPositions(activity, stocks!!)
+            recycleAdapter = RecyclerViewAdapterPositions(requireActivity(), stocks!!)
             recycleAdapter!!.setClickListener(this)
             requireActivity().runOnUiThread { recyclerView!!.adapter = recycleAdapter }
         }
         thread.start()
+
         val thread2 = Thread {
 
             // Fetch curent orders
@@ -361,7 +341,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             } catch (e: AlpacaAPIRequestException) {
                 e.printStackTrace()
             }
-            recycleAdapterOrders = RecyclerViewAdapterOrders(activity, orders!!)
+            recycleAdapterOrders = RecyclerViewAdapterOrders(requireActivity(), orders!!)
             requireActivity().runOnUiThread { recyclerOrders?.adapter = recycleAdapterOrders }
         }
         thread2.start()
@@ -370,10 +350,10 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             override fun getNumberOfColumns(): Int = numColumns
         }
 
-        recyclerView?.layoutManager = GridLayoutManager(activity, numColumns)
+        recyclerView?.layoutManager = GridLayoutManager(requireActivity(), numColumns)
         recyclerView?.addItemDecoration(GridMarginDecoration(0, col, GridLayoutManager.VERTICAL, false, null))
 
-        recyclerOrders?.layoutManager = LinearLayoutManager(activity)
+        recyclerOrders?.layoutManager = LinearLayoutManager(requireActivity())
         recyclerOrders?.addItemDecoration(LinearMarginDecoration.create(0, LinearLayoutManager.VERTICAL, false, null))
 
         // Swipe to refresh recycler data
@@ -388,8 +368,8 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
     @RequiresApi(api = Build.VERSION_CODES.O)
     override fun onItemClick(view: View?, position: Int) {
         ticker!!.set(recycleAdapter!!.getItem(position))
-        val intentMain = Intent(activity, StockPageActivity::class.java)
-        requireActivity().startActivity(intentMain, ActivityOptions.makeSceneTransitionAnimation(activity).toBundle())
+        val intentMain = Intent(requireActivity(), StockPageActivity::class.java)
+        requireActivity().startActivity(intentMain, ActivityOptions.makeSceneTransitionAnimation(requireActivity()).toBundle())
     }
 
     override fun switchColors(view: RecyclerViewAdapterPositions.ViewHolder?, pos: Boolean) {
@@ -427,7 +407,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
     fun onRefresh() {
         swipeRefresh!!.isRefreshing = true
         val thread = Thread {
-            val alpacaAPI = AlpacaAPI(prefs!!.retrieveString("auth_token", "NULL"))
+            val alpacaAPI = AlpacaAPI(null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
 
             // Fetch current positions
             var positions = ArrayList<Position>()
@@ -450,7 +430,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
         thread.start()
 
         val thread2 = Thread {
-            val alpacaAPI = AlpacaAPI(prefs!!.retrieveString("auth_token", "NULL"))
+            val alpacaAPI = AlpacaAPI(null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
 
             // Fetch curent orders
             var temp: ArrayList<Order> = ArrayList()
@@ -463,7 +443,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             orders!!.addAll(temp)
 
             // Set Recycle Adapter for orders
-            recycleAdapterOrders = RecyclerViewAdapterOrders(activity, orders!!)
+            recycleAdapterOrders = RecyclerViewAdapterOrders(requireActivity(), orders!!)
             requireActivity().runOnUiThread { recyclerOrders!!.adapter = recycleAdapterOrders }
             swipeRefresh!!.isRefreshing = false
         }
@@ -504,12 +484,12 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             oneWeek!!.setTextColor(color)
             oneMonth!!.setTextColor(color)
             threeMonth!!.setTextColor(color)
-            oneYear!!.setTextColor(color)
-            oneDay!!.rippleColor = ColorStateList.valueOf(color)
-            oneWeek!!.rippleColor = ColorStateList.valueOf(color)
-            oneMonth!!.rippleColor = ColorStateList.valueOf(color)
-            threeMonth!!.rippleColor = ColorStateList.valueOf(color)
-            oneYear!!.rippleColor = ColorStateList.valueOf(color)
+            oneYear?.setTextColor(color)
+            oneDay?.rippleColor = ColorStateList.valueOf(color)
+            oneWeek?.rippleColor = ColorStateList.valueOf(color)
+            oneMonth?.rippleColor = ColorStateList.valueOf(color)
+            threeMonth?.rippleColor = ColorStateList.valueOf(color)
+            oneYear?.rippleColor = ColorStateList.valueOf(color)
             requireActivity().theme.resolveAttribute(R.attr.color_positive_light, typedValue, true)
         } else {
             percentChange!!.text = String.format("-$%.2f (%.2f%%)", abs(profitLoss), percentageChange)
@@ -527,18 +507,18 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             oneMonth!!.setTextColor(color)
             threeMonth!!.setTextColor(color)
             oneYear!!.setTextColor(color)
-            oneDay!!.rippleColor = ColorStateList.valueOf(color)
-            oneWeek!!.rippleColor = ColorStateList.valueOf(color)
-            oneMonth!!.rippleColor = ColorStateList.valueOf(color)
-            threeMonth!!.rippleColor = ColorStateList.valueOf(color)
-            oneYear!!.rippleColor = ColorStateList.valueOf(color)
+            oneDay?.rippleColor = ColorStateList.valueOf(color)
+            oneWeek?.rippleColor = ColorStateList.valueOf(color)
+            oneMonth?.rippleColor = ColorStateList.valueOf(color)
+            threeMonth?.rippleColor = ColorStateList.valueOf(color)
+            oneYear?.rippleColor = ColorStateList.valueOf(color)
             requireActivity().theme.resolveAttribute(R.attr.color_negative_light, typedValue, true)
         }
         posOrNegColorLight!!.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId))
     }
 
     private fun initializeDashboardValues(periodLength: Int, periodUnit: PortfolioPeriodUnit, timeFrame: PortfolioTimeFrame, selectedAdapterInitial: StockAdapter?) {
-        val alpacaAPI = AlpacaAPI(prefs!!.retrieveString("auth_token", "NULL"))
+        val alpacaAPI = AlpacaAPI(null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
 //        val polygonAPI = PolygonAPI(prefs!!.retrieveString("polygon_id", "NULL"))
         val t2 = Thread {
             val historyInitial = AtomicReference(ArrayList<Double>())
@@ -564,46 +544,27 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
 
             // Set baseline values
             // Get market status
-            var marketStatus: Boolean = true
+            var marketStatus = true
             try {
                 marketStatus = alpacaAPI.clock.isOpen
             } catch (e: AlpacaAPIRequestException) {
                 e.printStackTrace()
             }
 
-            // Check if market is open
             var history: ArrayList<Double?>? = null
-            if (marketStatus) {
-                if (PortfolioTimeFrame.FIVE_MINUTE == timeFrame) {
+            if (PortfolioTimeFrame.FIVE_MINUTE == timeFrame) {
 
-                    // Gather old portfolio data
-                    historyInitial.set(ArrayList())
-                    try {
-                        historyInitial.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, lastOpenDate2, false).equity)
-                    } catch (e: AlpacaAPIRequestException) {
-                        e.printStackTrace()
-                    }
-                    val temp = historyInitial.get()[historyInitial.get().size - 3]
-                    selectedAdapterInitial!!.pushFront(temp.toFloat())
-                    selectedAdapterInitial.setBaseline(selectedAdapterInitial.getValue(0))
-                    oneDayAdapter!!.notifyDataSetChanged()
+                // Gather old portfolio data
+                historyInitial.set(ArrayList())
+                try {
+                    historyInitial.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, lastOpenDate2, false).equity)
+                } catch (e: AlpacaAPIRequestException) {
+                    e.printStackTrace()
                 }
-            } else {
-                if (PortfolioTimeFrame.FIVE_MINUTE == timeFrame) {
-                    historyInitial.set(ArrayList())
-                    try {
-                        historyInitial.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, lastOpenDate2, false).equity)
-                    } catch (e: AlpacaAPIRequestException) {
-                        e.printStackTrace()
-                    }
-                    val tempHistory = historyInitial.get()
-                    tempHistory.removeAt(tempHistory.size - 1)
-                    tempHistory.removeAt(tempHistory.size - 1)
-                    val temp = StockAdapter.getLastFilledIndex(tempHistory)
-                    selectedAdapterInitial!!.pushFront(temp?.toFloat()!!)
-                    selectedAdapterInitial.setBaseline(selectedAdapterInitial.getValue(0))
-                    oneDayAdapter!!.notifyDataSetChanged()
-                }
+                val temp = historyInitial.get()[historyInitial.get().size - 3]
+                selectedAdapterInitial!!.pushFront(temp.toFloat())
+                selectedAdapterInitial.setBaseline(selectedAdapterInitial.getValue(0))
+                oneDayAdapter!!.notifyDataSetChanged()
             }
 
             if (periodUnit == PortfolioPeriodUnit.DAY) {

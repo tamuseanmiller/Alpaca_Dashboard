@@ -12,6 +12,8 @@
         android:largeHeap="true"
         android:usesCleartextTraffic="true">
 
+        <uses-library android:name="org.apache.http.legacy" android:required="false"/>
+
         <activity android:name=".LoginActivity" />
         <activity
             android:name=".SplashActivity"

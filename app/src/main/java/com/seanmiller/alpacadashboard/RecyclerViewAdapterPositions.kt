@@ -11,6 +11,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import net.jacobpeterson.alpaca.AlpacaAPI
+import net.jacobpeterson.alpaca.enums.api.DataAPIType
+import net.jacobpeterson.alpaca.enums.api.EndpointAPIType
 import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException
 import net.jacobpeterson.domain.alpaca.position.Position
 
@@ -28,7 +30,7 @@ class RecyclerViewAdapterPositions internal constructor(context: Context?, data:
         val stockName = mData[position]
         holder.stock_name.text = stockName
         val prefs = SharedPreferencesManager(mInflater.context)
-        val alpacaAPI = AlpacaAPI(prefs.retrieveString("auth_token", "NULL"))
+        val alpacaAPI = AlpacaAPI(null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
         val thread = Thread {
 
 //            // Fetch last open day's information
@@ -219,19 +221,19 @@ class RecyclerViewAdapterPositions internal constructor(context: Context?, data:
                 val finalClose = snapshot.prevDailyBar.c.toFloat()
                 val finalCurr = snapshot.latestQuote.ap.toFloat()
                 mainActivity.runOnUiThread {
-                            if (finalCurr != 0f && finalClose != 0f) {
-                                holder.priceOfStock.text = String.format("$%.2f", finalCurr)
-                                val temp = (finalCurr - finalClose) / finalClose * 100
+                    if (finalCurr != 0f && finalClose != 0f) {
+                        holder.priceOfStock.text = String.format("$%.2f", finalCurr)
+                        val temp = (finalCurr - finalClose) / finalClose * 100
 
-                                // Sets the precision and adds to view, then changes color
-                                if (temp >= 0) {
-                                    holder.percentChange.text = String.format("+%.2f%%", temp)
-                                    mClickListener!!.switchColors(holder, true)
-                                } else {
-                                    holder.percentChange.text = String.format("%.2f%%", temp)
-                                    mClickListener!!.switchColors(holder, false)
-                                }
-                            }
+                        // Sets the precision and adds to view, then changes color
+                        if (temp >= 0) {
+                            holder.percentChange.text = String.format("+%.2f%%", temp)
+                            mClickListener!!.switchColors(holder, true)
+                        } else {
+                            holder.percentChange.text = String.format("%.2f%%", temp)
+                            mClickListener!!.switchColors(holder, false)
+                        }
+                    }
                 }
 
                 // Sleep for 1 minute

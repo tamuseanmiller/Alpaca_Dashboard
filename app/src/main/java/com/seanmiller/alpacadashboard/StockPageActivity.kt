@@ -27,6 +27,8 @@ import net.jacobpeterson.abstracts.enums.SortDirection
 import net.jacobpeterson.abstracts.websocket.exception.WebsocketException
 import net.jacobpeterson.alpaca.AlpacaAPI
 import net.jacobpeterson.alpaca.enums.*
+import net.jacobpeterson.alpaca.enums.api.DataAPIType
+import net.jacobpeterson.alpaca.enums.api.EndpointAPIType
 import net.jacobpeterson.alpaca.enums.marketdata.BarsTimeFrame
 import net.jacobpeterson.alpaca.enums.order.OrderStatus
 import net.jacobpeterson.alpaca.enums.portfolio.PortfolioPeriodUnit
@@ -40,6 +42,7 @@ import net.jacobpeterson.domain.alpaca.calendar.Calendar
 import net.jacobpeterson.domain.alpaca.marketdata.historical.bar.Bar
 import net.jacobpeterson.domain.alpaca.marketdata.historical.bar.BarsResponse
 import net.jacobpeterson.domain.alpaca.marketdata.historical.quote.LatestQuoteResponse
+import net.jacobpeterson.domain.alpaca.marketdata.historical.snapshot.Snapshot
 import net.jacobpeterson.domain.alpaca.marketdata.realtime.MarketDataMessage
 import net.jacobpeterson.domain.alpaca.marketdata.realtime.bar.BarMessage
 import net.jacobpeterson.domain.alpaca.marketdata.realtime.quote.QuoteMessage
@@ -173,7 +176,7 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
         sparkCardStock.minimumHeight = (height / 1.75).toInt()
 
         // Initializations
-        val alpacaAPI = AlpacaAPI(prefs!!.retrieveString("auth_token", "NULL"))
+        val alpacaAPI = AlpacaAPI(null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
 
         // Set title
         val totalEquity = findViewById<TextView>(R.id.stockTradedStock)
@@ -225,19 +228,15 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
         selectedButton = oneDayStock
 
         // The sparkline graph data
-        try {
-            oneDayStockAdapter = StockAdapter(DashboardFragment.ticker!!, 1, PortfolioPeriodUnit.DAY, PortfolioTimeFrame.ONE_MIN, this)
-            oneWeekStockAdapter = StockAdapter(DashboardFragment.ticker!!, 1, PortfolioPeriodUnit.WEEK, PortfolioTimeFrame.ONE_HOUR, this)
-            oneMonthStockAdapter = StockAdapter(DashboardFragment.ticker!!, 1, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY, this)
-            threeMonthStockAdapter = StockAdapter(DashboardFragment.ticker!!, 3, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY, this)
-            oneYearStockAdapter = StockAdapter(DashboardFragment.ticker!!, 1, PortfolioPeriodUnit.YEAR, PortfolioTimeFrame.ONE_DAY, this)
-            selectedAdapterStock = oneDayStockAdapter
-        } catch (e: AlpacaAPIRequestException) {
-            e.printStackTrace()
-        }
+        oneDayStockAdapter = StockAdapter(this)
+        oneWeekStockAdapter = StockAdapter(this)
+        oneMonthStockAdapter = StockAdapter(this)
+        threeMonthStockAdapter = StockAdapter(this)
+        oneYearStockAdapter = StockAdapter(this)
+        selectedAdapterStock = oneDayStockAdapter
         sparkViewStock?.adapter = selectedAdapterStock
-        val t2 = Thread {
 
+        val t2 = Thread {
 
             // Initalize all graphs
             try {
@@ -249,64 +248,63 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
             } catch (e: AlpacaAPIRequestException) {
                 e.printStackTrace()
             }
-
-            // Set colors on click, for toggle buttons
-            val typedValue = TypedValue()
-            theme.resolveAttribute(R.attr.color_positive_light, typedValue, true)
-            posOrNegColorLight = AtomicInteger(ContextCompat.getColor(this, typedValue.resourceId))
-            theme.resolveAttribute(R.attr.colorPrimary, typedValue, true)
-            val colorPrimary = ContextCompat.getColor(this, typedValue.resourceId)
-            oneDayStock?.setOnClickListener {
-                selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
-                selectedButton = oneDayStock
-                selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
-                selectedAdapterStock = oneDayStockAdapter
-                sparkViewStock?.adapter = selectedAdapterStock
-                setStockValues(selectedAdapterStock)
-            }
-            oneWeekStock?.setOnClickListener {
-                selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
-                selectedButton = oneWeekStock
-                selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
-                selectedAdapterStock = oneWeekStockAdapter
-                sparkViewStock?.adapter = selectedAdapterStock
-                setStockValues(selectedAdapterStock)
-            }
-            oneMonthStock?.setOnClickListener {
-                selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
-                selectedButton = oneMonthStock
-                selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
-                selectedAdapterStock = oneMonthStockAdapter
-                sparkViewStock?.adapter = selectedAdapterStock
-                setStockValues(selectedAdapterStock)
-            }
-            threeMonthStock?.setOnClickListener {
-                selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
-                selectedButton = threeMonthStock
-                selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
-                selectedAdapterStock = threeMonthStockAdapter
-                sparkViewStock?.adapter = selectedAdapterStock
-                setStockValues(selectedAdapterStock)
-            }
-            oneYearStock?.setOnClickListener {
-                selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
-                selectedButton = oneYearStock
-                selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
-                selectedAdapterStock = oneYearStockAdapter
-                sparkViewStock?.adapter = selectedAdapterStock
-                setStockValues(selectedAdapterStock)
-            }
         }
         t2.start()
+
+        // Set colors on click, for toggle buttons
+        val tV = TypedValue()
+        theme.resolveAttribute(R.attr.color_positive_light, tV, true)
+        posOrNegColorLight = AtomicInteger(ContextCompat.getColor(this, tV.resourceId))
+        theme.resolveAttribute(R.attr.colorPrimary, tV, true)
+        val colorPrimary = ContextCompat.getColor(this, tV.resourceId)
+        oneDayStock?.setOnClickListener {
+            selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
+            selectedButton = oneDayStock
+            selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
+            selectedAdapterStock = oneDayStockAdapter
+            sparkViewStock?.adapter = selectedAdapterStock
+            setStockValues(oneDayStockAdapter)
+        }
+        oneWeekStock?.setOnClickListener {
+            selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
+            selectedButton = oneWeekStock
+            selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
+            selectedAdapterStock = oneWeekStockAdapter
+            sparkViewStock?.adapter = selectedAdapterStock
+            setStockValues(oneWeekStockAdapter)
+        }
+        oneMonthStock?.setOnClickListener {
+            selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
+            selectedButton = oneMonthStock
+            selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
+            selectedAdapterStock = oneMonthStockAdapter
+            sparkViewStock?.adapter = selectedAdapterStock
+            setStockValues(selectedAdapterStock)
+        }
+        threeMonthStock?.setOnClickListener {
+            selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
+            selectedButton = threeMonthStock
+            selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
+            selectedAdapterStock = threeMonthStockAdapter
+            sparkViewStock?.adapter = selectedAdapterStock
+            setStockValues(selectedAdapterStock)
+        }
+        oneYearStock?.setOnClickListener {
+            selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
+            selectedButton = oneYearStock
+            selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
+            selectedAdapterStock = oneYearStockAdapter
+            sparkViewStock?.adapter = selectedAdapterStock
+            setStockValues(selectedAdapterStock)
+        }
 
         val amount = AtomicReference<Double>()
         val formatter = DecimalFormat("#,###.00")
         sparkViewStock?.adapter = selectedAdapterStock
 
         // Scrub for chart
-        val typedValue = TypedValue()
-        theme.resolveAttribute(R.attr.colorPrimaryLight, typedValue, true)
-        val color = AtomicInteger(ContextCompat.getColor(this, typedValue.resourceId))
+        theme.resolveAttribute(R.attr.colorPrimaryLight, tV, true)
+        val color = AtomicInteger(ContextCompat.getColor(this, tV.resourceId))
 
         // Scrub for chart
         sparkViewStock?.sparkAnimator = null
@@ -321,7 +319,7 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
         }
 
         // Get market status
-        var marketStatus: Boolean = true
+        var marketStatus = true
         try {
             marketStatus = alpacaAPI.clock.isOpen
         } catch (e: AlpacaAPIRequestException) {
@@ -356,6 +354,7 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
                 }
             }
             t4.start()
+
         } else {
             val t5 = Thread {
                 var askingPrice = 0f
@@ -367,10 +366,10 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
                 val finalAskingPrice = askingPrice
                 runOnUiThread { selectedAdapterStock!!.addVal(finalAskingPrice) }
             }
-            //            t5.start()
+//            t5.start()
         }
-        val thread = Thread {
 
+        val thread = Thread {
 
             // Fetch current orders
             ordersStock = ArrayList()
@@ -410,7 +409,6 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
             swipeRefreshStock?.isNestedScrollingEnabled = false
         }
         val t1 = Thread {
-
 
             // Set Statistics
             val dividend_yield = findViewById<TextView>(R.id.dividend_yield)
@@ -453,14 +451,14 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
 //                }
 //            }
         }
-        t1.start()
+//        t1.start()
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     fun onRefresh() {
         swipeRefreshStock!!.isRefreshing = true
         val thread2 = Thread {
-            val alpacaAPI = AlpacaAPI(prefs!!.retrieveString("auth_token", "NULL"))
+            val alpacaAPI = AlpacaAPI(null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
 
             // Fetch current orders
             ordersStock = ArrayList()
@@ -499,12 +497,12 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
     fun initializeDashboardValues(datetime: ZonedDateTime, multiplier: Int, timeFrame: BarsTimeFrame?, selectedAdapterInitial: StockAdapter?) {
 
         // Requests bars and adds to graph
-        val alpacaAPI = AlpacaAPI(prefs!!.retrieveString("auth_token", "NULL"))
+        val alpacaAPI = AlpacaAPI(null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
         val thread = Thread {
 
-            val snapshot = alpacaAPI.getSnapshot(DashboardFragment.ticker!!.get())
-            selectedAdapterInitial!!.setBaseline(snapshot.prevDailyBar.c.toFloat())
-            selectedAdapterInitial.pushFront(snapshot.prevDailyBar.c.toFloat())
+//            val snapshot = alpacaAPI.getSnapshot(DashboardFragment.ticker!!.get())
+//            selectedAdapterInitial!!.setBaseline(snapshot.prevDailyBar.c.toFloat())
+//            selectedAdapterInitial.pushFront(snapshot.prevDailyBar.c.toFloat())
 
 
             // Fetch last open day's information
@@ -515,7 +513,7 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
                 e.printStackTrace()
             }
             var lastOpenDate = LocalDate.parse(calendarInitial!![calendarInitial.size - 2].date)
-            var oldTime = LocalTime.of(calendarInitial[calendarInitial.size - 2].open.substring(0, 2).toInt(), calendarInitial[calendarInitial.size - 2].open.substring(3, 5).toInt())
+            val oldTime = LocalTime.of(calendarInitial[calendarInitial.size - 2].open.substring(0, 2).toInt(), calendarInitial[calendarInitial.size - 2].open.substring(3, 5).toInt())
 
             // Switch given open datetime from US/Eastern to System Default
             val zonedDateTime = ZonedDateTime.of(lastOpenDate, oldTime, ZoneId.of("US/Eastern"))
@@ -554,11 +552,11 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
                 e.printStackTrace()
             }
 //            if (marketStatus) {
-                try {
-                    bars = alpacaAPI.getBars(DashboardFragment.ticker!!.get(), datetime, ZonedDateTime.now(),1000, null, timeFrame)
-                } catch (e: AlpacaAPIRequestException) {
-                    e.printStackTrace()
-                }
+            try {
+                bars = alpacaAPI.getBars(DashboardFragment.ticker!!.get(), zonedDateTime, ZonedDateTime.now(), 1000, null, timeFrame)
+            } catch (e: AlpacaAPIRequestException) {
+                e.printStackTrace()
+            }
 //            } else {
 //
 //                // If it's a day adapter and set baseline value
@@ -634,117 +632,123 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
 //                    }
 //                }
 //            }
-                for (bar in bars!!.bars) {
-                    runOnUiThread {
-                        bar.c.let { selectedAdapterInitial.addVal(it.toFloat()) }
-                    }
-
-                    if (datetime.year < ZonedDateTime.now().year) {
-                        runOnUiThread { selectedAdapterInitial!!.smoothGraph() }
-                    }
-
-                    // Get Last value, check for weekend
-                    var askingPrice: LatestQuoteResponse? = null
-                    try {
-                        askingPrice = alpacaAPI.getLatestQuote(DashboardFragment.ticker!!.get())
-                    } catch (e: AlpacaAPIRequestException) {
-                        e.printStackTrace()
-                    }
-                    val finalAskingPrice = askingPrice!!.quote.ap.toFloat()
-                    runOnUiThread { selectedAdapterInitial.addVal(finalAskingPrice) }
-                    runOnUiThread { oneDayStock!!.callOnClick() } // Set here to allow ample time for instantiation
+            for (bar in bars!!.bars) {
+                runOnUiThread {
+                    bar.c.let { selectedAdapterInitial?.addVal(it.toFloat()) }
                 }
             }
-            thread.start()
-        }
 
-        private fun setDashboardColors(pos: Boolean, profitLoss: Float, percentageChange: Float) {
-            val typedValue = TypedValue()
-            theme.resolveAttribute(R.attr.color_positive_light, typedValue, true)
-            val posColorLight = AtomicInteger(ContextCompat.getColor(this, typedValue.resourceId))
-            theme.resolveAttribute(R.attr.color_negative_light, typedValue, true)
-            val negColorLight = AtomicInteger(ContextCompat.getColor(this, typedValue.resourceId))
-            if (pos) {
-                percentChangeStock!!.text = String.format("+$%.2f (%.2f%%)", profitLoss, percentageChange)
-                theme.resolveAttribute(R.attr.color_positive, typedValue, true)
-                val color = ContextCompat.getColor(this, typedValue.resourceId)
-                percentChangeStock!!.setTextColor(color)
-                percentChangeStock!!.backgroundTintList = ColorStateList.valueOf(posColorLight.get())
-                val upArrow = ContextCompat.getDrawable(this, R.drawable.arrow_top_right)
-                upArrow!!.setTint(color)
-                percentChangeStock!!.setCompoundDrawablesWithIntrinsicBounds(null, null, upArrow, null)
-                sparkViewStock!!.lineColor = color
-                selectedButton!!.backgroundTintList = ColorStateList.valueOf(posColorLight.get())
-                oneDayStock!!.setTextColor(color)
-                oneWeekStock!!.setTextColor(color)
-                oneMonthStock!!.setTextColor(color)
-                threeMonthStock!!.setTextColor(color)
-                oneYearStock!!.setTextColor(color)
-                oneDayStock!!.rippleColor = ColorStateList.valueOf(color)
-                oneWeekStock!!.rippleColor = ColorStateList.valueOf(color)
-                oneMonthStock!!.rippleColor = ColorStateList.valueOf(color)
-                threeMonthStock!!.rippleColor = ColorStateList.valueOf(color)
-                oneYearStock!!.rippleColor = ColorStateList.valueOf(color)
-                theme.resolveAttribute(R.attr.color_positive_light, typedValue, true)
-            } else {
-                percentChangeStock!!.text = String.format("-$%.2f (%.2f%%)", Math.abs(profitLoss), percentageChange)
-                theme.resolveAttribute(R.attr.color_negative, typedValue, true)
-                val color = ContextCompat.getColor(this, typedValue.resourceId)
-                percentChangeStock!!.setTextColor(color)
-                percentChangeStock!!.backgroundTintList = ColorStateList.valueOf(negColorLight.get())
-                val downArrow = ContextCompat.getDrawable(this, R.drawable.arrow_bottom_right)
-                downArrow!!.setTint(color)
-                percentChangeStock!!.setCompoundDrawablesWithIntrinsicBounds(null, null, downArrow, null)
-                sparkViewStock!!.lineColor = color
-                selectedButton!!.backgroundTintList = ColorStateList.valueOf(negColorLight.get())
-                oneDayStock!!.setTextColor(color)
-                oneWeekStock!!.setTextColor(color)
-                oneMonthStock!!.setTextColor(color)
-                threeMonthStock!!.setTextColor(color)
-                oneYearStock!!.setTextColor(color)
-                oneDayStock!!.rippleColor = ColorStateList.valueOf(color)
-                oneWeekStock!!.rippleColor = ColorStateList.valueOf(color)
-                oneMonthStock!!.rippleColor = ColorStateList.valueOf(color)
-                threeMonthStock!!.rippleColor = ColorStateList.valueOf(color)
-                oneYearStock!!.rippleColor = ColorStateList.valueOf(color)
-                theme.resolveAttribute(R.attr.color_negative_light, typedValue, true)
+            if (datetime.year < ZonedDateTime.now().year) {
+                runOnUiThread { selectedAdapterInitial?.smoothGraph() }
             }
-            posOrNegColorLight!!.set(ContextCompat.getColor(this, typedValue.resourceId))
-        }
 
-        private fun setStockValues(selectedAdapter: StockAdapter?) {
-
-            // Set Line and Ticker Info
-            val oldVal = selectedAdapter!!.getValue(0)
-            val newVal = selectedAdapter.getValue(selectedAdapter.count - 1)
-            val percentageChange = (newVal - oldVal) / oldVal * 100
-            val profitLoss = selectedAdapter.getValue(selectedAdapter.count - 1) - selectedAdapter.getValue(0)
-            if (selectedAdapterStock!!.count != 0) {
-
-                // If positive
-                if (profitLoss >= 0) {
-                    setDashboardColors(true, profitLoss, percentageChange)
-                } else {
-                    setDashboardColors(false, profitLoss, percentageChange)
+            // Get Last value, check for weekend
+            var askingPrice: Snapshot? = null
+            try {
+                askingPrice = alpacaAPI.getSnapshot(DashboardFragment.ticker!!.get())
+            } catch (e: AlpacaAPIRequestException) {
+                e.printStackTrace()
+            }
+            val finalAskingPrice = askingPrice!!.latestQuote.ap.toFloat()
+            runOnUiThread {
+                selectedAdapterInitial?.addVal(finalAskingPrice)
+                if (selectedAdapterInitial == oneDayStockAdapter) {
+                    selectedAdapterInitial?.pushFront(askingPrice.prevDailyBar.c.toFloat())
+                    selectedAdapterInitial?.setBaseline(askingPrice.prevDailyBar.c.toFloat())
                 }
             }
-            val formatter = DecimalFormat("$#,###.00")
-            val amount = newVal.toString().toDouble()
-            tickerViewStock!!.text = formatter.format(amount)
         }
-
-        override fun onBackPressed() {
-            finish()
-        }
-
-        override fun onItemClick(view: View?, position: Int) {}
-
-        companion object {
-            @JvmField
-            var tickerViewStock: TickerView? = null
-            var oneDayStockAdapter: StockAdapter? = null
-
-            @JvmField
-            var isInFront = false
-        }
+        thread.start()
+        oneDayStock!!.callOnClick() // Set here to allow ample time for instantiation
     }
+
+    private fun setDashboardColors(pos: Boolean, profitLoss: Float, percentageChange: Float) {
+        val tV = TypedValue()
+        theme.resolveAttribute(R.attr.color_positive_light, tV, true)
+        val posColorLight = AtomicInteger(ContextCompat.getColor(this, tV.resourceId))
+        theme.resolveAttribute(R.attr.color_negative_light, tV, true)
+        val negColorLight = AtomicInteger(ContextCompat.getColor(this, tV.resourceId))
+        if (pos) {
+            percentChangeStock!!.text = String.format("+$%.2f (%.2f%%)", profitLoss, percentageChange)
+            theme.resolveAttribute(R.attr.color_positive, tV, true)
+            val color = ContextCompat.getColor(this, tV.resourceId)
+            percentChangeStock!!.setTextColor(color)
+            percentChangeStock!!.backgroundTintList = ColorStateList.valueOf(posColorLight.get())
+            val upArrow = ContextCompat.getDrawable(this, R.drawable.arrow_top_right)
+            upArrow!!.setTint(color)
+            percentChangeStock!!.setCompoundDrawablesWithIntrinsicBounds(null, null, upArrow, null)
+            sparkViewStock!!.lineColor = color
+            selectedButton!!.backgroundTintList = ColorStateList.valueOf(posColorLight.get())
+            oneDayStock!!.setTextColor(color)
+            oneWeekStock!!.setTextColor(color)
+            oneMonthStock!!.setTextColor(color)
+            threeMonthStock!!.setTextColor(color)
+            oneYearStock!!.setTextColor(color)
+            oneDayStock!!.rippleColor = ColorStateList.valueOf(color)
+            oneWeekStock!!.rippleColor = ColorStateList.valueOf(color)
+            oneMonthStock!!.rippleColor = ColorStateList.valueOf(color)
+            threeMonthStock!!.rippleColor = ColorStateList.valueOf(color)
+            oneYearStock!!.rippleColor = ColorStateList.valueOf(color)
+            theme.resolveAttribute(R.attr.color_positive_light, tV, true)
+        } else {
+            percentChangeStock!!.text = String.format("-$%.2f (%.2f%%)", Math.abs(profitLoss), percentageChange)
+            theme.resolveAttribute(R.attr.color_negative, tV, true)
+            val color = ContextCompat.getColor(this, tV.resourceId)
+            percentChangeStock!!.setTextColor(color)
+            percentChangeStock!!.backgroundTintList = ColorStateList.valueOf(negColorLight.get())
+            val downArrow = ContextCompat.getDrawable(this, R.drawable.arrow_bottom_right)
+            downArrow!!.setTint(color)
+            percentChangeStock!!.setCompoundDrawablesWithIntrinsicBounds(null, null, downArrow, null)
+            sparkViewStock!!.lineColor = color
+            selectedButton!!.backgroundTintList = ColorStateList.valueOf(negColorLight.get())
+            oneDayStock!!.setTextColor(color)
+            oneWeekStock!!.setTextColor(color)
+            oneMonthStock!!.setTextColor(color)
+            threeMonthStock!!.setTextColor(color)
+            oneYearStock!!.setTextColor(color)
+            oneDayStock!!.rippleColor = ColorStateList.valueOf(color)
+            oneWeekStock!!.rippleColor = ColorStateList.valueOf(color)
+            oneMonthStock!!.rippleColor = ColorStateList.valueOf(color)
+            threeMonthStock!!.rippleColor = ColorStateList.valueOf(color)
+            oneYearStock!!.rippleColor = ColorStateList.valueOf(color)
+            theme.resolveAttribute(R.attr.color_negative_light, tV, true)
+        }
+        posOrNegColorLight!!.set(ContextCompat.getColor(this, tV.resourceId))
+    }
+
+    private fun setStockValues(selectedAdapter: StockAdapter?) {
+
+        // Set Line and Ticker Info
+        val oldVal = selectedAdapter!!.getValue(0)
+        val newVal = selectedAdapter.getValue(selectedAdapter.count - 1)
+        val percentageChange = (newVal - oldVal) / oldVal * 100
+        val profitLoss = selectedAdapter.getValue(selectedAdapter.count - 1) - selectedAdapter.getValue(0)
+        if (selectedAdapterStock!!.count != 0) {
+
+            // If positive
+            if (profitLoss >= 0) {
+                setDashboardColors(true, profitLoss, percentageChange)
+            } else {
+                setDashboardColors(false, profitLoss, percentageChange)
+            }
+        }
+        val formatter = DecimalFormat("$#,###.00")
+        val amount = newVal.toString().toDouble()
+        tickerViewStock!!.text = formatter.format(amount)
+    }
+
+    override fun onBackPressed() {
+        finish()
+    }
+
+    override fun onItemClick(view: View?, position: Int) {}
+
+    companion object {
+        @JvmField
+        var tickerViewStock: TickerView? = null
+        var oneDayStockAdapter: StockAdapter? = null
+
+        @JvmField
+        var isInFront = false
+    }
+}

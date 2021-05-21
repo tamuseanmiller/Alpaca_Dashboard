@@ -19,6 +19,8 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import net.jacobpeterson.alpaca.AlpacaAPI
 import net.jacobpeterson.alpaca.enums.account.AccountStatus
+import net.jacobpeterson.alpaca.enums.api.DataAPIType
+import net.jacobpeterson.alpaca.enums.api.EndpointAPIType
 import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException
 import net.jacobpeterson.domain.alpaca.account.Account
 import net.openid.appauth.*
@@ -62,9 +64,6 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         prefs = SharedPreferencesManager(this)
         Utils.startTheme(this@MainActivity, prefs!!.retrieveInt("theme", Utils.THEME_DEFAULT))
 
-        // Set up billing client
-        bp = BillingProcessor(this, Properties.playLicenseKey, this)
-        bp!!.initialize()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         var check = false
@@ -72,8 +71,13 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         // Check to see if pending OAuth
         if (prefs!!.retrieveString("auth_token", "NULL") == "NULL" || prefs!!.retrieveString("polygon_id", "NULL") == "NULL") {
             finishAuthentication()
+            if (prefs!!.retrieveString("auth_token", "NULL") == "NULL") return
             check = true
         }
+
+        // Set up billing client
+        bp = BillingProcessor(this, Properties.playLicenseKey, this)
+        bp!!.initialize()
 
         // Write a message to the database
 //        FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -158,7 +162,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
     }
 
     // Finish authentication method
-    fun finishAuthentication() {
+    private fun finishAuthentication() {
 
         // Reinitialize the service configuration for continued use
         val serviceConfig = AuthorizationServiceConfiguration(
@@ -209,13 +213,12 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
                 // Exchange succeeded
                 println("Authentication Done")
                 authState.updateAfterTokenResponse(tokenResponse, ex1)
-                prefs!!.storeString("auth_token", tokenResponse.accessToken)
                 println(tokenResponse.accessToken)
                 authenticationResponse.set(tokenResponse.accessToken)
 
                 // Fetch account using alpaca-java
                 var account: Account? = null
-                val alpacaAPI = AlpacaAPI(tokenResponse.accessToken)
+                val alpacaAPI = AlpacaAPI(null, null, tokenResponse.accessToken, EndpointAPIType.PAPER, DataAPIType.IEX)
                 try {
                     account = alpacaAPI.account
                 } catch (e: AlpacaAPIRequestException) {
@@ -224,6 +227,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
                 // Check for if account is funded
                 if (account != null && account.portfolioValue.toFloat() > 0 && account.status.equals(AccountStatus.ACTIVE)) {
+                    prefs!!.storeString("auth_token", tokenResponse.accessToken)
 
                     // Fetch Polygon Id and add to SharedPreferences
                     try {
@@ -276,7 +280,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
             }
 
             // Start main thread, after authorization is complete
-            t1!!.start()
+//            t1!!.start()
         }
     }
 

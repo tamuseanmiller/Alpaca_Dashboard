@@ -10,6 +10,8 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import net.jacobpeterson.alpaca.AlpacaAPI
+import net.jacobpeterson.alpaca.enums.api.DataAPIType
+import net.jacobpeterson.alpaca.enums.api.EndpointAPIType
 import net.jacobpeterson.alpaca.enums.order.OrderSide
 import net.jacobpeterson.alpaca.enums.order.OrderTimeInForce
 import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException
@@ -53,7 +55,7 @@ class PlaceOrderFragment : AAH_FabulousFragment() {
         val qty: TextInputEditText = contentView.findViewById(R.id.quantityTextField)
 
         // Place buy order on button click
-        val alpacaAPI = AlpacaAPI(SharedPreferencesManager(requireActivity()).retrieveString("auth_token", "NULL"))
+        val alpacaAPI = AlpacaAPI(null, null, SharedPreferencesManager(requireActivity())!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
         val buy: MaterialButton = contentView.findViewById(R.id.btn_close)
         buy.setOnClickListener {
             if (qty.text.toString().isEmpty()) {

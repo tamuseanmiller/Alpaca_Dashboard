@@ -10,6 +10,8 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import net.jacobpeterson.abstracts.enums.SortDirection
 import net.jacobpeterson.alpaca.AlpacaAPI
+import net.jacobpeterson.alpaca.enums.api.DataAPIType
+import net.jacobpeterson.alpaca.enums.api.EndpointAPIType
 import net.jacobpeterson.alpaca.enums.order.OrderSide
 import net.jacobpeterson.alpaca.enums.order.OrderStatus
 import net.jacobpeterson.alpaca.enums.order.OrderTimeInForce
@@ -62,7 +64,7 @@ class EmergencyFragment : Fragment() {
         val mView = inflater.inflate(R.layout.fragment_emergency, container, false)
         val liquidate: MaterialButton = mView.findViewById(R.id.liquidateButton)
         val cancel: MaterialButton = mView.findViewById(R.id.cancelButton)
-        val alpacaAPI = AlpacaAPI(SharedPreferencesManager(requireActivity()).retrieveString("auth_token", "NULL"))
+        val alpacaAPI = AlpacaAPI(null, null, SharedPreferencesManager(requireActivity())!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
         liquidate.setOnClickListener {
             var positions: ArrayList<Position>? = null
             try {
