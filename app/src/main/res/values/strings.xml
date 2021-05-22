@@ -64,4 +64,5 @@
     <string name="revenues">Revenues</string>
     <string name="zero_shares">0 shares owned</string>
     <string name="buy_premium">Buy Premium</string>
+    <string name="watchlist">Watchlist</string>
 </resources>

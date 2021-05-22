@@ -16,7 +16,7 @@ import net.jacobpeterson.alpaca.enums.api.EndpointAPIType
 import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException
 import net.jacobpeterson.domain.alpaca.position.Position
 
-class RecyclerViewAdapterPositions internal constructor(context: Context?, data: List<String>) : RecyclerView.Adapter<RecyclerViewAdapterPositions.ViewHolder>() {
+class RecyclerViewAdapterWatchlist internal constructor(context: Context?, data: List<String>) : RecyclerView.Adapter<RecyclerViewAdapterWatchlist.ViewHolder>() {
     private val mInflater: LayoutInflater = LayoutInflater.from(context)
     private var mClickListener: ItemClickListener? = null
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -27,16 +27,11 @@ class RecyclerViewAdapterPositions internal constructor(context: Context?, data:
     @RequiresApi(api = Build.VERSION_CODES.O)
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
-        if (position > mData.size - 1) {
-            println("Here")
-        }
-
         val mainActivity = MainActivity()
         val stockName = mData[position]
         holder.stock_name.text = stockName
         val prefs = SharedPreferencesManager(mInflater.context)
         val alpacaAPI = AlpacaAPI(null, null, prefs.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
-
         val thread = Thread {
 
             // Get Amount of shares owned
@@ -50,10 +45,14 @@ class RecyclerViewAdapterPositions internal constructor(context: Context?, data:
             // Set shares owned
             val finalShrOwned = shrOwned
             mainActivity.runOnUiThread {
-                if (finalShrOwned!!.qty != null) {
-                    if (finalShrOwned.qty == "1") {
+                when (finalShrOwned!!.qty) {
+                    "1" -> {
                         holder.sharesOwned.text = String.format("%s share owned", finalShrOwned.qty)
-                    } else {
+                    }
+                    null -> {
+                        holder.sharesOwned.text = String.format("%s shares owned", 0)
+                    }
+                    else -> {
                         holder.sharesOwned.text = String.format("%s shares owned", finalShrOwned.qty)
                     }
                 }
@@ -275,7 +274,7 @@ class RecyclerViewAdapterPositions internal constructor(context: Context?, data:
         var stockCard: MaterialCardView = itemView.findViewById(R.id.positionCard)
         override fun onClick(view: View) {
             if (mClickListener != null) {
-                mClickListener!!.onItemClick(view, adapterPosition)
+                mClickListener!!.onItemClickWatch(view, adapterPosition)
             }
         }
 
@@ -292,13 +291,13 @@ class RecyclerViewAdapterPositions internal constructor(context: Context?, data:
     }
 
     // allows clicks events to be caught
-    fun setClickListener(itemClickListener: ItemClickListener?) {
+    fun setClickListener(itemClickListener: DashboardFragment) {
         mClickListener = itemClickListener
     }
 
     // parent activity will implement this method to respond to click events
     interface ItemClickListener {
-        fun onItemClick(view: View?, position: Int)
+        fun onItemClickWatch(view: View?, position: Int)
         fun switchColors(view: ViewHolder?, pos: Boolean)
     }
 

@@ -93,7 +93,11 @@ public abstract class AbstractRequest {
         LOGGER.debug("HEAD URL {}", url);
 
         OkHttpClient okHttpClient = new OkHttpClient();
-        Request request = new Request.Builder().url(url).head().build();
+        Request request = new Request.Builder()
+                .url(url)
+                .addHeader("Authorization", headers.get("Authorization"))
+                .head()
+                .build();
         Response response = okHttpClient.newCall(request).execute();
 
         // GetRequest request = Unirest.head(url);
@@ -121,16 +125,17 @@ public abstract class AbstractRequest {
 
         LOGGER.debug("POST URL: {}", url);
 
-        RequestBody requestBody = RequestBody.create(abstractRequestBuilder.buildBody(), MediaType.parse("application/json"));
+        RequestBody requestBody = RequestBody.create(abstractRequestBuilder.buildBody().getBytes());
         OkHttpClient okHttpClient = new OkHttpClient();
         Request request = new Request.Builder()
                 .url(url)
+                .addHeader("Authorization", headers.get("Authorization"))
                 .post(requestBody)
                 .build();
         Response response = okHttpClient.newCall(request).execute();
 
         if (!headers.isEmpty()) {
-            // request.headers(headers);
+            // request.headers(headers);a
 
             LOGGER.debug("POST Headers: {}", headers);
         }
@@ -164,6 +169,7 @@ public abstract class AbstractRequest {
         OkHttpClient okHttpClient = new OkHttpClient();
         Request request = new Request.Builder()
                 .url(url)
+                .addHeader("Authorization", headers.get("Authorization"))
                 .post(requestBody)
                 .build();
         Response response = okHttpClient.newCall(request).execute();
@@ -202,6 +208,7 @@ public abstract class AbstractRequest {
         OkHttpClient okHttpClient = new OkHttpClient();
         Request request = new Request.Builder()
                 .url(url)
+                .addHeader("Authorization", headers.get("Authorization"))
                 .put(requestBody)
                 .build();
         Response response = okHttpClient.newCall(request).execute();
@@ -238,7 +245,11 @@ public abstract class AbstractRequest {
         LOGGER.debug("DELETE URL {}", url);
 
         OkHttpClient okHttpClient = new OkHttpClient();
-        Request request = new Request.Builder().url(url).delete().build();
+        Request request = new Request.Builder()
+                .url(url)
+                .addHeader("Authorization", headers.get("Authorization"))
+                .delete()
+                .build();
         Response response = okHttpClient.newCall(request).execute();
         // HttpRequestWithBody request = Unirest.delete(url);
 

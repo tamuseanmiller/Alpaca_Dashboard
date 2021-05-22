@@ -53,12 +53,14 @@ import kotlin.math.abs
 import io.cabriole.decorator.ColumnProvider as ColumnProvider1
 
 
-class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickListener, OnClickListener {
+class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickListener, RecyclerViewAdapterWatchlist.ItemClickListener, OnClickListener {
     private var sparkView: CustomSparkView? = null
     private var selectedAdapter: StockAdapter? = null
-    private var recyclerView: RecyclerView? = null
+    private var recyclerViewPositions: RecyclerView? = null
+    private var recyclerViewWatchlist: RecyclerView? = null
+    private var recyclerViewAdapterWatchlist: RecyclerViewAdapterWatchlist? = null
     private var recyclerOrders: RecyclerView? = null
-    private var recycleAdapter: RecyclerViewAdapterPositions? = null
+    private var recycleAdapterPositions: RecyclerViewAdapterPositions? = null
     private var recycleAdapterOrders: RecyclerViewAdapterOrders? = null
     private var percentChange: MaterialButton? = null
     private var swipeRefresh: SwipeRefreshLayout? = null
@@ -76,6 +78,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
     private var oneYearAdapter: StockAdapter? = null
     private var prefs: SharedPreferencesManager? = null
     private var sparkCard: MaterialCardView? = null
+    private var watchlist: ArrayList<String>? = null
     private fun fetchHeight(): Int {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val windowMetrics = requireActivity().windowManager.currentWindowMetrics
@@ -98,10 +101,10 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
         val col = object : ColumnProvider1 {
             override fun getNumberOfColumns(): Int = numColumns
         }
-        recyclerView!!.layoutManager = GridLayoutManager(context, numColumns)
-        recyclerView!!.addItemDecoration(GridMarginDecoration(0, col,
+        recyclerViewPositions!!.layoutManager = GridLayoutManager(context, numColumns)
+        recyclerViewPositions!!.addItemDecoration(GridMarginDecoration(0, col,
                 GridLayoutManager.VERTICAL, false, null))
-        recyclerView!!.adapter = recycleAdapter
+        recyclerViewPositions!!.adapter = recycleAdapterPositions
 
         // Vary size of spark view by height of screen size
         val height = fetchHeight()
@@ -186,6 +189,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             initializeDashboardValues(1, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY, oneMonthAdapter)
             initializeDashboardValues(3, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY, threeMonthAdapter)
             initializeDashboardValues(1, PortfolioPeriodUnit.YEAR, PortfolioTimeFrame.ONE_DAY, oneYearAdapter)
+        }
 
             // Set colors on click, for toggle buttons
             requireActivity().theme.resolveAttribute(R.attr.color_positive_light, typedValue, true)
@@ -193,7 +197,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             requireActivity().theme.resolveAttribute(R.attr.colorPrimary, typedValue, true)
             val colorPrimary = ContextCompat.getColor(requireActivity(), typedValue.resourceId)
 
-            requireActivity()?.runOnUiThread {
+//            requireActivity().runOnUiThread {
 
                 // One Day Multibutton
                 oneDay?.setOnClickListener {
@@ -247,9 +251,9 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
                     with(sparkView) { this?.setAdapter(selectedAdapter) }
                     setDashboardValues()
                 }
-            }
+//            }
 
-        }
+//        }
         t4.start()
 
 
@@ -307,8 +311,9 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             }
         }
         t3.start()
-        recyclerView = mView.findViewById(R.id.recyclerStocks)
+        recyclerViewPositions = mView.findViewById(R.id.recyclerStocks)
         recyclerOrders = mView.findViewById(R.id.orders)
+        recyclerViewWatchlist = mView.findViewById(R.id.recyclerWatchlist)
 
         // Threads for getting recycler data
         val thread = Thread {
@@ -326,21 +331,56 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             }
 
             // Fetch the Recycler View
-            recycleAdapter = RecyclerViewAdapterPositions(requireActivity(), stocks!!)
-            recycleAdapter!!.setClickListener(this)
-            requireActivity().runOnUiThread { recyclerView!!.adapter = recycleAdapter }
+            recycleAdapterPositions = RecyclerViewAdapterPositions(requireActivity(), stocks!!)
+            recycleAdapterPositions!!.setClickListener(this)
+            requireActivity().runOnUiThread { recyclerViewPositions!!.adapter = recycleAdapterPositions }
         }
         thread.start()
+
+        val thread3 = Thread {
+
+            // Fetch watchlist
+            watchlist = ArrayList()
+            val tempList: ArrayList<String> = ArrayList()
+
+            try {
+                for (i in alpacaAPI.watchlists) {
+                    for (j in alpacaAPI.getWatchlist(i.id).assets) {
+                        if (!tempList.contains(j.symbol))
+                            tempList.add(j.symbol)
+                    }
+                }
+            } catch (e: AlpacaAPIRequestException) {
+                e.printStackTrace()
+            }
+
+            if (tempList.isEmpty()) {
+                alpacaAPI.addWatchlistAsset("b0747289-92e4-404b-9558-7b682cb36de1", "TSLA")
+                alpacaAPI.createWatchlist("alpaca_dashboard", "AAPL")
+
+            } else {
+                watchlist?.clear()
+                watchlist?.addAll(tempList)
+                recyclerViewAdapterWatchlist = RecyclerViewAdapterWatchlist(requireActivity(), watchlist!!)
+                recyclerViewAdapterWatchlist?.setClickListener(this)
+                requireActivity().runOnUiThread {
+                    recyclerViewWatchlist?.adapter = recyclerViewAdapterWatchlist
+                }
+            }
+        }
+        thread3.start()
 
         val thread2 = Thread {
 
             // Fetch curent orders
             orders = ArrayList()
+            var tempOrders: ArrayList<Order> = ArrayList()
             try {
-                orders = alpacaAPI.getOrders(OrderStatus.CLOSED, 10, null, ZonedDateTime.now().plusDays(1), SortDirection.DESCENDING, false, null) as ArrayList<Order>?
+                tempOrders = (alpacaAPI.getOrders(OrderStatus.CLOSED, 10, null, ZonedDateTime.now().plusDays(1), SortDirection.DESCENDING, false, null) as ArrayList<Order>?)!!
             } catch (e: AlpacaAPIRequestException) {
                 e.printStackTrace()
             }
+            orders?.addAll(tempOrders)
             recycleAdapterOrders = RecyclerViewAdapterOrders(requireActivity(), orders!!)
             requireActivity().runOnUiThread { recyclerOrders?.adapter = recycleAdapterOrders }
         }
@@ -349,12 +389,18 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
         val col = object : ColumnProvider1 {
             override fun getNumberOfColumns(): Int = numColumns
         }
+        val col2 = object : ColumnProvider1 {
+            override fun getNumberOfColumns(): Int = numColumns
+        }
 
-        recyclerView?.layoutManager = GridLayoutManager(requireActivity(), numColumns)
-        recyclerView?.addItemDecoration(GridMarginDecoration(0, col, GridLayoutManager.VERTICAL, false, null))
+        recyclerViewPositions?.layoutManager = GridLayoutManager(requireActivity(), numColumns)
+        recyclerViewPositions?.addItemDecoration(GridMarginDecoration(0, col, GridLayoutManager.VERTICAL, false, null))
 
         recyclerOrders?.layoutManager = LinearLayoutManager(requireActivity())
         recyclerOrders?.addItemDecoration(LinearMarginDecoration.create(0, LinearLayoutManager.VERTICAL, false, null))
+
+        recyclerViewWatchlist?.layoutManager = GridLayoutManager(requireActivity(), numColumns)
+        recyclerViewWatchlist?.addItemDecoration(GridMarginDecoration(0, col2, GridLayoutManager.VERTICAL, false, null))
 
         // Swipe to refresh recycler data
         swipeRefresh?.setOnRefreshListener {
@@ -365,11 +411,48 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
     }
 
     // If stock is tapped, switch to that stock
-    @RequiresApi(api = Build.VERSION_CODES.O)
     override fun onItemClick(view: View?, position: Int) {
-        ticker!!.set(recycleAdapter!!.getItem(position))
+        ticker!!.set(recycleAdapterPositions!!.getItem(position))
         val intentMain = Intent(requireActivity(), StockPageActivity::class.java)
         requireActivity().startActivity(intentMain, ActivityOptions.makeSceneTransitionAnimation(requireActivity()).toBundle())
+
+    }
+
+    override fun onItemClickWatch(view: View?, position: Int) {
+        ticker!!.set(recyclerViewAdapterWatchlist!!.getItem(position))
+        val intentMain = Intent(requireActivity(), StockPageActivity::class.java)
+        requireActivity().startActivity(intentMain, ActivityOptions.makeSceneTransitionAnimation(requireActivity()).toBundle())
+    }
+
+    override fun switchColors(view: RecyclerViewAdapterWatchlist.ViewHolder?, pos: Boolean) {
+        val typedValue = TypedValue()
+        if (isAdded) {
+            requireActivity().theme.resolveAttribute(R.attr.color_positive, typedValue, true)
+            val posColor = ContextCompat.getColor(requireActivity(), typedValue.resourceId)
+            requireActivity().theme.resolveAttribute(R.attr.color_negative, typedValue, true)
+            val negColor = ContextCompat.getColor(requireActivity(), typedValue.resourceId)
+            requireActivity().theme.resolveAttribute(R.attr.color_positive_light, typedValue, true)
+            val posColorLight = ContextCompat.getColor(requireActivity(), typedValue.resourceId)
+            requireActivity().theme.resolveAttribute(R.attr.color_negative_light, typedValue, true)
+            val negColorLight = ContextCompat.getColor(requireActivity(), typedValue.resourceId)
+            if (pos) {
+                view?.percentChange?.setTextColor(posColor)
+                view?.percentChange?.backgroundTintList = ColorStateList.valueOf(posColorLight)
+                view?.percentChange?.rippleColor = ColorStateList.valueOf(posColor)
+                view?.stockCard?.rippleColor = ColorStateList.valueOf(posColor)
+                val downArrow = ContextCompat.getDrawable(requireActivity(), R.drawable.arrow_top_right)
+                downArrow!!.setTint(posColor)
+                view?.percentChange?.setCompoundDrawablesWithIntrinsicBounds(downArrow, null, null, null)
+            } else {
+                view?.percentChange?.setTextColor(negColor)
+                view?.percentChange?.backgroundTintList = ColorStateList.valueOf(negColorLight)
+                view?.percentChange?.rippleColor = ColorStateList.valueOf(negColor)
+                view?.stockCard?.rippleColor = ColorStateList.valueOf(negColor)
+                val downArrow = ContextCompat.getDrawable(requireActivity(), R.drawable.arrow_bottom_right)
+                downArrow!!.setTint(negColor)
+                view?.percentChange?.setCompoundDrawablesWithIntrinsicBounds(downArrow, null, null, null)
+            }
+        }
     }
 
     override fun switchColors(view: RecyclerViewAdapterPositions.ViewHolder?, pos: Boolean) {
@@ -403,8 +486,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    fun onRefresh() {
+    private fun onRefresh() {
         swipeRefresh!!.isRefreshing = true
         val thread = Thread {
             val alpacaAPI = AlpacaAPI(null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
@@ -425,7 +507,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             temp.clear()
 
             // Set Recycle Adapter for positions
-            requireActivity().runOnUiThread { recycleAdapter!!.notifyDataSetChanged() }
+            requireActivity().runOnUiThread { recycleAdapterPositions?.notifyDataSetChanged() }
         }
         thread.start()
 
@@ -433,21 +515,51 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             val alpacaAPI = AlpacaAPI(null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
 
             // Fetch curent orders
+            orders!!.clear()
             var temp: ArrayList<Order> = ArrayList()
             try {
                 temp = alpacaAPI.getOrders(OrderStatus.CLOSED, 10, null, ZonedDateTime.now().plusDays(1), SortDirection.DESCENDING, false, null) as ArrayList<Order>
             } catch (e: AlpacaAPIRequestException) {
                 e.printStackTrace()
             }
-            orders!!.clear()
             orders!!.addAll(temp)
+            temp.clear()
 
             // Set Recycle Adapter for orders
             recycleAdapterOrders = RecyclerViewAdapterOrders(requireActivity(), orders!!)
-            requireActivity().runOnUiThread { recyclerOrders!!.adapter = recycleAdapterOrders }
-            swipeRefresh!!.isRefreshing = false
+            requireActivity().runOnUiThread {
+//                recycleAdapterOrders?.notifyDataSetChanged()
+                recyclerOrders?.adapter = recycleAdapterOrders
+            }
         }
         thread2.start()
+
+        val thread3 = Thread {
+            val alpacaAPI = AlpacaAPI(null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
+
+            // Fetch watchlist
+            watchlist?.clear()
+            val tempList: ArrayList<String> = ArrayList()
+
+            try {
+                for (i in alpacaAPI.watchlists) {
+                    for (j in alpacaAPI.getWatchlist(i.id).assets) {
+                        if (!tempList.contains(j.symbol))
+                            tempList.add(j.symbol)
+                    }
+                }
+            } catch (e: AlpacaAPIRequestException) {
+                e.printStackTrace()
+            }
+
+            // Set Recycle Adapter for positions
+//            recyclerViewAdapterWatchlist = RecyclerViewAdapterWatchlist(requireActivity(), watchlist!!)
+            watchlist?.addAll(tempList)
+            tempList.clear()
+            requireActivity().runOnUiThread { recyclerViewAdapterWatchlist?.notifyDataSetChanged() }
+            swipeRefresh!!.isRefreshing = false
+        }
+        thread3.start()
     }
 
     // Theme change on click

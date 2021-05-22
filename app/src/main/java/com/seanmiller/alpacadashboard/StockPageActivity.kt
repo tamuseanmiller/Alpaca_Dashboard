@@ -8,6 +8,7 @@ import android.util.TypedValue
 import android.view.View
 import android.view.WindowInsets
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -193,17 +194,62 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
             dialogFrag.show(supportFragmentManager, dialogFrag.tag)
         }
 
+        // Watchlist, set below
+        val addWatchlist = findViewById<ImageButton>(R.id.addWatchlist)
+
         val t3 = Thread {
+
+            // Check for watchlist
+            var inWatchlist = false
+            var watchListId: String? = null
+            for (i in alpacaAPI.watchlists) {
+                watchListId = i.id
+                for (j in alpacaAPI.getWatchlist(i.id).assets) {
+                    if (j.symbol == DashboardFragment.ticker!!.get()) {
+                        val offList = ContextCompat.getDrawable(this, R.drawable.eye_minus)
+                        runOnUiThread { addWatchlist.setImageDrawable(offList) }
+                        inWatchlist = true
+                    }
+                }
+            }
+            if (!inWatchlist) {
+                val onList = ContextCompat.getDrawable(this, R.drawable.eye_plus)
+                runOnUiThread { addWatchlist.setImageDrawable(onList) }
+            }
+            addWatchlist.setOnClickListener {
+                if (inWatchlist) {
+                    val offList = ContextCompat.getDrawable(this, R.drawable.eye_plus)
+                    runOnUiThread { addWatchlist.setImageDrawable(offList) }
+                    alpacaAPI.removeSymbolFromWatchlist(watchListId, DashboardFragment.ticker!!.get())
+
+                } else {
+                    val onList = ContextCompat.getDrawable(this, R.drawable.eye_minus)
+                    runOnUiThread { addWatchlist.setImageDrawable(onList) }
+                    alpacaAPI.addWatchlistAsset(watchListId, DashboardFragment.ticker!!.get())
+                }
+                inWatchlist = !inWatchlist
+            }
 
             // Set number of stocks textview
             numPos = findViewById(R.id.numberOfStocks)
-            val numPosition: String?
+            var numPosition: String? = null
             try {
                 numPosition = alpacaAPI.getOpenPositionBySymbol(DashboardFragment.ticker!!.get()).qty
-                runOnUiThread { numPos?.text = String.format("%s shares owned", numPosition) }
             } catch (e: AlpacaAPIRequestException) {
-                runOnUiThread { numPos?.text = R.string.zero_shares.toString() }
                 e.printStackTrace()
+            }
+            runOnUiThread {
+                when (numPosition) {
+                    "1" -> {
+                        numPos?.text = String.format("%s share owned", numPosition)
+                    }
+                    null -> {
+                        numPos?.text = String.format("%s shares owned", 0)
+                    }
+                    else -> {
+                        numPos?.text = String.format("%s shares owned", numPosition)
+                    }
+                }
             }
         }
         t3.start()
@@ -552,10 +598,19 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
                 e.printStackTrace()
             }
 //            if (marketStatus) {
-            try {
-                bars = alpacaAPI.getBars(DashboardFragment.ticker!!.get(), zonedDateTime, ZonedDateTime.now(), 1000, null, timeFrame)
-            } catch (e: AlpacaAPIRequestException) {
-                e.printStackTrace()
+            if (selectedAdapterInitial == oneDayStockAdapter) {
+                try {
+                    bars = alpacaAPI.getBars(DashboardFragment.ticker!!.get(), zonedDateTime, ZonedDateTime.now(), 1000, null, timeFrame)
+                } catch (e: AlpacaAPIRequestException) {
+                    e.printStackTrace()
+                }
+
+            } else {
+                try {
+                    bars = alpacaAPI.getBars(DashboardFragment.ticker!!.get(), datetime, ZonedDateTime.now(), 1000, null, timeFrame)
+                } catch (e: AlpacaAPIRequestException) {
+                    e.printStackTrace()
+                }
             }
 //            } else {
 //

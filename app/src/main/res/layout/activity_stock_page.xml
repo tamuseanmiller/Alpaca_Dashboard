@@ -117,13 +117,36 @@
 
                     </RelativeLayout>
 
-                    <com.robinhood.ticker.TickerView
-                        android:id="@+id/tickerViewStock"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:paddingTop="@dimen/activity_vertical_margin"
-                        android:textColor="?attr/colorLight"
-                        android:textSize="30sp" />
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <com.robinhood.ticker.TickerView
+                            android:id="@+id/tickerViewStock"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingTop="@dimen/activity_vertical_margin"
+                            android:textColor="?attr/colorLight"
+                            android:textSize="30sp" />
+
+                        <androidx.appcompat.widget.AppCompatImageButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:clickable="true"
+                            android:src="@drawable/eye"
+                            android:id="@+id/addWatchlist"
+                            android:padding="10dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:backgroundTint="?attr/colorPrimary"
+                            android:stateListAnimator="@null"
+                            android:paddingBottom="10dp"
+                            android:layout_centerVertical="true"
+                            android:layout_alignParentEnd="true"
+                            app:tint="?attr/colorPrimaryLight"
+                            tools:ignore="RtlSymmetry"
+                            android:focusable="true" />
+
+                    </RelativeLayout>
 
                 </LinearLayout>
 
