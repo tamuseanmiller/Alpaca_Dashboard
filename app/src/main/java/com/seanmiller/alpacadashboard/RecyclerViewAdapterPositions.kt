@@ -50,10 +50,14 @@ class RecyclerViewAdapterPositions internal constructor(context: Context?, data:
             // Set shares owned
             val finalShrOwned = shrOwned
             mainActivity.runOnUiThread {
-                if (finalShrOwned!!.qty != null) {
-                    if (finalShrOwned.qty == "1") {
+                when (finalShrOwned!!.qty) {
+                    "1" -> {
                         holder.sharesOwned.text = String.format("%s share owned", finalShrOwned.qty)
-                    } else {
+                    }
+                    null -> {
+                        holder.sharesOwned.text = String.format("%s shares owned", 0)
+                    }
+                    else -> {
                         holder.sharesOwned.text = String.format("%s shares owned", finalShrOwned.qty)
                     }
                 }

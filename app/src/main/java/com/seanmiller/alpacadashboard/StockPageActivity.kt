@@ -220,7 +220,9 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
                 if (inWatchlist) {
                     val offList = ContextCompat.getDrawable(this, R.drawable.eye_plus)
                     runOnUiThread { addWatchlist.setImageDrawable(offList) }
-                    alpacaAPI.removeSymbolFromWatchlist(watchListId, DashboardFragment.ticker!!.get())
+                    for (i in alpacaAPI.watchlists) {
+                        alpacaAPI.removeSymbolFromWatchlist(i.id, DashboardFragment.ticker!!.get())
+                    }
 
                 } else {
                     val onList = ContextCompat.getDrawable(this, R.drawable.eye_minus)

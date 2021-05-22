@@ -6,9 +6,11 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
+import net.jacobpeterson.domain.polygon.tickers.ticker.Ticker
+import org.json.JSONObject
 import java.util.*
 
-class SearchableAdapter(private val mValues: ArrayList<String>) : RecyclerView.Adapter<SearchableAdapter.ViewHolder>() {
+class SearchableAdapter(private val mValues: ArrayList<Ticker>) : RecyclerView.Adapter<SearchableAdapter.ViewHolder>() {
     private var mClickListener: ItemClickListener? = null
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.search_row, parent, false)
@@ -16,10 +18,10 @@ class SearchableAdapter(private val mValues: ArrayList<String>) : RecyclerView.A
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-//        String name = mValues.get(position).getName();
-//        String ticker = mValues.get(position);
-//        holder.stockTicker.setText(ticker);
-//        holder.stockFullName.setText("test");
+        val name = mValues[position].name
+        val ticker = mValues[position].ticker
+        holder.stockTicker.text = ticker
+        holder.stockFullName.text = name
 
 //        String fullString = mValues.get(position);
 //        holder.stockTicker.text = mValues[position].ticker
@@ -51,7 +53,7 @@ class SearchableAdapter(private val mValues: ArrayList<String>) : RecyclerView.A
     }
 
     // convenience method for getting data at click position
-    fun getItem(id: Int): String {
+    fun getItem(id: Int): Ticker {
         return mValues[id]
     }
 

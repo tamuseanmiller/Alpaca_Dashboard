@@ -18,7 +18,6 @@ import com.anjlab.android.iab.v3.BillingProcessor
 import com.anjlab.android.iab.v3.BillingProcessor.IBillingHandler
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
-import com.google.common.collect.ImmutableMap
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.lapism.search.internal.SearchLayout
@@ -26,21 +25,22 @@ import com.lapism.search.internal.SearchLayout.OnMicClickListener
 import com.lapism.search.internal.SearchLayout.OnNavigationClickListener
 import com.lapism.search.widget.MaterialSearchView
 import com.mashape.unirest.http.HttpResponse
-import com.mashape.unirest.http.Unirest
-import com.mashape.unirest.http.exceptions.UnirestException
 import io.cabriole.decorator.LinearMarginDecoration
 import net.jacobpeterson.alpaca.AlpacaAPI
 import net.jacobpeterson.alpaca.enums.api.DataAPIType
 import net.jacobpeterson.alpaca.enums.api.EndpointAPIType
 import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException
 import net.jacobpeterson.domain.alpaca.position.Position
+import net.jacobpeterson.domain.polygon.tickers.ticker.Ticker
+import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.Response
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.*
+import kotlin.collections.ArrayList
+
 
 class SearchFragment : Fragment(), SearchLayout.OnQueryTextListener, SearchableAdapter.ItemClickListener /*, BillingProcessor.IBillingHandler*/ {
     private var materialSearch: MaterialSearchView? = null
@@ -134,40 +134,45 @@ class SearchFragment : Fragment(), SearchLayout.OnQueryTextListener, SearchableA
 
             // Calls yahoo finance api
             // http://d.yimg.com/aq/autoc?query=y&region=US&lang=en-US&callback=YAHOO.util.ScriptNodeDataSource.callbacks
-            var nodeHttpResponse: HttpResponse<String>? = null
-            try {
-                nodeHttpResponse = Unirest.get("http://d.yimg.com/aq/autoc")
-                        .queryString("query", newText.toString())
-                        .queryString(ImmutableMap.of<String, Any>("region", "US", "lang", "en-US", "callback", "YAHOO.util.ScriptNodeDataSource.callbacks")).asString()
-            } catch (e: UnirestException) {
-                e.printStackTrace()
-            }
+            // Create Client and request
+            val client = OkHttpClient()
+            val httpBuilder: HttpUrl = HttpUrl.Builder()
+                    .scheme("http")
+                    .host("d.yimg.com")
+                    .addPathSegment("aq")
+                    .addPathSegment("autoc")
+                    .addQueryParameter("query", newText.toString())
+                    .addQueryParameter("region", "US")
+                    .addQueryParameter("lang", "en-US")
+                    .addQueryParameter("callback", "YAHOO.util.ScriptNodeDataSource.callbacks")
+                    .build()
+
+            val request: Request = Request.Builder()
+                    .url(httpBuilder)
+                    .build()
+
+            // Catch response after execution
+            val response = client.newCall(request).execute()
+
+            // Convert response to json to find the field
+            val body = response.body!!.string()
+            val jsonObject = JSONObject(body.substring(42, body.length - 2))
 
             // Formats the response into an array
-            if (nodeHttpResponse != null) {
-                val innerJson = nodeHttpResponse.body.substring(42, nodeHttpResponse.body.length - 2)
-                val parse = JsonParser()
-                val jsonObject = parse.parse(innerJson) as JsonObject
-                val stocks = jsonObject["ResultSet"].asJsonObject["Result"].asJsonArray
-                val tickers = ArrayList<String>()
-                for (i in stocks) {
-//                    try {
-//                        Asset asset = alpacaAPI.getAssetBySymbol(i.getAsJsonObject().get("symbol").getAsString());
-//                        if (asset.getStatus().equals("active")) {
-//                    t.name = i.asJsonObject["name"].asString
-//                    t.ticker = i.asJsonObject["symbol"].asString
-                    tickers.add(i.asJsonObject["symbol"].asString)
-                    //                        }
-//                    } catch (AlpacaAPIRequestException e) {
-//                        e.printStackTrace();
-//                    }
-                }
-
-                // Sets adapter
-                searchableAdapter = SearchableAdapter(tickers)
-                searchableAdapter!!.setClickListener(this)
-                requireActivity().runOnUiThread { materialSearch!!.setAdapter(searchableAdapter) }
+            val stocks: JSONArray = (jsonObject["ResultSet"] as JSONObject)["Result"] as JSONArray
+            val tickers = ArrayList<Ticker>()
+            for (i in 0 until stocks.length()) {
+                val t = Ticker()
+                t.name = stocks.getJSONObject(i)["name"].toString()
+                t.ticker = stocks.getJSONObject(i)["symbol"].toString()
+                tickers.add(t)
             }
+
+            // Sets adapter
+            searchableAdapter = SearchableAdapter(tickers)
+            searchableAdapter!!.setClickListener(this)
+            requireActivity().runOnUiThread { materialSearch!!.setAdapter(searchableAdapter) }
+
         }
         thread.start()
         return false
@@ -179,38 +184,45 @@ class SearchFragment : Fragment(), SearchLayout.OnQueryTextListener, SearchableA
 
             // Calls yahoo finance api
             // http://d.yimg.com/aq/autoc?query=y&region=US&lang=en-US&callback=YAHOO.util.ScriptNodeDataSource.callbacks
-            var nodeHttpResponse: HttpResponse<String>? = null
-            try {
-                nodeHttpResponse = Unirest.get("http://d.yimg.com/aq/autoc")
-                        .queryString("query", charSequence.toString())
-                        .queryString(ImmutableMap.of<String, Any>("region", "US", "lang", "en-US", "callback", "YAHOO.util.ScriptNodeDataSource.callbacks")).asString()
-            } catch (e: UnirestException) {
-                e.printStackTrace()
-            }
+            // Create Client and request
+            val client = OkHttpClient()
+            val httpBuilder: HttpUrl = HttpUrl.Builder()
+                    .scheme("http")
+                    .host("d.yimg.com")
+                    .addPathSegment("aq")
+                    .addPathSegment("autoc")
+                    .addQueryParameter("query", charSequence.toString())
+                    .addQueryParameter("region", "US")
+                    .addQueryParameter("lang", "en-US")
+                    .addQueryParameter("callback", "YAHOO.util.ScriptNodeDataSource.callbacks")
+                    .build()
+
+            val request: Request = Request.Builder()
+                    .url(httpBuilder)
+                    .build()
+
+            // Catch response after execution
+            val response = client.newCall(request).execute()
+
+            // Convert response to json to find the field
+            val body = response.body!!.string()
+            val jsonObject = JSONObject(body.substring(42, body.length - 2))
 
             // Formats the response into an array
-            if (nodeHttpResponse != null) {
-                val innerJson = nodeHttpResponse.body.substring(42, nodeHttpResponse.body.length - 2)
-                val parse = JsonParser()
-                val jsonObject = parse.parse(innerJson) as JsonObject
-                val stocks = jsonObject["ResultSet"].asJsonObject["Result"].asJsonArray
-                val tickers = ArrayList<String>()
-                for (i in stocks) {
-//                    try {
-//                        Asset asset = alpacaAPI.getAssetBySymbol(i.getAsJsonObject().get("symbol").getAsString());
-//                        if (asset.getStatus().equals("active")) {
-                    tickers.add(i.asJsonObject["symbol"].asString)
-                    //                        }
-//                    } catch (AlpacaAPIRequestException e) {
-//                        e.printStackTrace();
-//                    }
-                }
-
-                // Sets adapter
-                searchableAdapter = SearchableAdapter(tickers)
-                searchableAdapter!!.setClickListener(this)
-                requireActivity().runOnUiThread { materialSearch!!.setAdapter(searchableAdapter) }
+            val stocks: JSONArray = (jsonObject["ResultSet"] as JSONObject)["Result"] as JSONArray
+            val tickers = ArrayList<Ticker>()
+            for (i in 0 until stocks.length()) {
+                val t = Ticker()
+                t.name = stocks.getJSONObject(i)["name"].toString()
+                t.ticker = stocks.getJSONObject(i)["symbol"].toString()
+                tickers.add(t)
             }
+
+            // Sets adapter
+            searchableAdapter = SearchableAdapter(tickers)
+            searchableAdapter!!.setClickListener(this)
+            requireActivity().runOnUiThread { materialSearch!!.setAdapter(searchableAdapter) }
+
         }
         thread.start()
         return true
@@ -218,7 +230,7 @@ class SearchFragment : Fragment(), SearchLayout.OnQueryTextListener, SearchableA
 
     // When a search item is chosen, go to stock page
     override fun onItemClick(view: View?, position: Int) {
-        DashboardFragment.ticker!!.set(searchableAdapter!!.getItem(position))
+        DashboardFragment.ticker!!.set(searchableAdapter!!.getItem(position).ticker)
         val intentMain = Intent(activity, StockPageActivity::class.java)
         requireActivity().startActivity(intentMain, ActivityOptions.makeSceneTransitionAnimation(activity).toBundle())
     }
@@ -249,54 +261,54 @@ class SearchFragment : Fragment(), SearchLayout.OnQueryTextListener, SearchableA
     }
 
     // IBillingHandler implementation
-    /*@Override
-    public void onBillingInitialized() {
-        */
-    /*
-         * Called when BillingProcessor was initialized and it's ready to purchase
-         */
-    /*
+/*@Override
+public void onBillingInitialized() {
+    */
+/*
+     * Called when BillingProcessor was initialized and it's ready to purchase
+     */
+/*
 
-        // Check to see if premium has been purchased
-        prefs.storeBoolean("premium", bp.isPurchased("premium_sub"));
-    }
+    // Check to see if premium has been purchased
+    prefs.storeBoolean("premium", bp.isPurchased("premium_sub"));
+}
 
-    @Override
-    public void onProductPurchased(@NonNull String productId, TransactionDetails details) {
-        */
-    /*
-         * Called when requested PRODUCT ID was successfully purchased
-         */
-    /*
-        prefs.storeBoolean("premium", true);
-        startNews();
-        searchCard.setVisibility(View.INVISIBLE);
-    }
+@Override
+public void onProductPurchased(@NonNull String productId, TransactionDetails details) {
+    */
+/*
+     * Called when requested PRODUCT ID was successfully purchased
+     */
+/*
+    prefs.storeBoolean("premium", true);
+    startNews();
+    searchCard.setVisibility(View.INVISIBLE);
+}
 
-    @Override
-    public void onBillingError(int errorCode, Throwable error) {
-        */
-    /*
-         * Called when some error occurred. See Constants class for more details
-         *
-         * Note - this includes handling the case where the user canceled the buy dialog:
-         * errorCode = Constants.BILLING_RESPONSE_RESULT_USER_CANCELED
-         */
-    /*
-        prefs.storeBoolean("premium", false);
-        Log.v("Billing Error", String.valueOf(errorCode), error);
-    }
+@Override
+public void onBillingError(int errorCode, Throwable error) {
+    */
+/*
+     * Called when some error occurred. See Constants class for more details
+     *
+     * Note - this includes handling the case where the user canceled the buy dialog:
+     * errorCode = Constants.BILLING_RESPONSE_RESULT_USER_CANCELED
+     */
+/*
+    prefs.storeBoolean("premium", false);
+    Log.v("Billing Error", String.valueOf(errorCode), error);
+}
 
-    @Override
-    public void onPurchaseHistoryRestored() {
-        */
-    /*
-         * Called when purchase history was restored and the list of all owned PRODUCT ID's
-         * was loaded from Google Play
-         */
-    /*
-        prefs.storeBoolean("premium", bp.isPurchased("premium_sub"));
-    }*/
+@Override
+public void onPurchaseHistoryRestored() {
+    */
+/*
+     * Called when purchase history was restored and the list of all owned PRODUCT ID's
+     * was loaded from Google Play
+     */
+/*
+    prefs.storeBoolean("premium", bp.isPurchased("premium_sub"));
+}*/
     override fun onDestroy() {
         if (bp != null) {
             bp!!.release()
