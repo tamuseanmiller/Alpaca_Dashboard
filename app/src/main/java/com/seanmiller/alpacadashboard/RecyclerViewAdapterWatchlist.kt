@@ -224,7 +224,9 @@ class RecyclerViewAdapterWatchlist internal constructor(context: Context?, data:
                 // Set values
                 val snapshot = alpacaAPI.getSnapshot(stockName)
                 val finalClose = snapshot.prevDailyBar.c.toFloat()
-                val finalCurr = snapshot.latestQuote.ap.toFloat()
+//                val finalCurr = snapshot.latestQuote.ap.toFloat()
+                val finalCurr = snapshot.dailyBar.c.toFloat()
+
                 mainActivity.runOnUiThread {
                     if (finalCurr != 0f && finalClose != 0f) {
                         holder.priceOfStock.text = String.format("$%.2f", finalCurr)

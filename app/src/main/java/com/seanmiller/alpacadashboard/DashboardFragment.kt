@@ -11,6 +11,7 @@ import android.util.DisplayMetrics
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.INVISIBLE
 import android.view.View.OnClickListener
 import android.view.ViewGroup
 import android.view.WindowInsets
@@ -191,66 +192,66 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             initializeDashboardValues(1, PortfolioPeriodUnit.YEAR, PortfolioTimeFrame.ONE_DAY, oneYearAdapter)
         }
 
-            // Set colors on click, for toggle buttons
-            requireActivity().theme.resolveAttribute(R.attr.color_positive_light, typedValue, true)
-            posOrNegColorLight = AtomicInteger(ContextCompat.getColor(requireActivity(), typedValue.resourceId))
-            requireActivity().theme.resolveAttribute(R.attr.colorPrimary, typedValue, true)
-            val colorPrimary = ContextCompat.getColor(requireActivity(), typedValue.resourceId)
+        // Set colors on click, for toggle buttons
+        requireActivity().theme.resolveAttribute(R.attr.color_positive_light, typedValue, true)
+        posOrNegColorLight = AtomicInteger(ContextCompat.getColor(requireActivity(), typedValue.resourceId))
+        requireActivity().theme.resolveAttribute(R.attr.colorPrimary, typedValue, true)
+        val colorPrimary = ContextCompat.getColor(requireActivity(), typedValue.resourceId)
 
 //            requireActivity().runOnUiThread {
 
-                // One Day Multibutton
-                oneDay?.setOnClickListener {
-                    selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
-                    selectedButton = oneDay
-                    selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
-                    selectedAdapter = oneDayAdapter
-                    sparkView.let {
-                        sparkView!!.adapter = selectedAdapter
-                    }
-                    setDashboardValues()
-                }
+        // One Day Multibutton
+        oneDay?.setOnClickListener {
+            selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
+            selectedButton = oneDay
+            selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
+            selectedAdapter = oneDayAdapter
+            sparkView.let {
+                sparkView!!.adapter = selectedAdapter
+            }
+            setDashboardValues()
+        }
 
-                // One Week Multibutton
-                oneWeek?.setOnClickListener {
-                    selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
-                    selectedButton = oneWeek
-                    selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
-                    selectedAdapter = oneWeekAdapter
-                    sparkView?.adapter = selectedAdapter
-                    setDashboardValues()
-                }
+        // One Week Multibutton
+        oneWeek?.setOnClickListener {
+            selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
+            selectedButton = oneWeek
+            selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
+            selectedAdapter = oneWeekAdapter
+            sparkView?.adapter = selectedAdapter
+            setDashboardValues()
+        }
 
-                // One Month Multibutton
-                oneMonth?.setOnClickListener {
-                    selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
-                    selectedButton = oneMonth
-                    selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
-                    selectedAdapter = oneMonthAdapter
-                    sparkView?.adapter = selectedAdapter
-                    setDashboardValues()
-                }
+        // One Month Multibutton
+        oneMonth?.setOnClickListener {
+            selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
+            selectedButton = oneMonth
+            selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
+            selectedAdapter = oneMonthAdapter
+            sparkView?.adapter = selectedAdapter
+            setDashboardValues()
+        }
 
-                // Three Month Multibutton
-                threeMonth?.setOnClickListener {
-                    selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
-                    selectedButton = threeMonth
-                    selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
-                    selectedAdapter = threeMonthAdapter
-                    with(sparkView) { this?.setAdapter(selectedAdapter) }
-                    setDashboardValues()
-                }
+        // Three Month Multibutton
+        threeMonth?.setOnClickListener {
+            selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
+            selectedButton = threeMonth
+            selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
+            selectedAdapter = threeMonthAdapter
+            with(sparkView) { this?.setAdapter(selectedAdapter) }
+            setDashboardValues()
+        }
 
 
-                // One Year Multibutton
-                oneYear?.setOnClickListener {
-                    selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
-                    selectedButton = oneYear
-                    selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
-                    selectedAdapter = oneYearAdapter
-                    with(sparkView) { this?.setAdapter(selectedAdapter) }
-                    setDashboardValues()
-                }
+        // One Year Multibutton
+        oneYear?.setOnClickListener {
+            selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
+            selectedButton = oneYear
+            selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
+            selectedAdapter = oneYearAdapter
+            with(sparkView) { this?.setAdapter(selectedAdapter) }
+            setDashboardValues()
+        }
 //            }
 
 //        }
@@ -355,8 +356,10 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             }
 
             if (tempList.isEmpty()) {
-                alpacaAPI.addWatchlistAsset("b0747289-92e4-404b-9558-7b682cb36de1", "TSLA")
+//                val watchlistText: TextView = mView.findViewById(R.id.watchlistText)
+//                watchlistText.visibility = INVISIBLE
                 alpacaAPI.createWatchlist("alpaca_dashboard", "AAPL")
+
 
             } else {
                 watchlist?.clear()
@@ -673,10 +676,13 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
                 } catch (e: AlpacaAPIRequestException) {
                     e.printStackTrace()
                 }
-                val temp = historyInitial.get()[historyInitial.get().size - 3]
-                selectedAdapterInitial!!.pushFront(temp.toFloat())
-                selectedAdapterInitial.setBaseline(selectedAdapterInitial.getValue(0))
-                oneDayAdapter!!.notifyDataSetChanged()
+
+                if (historyInitial.get().isNotEmpty()) {
+                    val temp: Int = historyInitial.get().last().toInt()
+                    selectedAdapterInitial!!.pushFront(temp.toFloat())
+                    selectedAdapterInitial.setBaseline(selectedAdapterInitial.getValue(0))
+                    oneDayAdapter!!.notifyDataSetChanged()
+                }
             }
 
             if (periodUnit == PortfolioPeriodUnit.DAY) {
