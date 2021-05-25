@@ -29,9 +29,9 @@ class StockAdapter @RequiresApi(api = Build.VERSION_CODES.O) constructor(context
         val temp = Vector(yData)
         yData.clear()
         var i = 0
-        while (i < temp.size - 2) {
-            yData.add((temp[i] + temp[i + 1]) / 2)
-            i += 2
+        while (i < temp.size - 3) {
+            yData.add((temp[i] + temp[i + 1] + temp[i + 2] + temp[i + 3]) / 4)
+            i += 4
         }
         notifyDataSetChanged()
     }

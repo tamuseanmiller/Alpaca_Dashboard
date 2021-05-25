@@ -194,7 +194,8 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
                 for (j in alpacaAPI.getWatchlist(i.id).assets) {
                     if (j.symbol == DashboardFragment.ticker!!.get()) {
                         val offList = ContextCompat.getDrawable(this, R.drawable.eye_minus)
-                        runOnUiThread { addWatchlist.setImageDrawable(offList) }
+                        if (addWatchlist.drawable != offList)
+                            runOnUiThread { addWatchlist.setImageDrawable(offList) }
                         inWatchlist = true
                     }
                 }
@@ -552,7 +553,7 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
             } catch (e: AlpacaAPIRequestException) {
                 e.printStackTrace()
             }
-            var lastOpenDate = LocalDate.parse(calendarInitial!![calendarInitial.size - 2].date)
+            var lastOpenDate = LocalDate.parse(calendarInitial!![calendarInitial.size - 1].date)
             val oldTime = LocalTime.of(calendarInitial[calendarInitial.size - 2].open.substring(0, 2).toInt(), calendarInitial[calendarInitial.size - 2].open.substring(3, 5).toInt())
 
             // Switch given open datetime from US/Eastern to System Default
@@ -594,14 +595,14 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
 //            if (marketStatus) {
             if (selectedAdapterInitial == oneDayStockAdapter) {
                 try {
-                    bars = alpacaAPI.getBars(DashboardFragment.ticker!!.get(), zonedDateTime, ZonedDateTime.now(), 1000, null, timeFrame)
+                    bars = alpacaAPI.getBars(DashboardFragment.ticker!!.get(), zonedDateTime, ZonedDateTime.now(), 10000, null, timeFrame)
                 } catch (e: AlpacaAPIRequestException) {
                     e.printStackTrace()
                 }
 
             } else {
                 try {
-                    bars = alpacaAPI.getBars(DashboardFragment.ticker!!.get(), datetime, ZonedDateTime.now(), 1000, null, timeFrame)
+                    bars = alpacaAPI.getBars(DashboardFragment.ticker!!.get(), datetime, ZonedDateTime.now(), 10000, null, timeFrame)
                 } catch (e: AlpacaAPIRequestException) {
                     e.printStackTrace()
                 }
@@ -687,7 +688,7 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
                 }
             }
 
-            if (datetime.year < ZonedDateTime.now().year) {
+            if (datetime.year < ZonedDateTime.now().year || selectedAdapterStock == oneDayStockAdapter || selectedAdapterStock == oneWeekStockAdapter) {
                 runOnUiThread { selectedAdapterInitial?.smoothGraph() }
             }
 
@@ -705,7 +706,7 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
                     selectedAdapterInitial?.pushFront(askingPrice.prevDailyBar.c.toFloat())
                     selectedAdapterInitial?.setBaseline(askingPrice.prevDailyBar.c.toFloat())
                 }
-                oneDayStock!!.callOnClick() // Set here to allow ample time for instantiation
+                selectedButton!!.callOnClick() // Set here to allow ample time for instantiation
             }
 
         }

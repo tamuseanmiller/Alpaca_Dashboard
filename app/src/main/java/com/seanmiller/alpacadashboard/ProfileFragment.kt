@@ -42,11 +42,11 @@ class ProfileFragment : Fragment() {
         val prefs = SharedPreferencesManager(requireActivity())
         bp = BillingProcessor(requireActivity(), Properties.playLicenseKey, activity as IBillingHandler?)
         bp!!.initialize()
-        val thread = Thread(Runnable {
+        val thread = Thread {
 
 
             // Fetch various account data
-            val alpacaAPI = AlpacaAPI(null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
+            val alpacaAPI = AlpacaAPI(null, null, prefs.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
             try {
                 account = alpacaAPI.account
             } catch (e: AlpacaAPIRequestException) {
@@ -65,8 +65,8 @@ class ProfileFragment : Fragment() {
 
             // Run on main thread
             requireActivity().runOnUiThread {
-                with(totalPortVal) { this?.setText(formatter.format(portVal - cashVal)) }
-                with(cash) { this?.setText(formatter.format(cashVal)) }
+                totalPortVal?.text = formatter.format(portVal - cashVal)
+                cash?.text = formatter.format(cashVal)
             }
 
             // Fetch colors
@@ -116,18 +116,18 @@ class ProfileFragment : Fragment() {
                 this?.invalidate()
             }
 
-        })
+        }
         thread.start()
-        t1 = Thread(Runnable {
+        t1 = Thread {
             buyingPower = mView.findViewById(R.id.buyingPower)
             tradingSince = mView.findViewById(R.id.tradingSince)
             val buyingPowerVal = account!!.buyingPower.toDouble()
             val formatter = DecimalFormat("$#,###.00")
             requireActivity().runOnUiThread {
                 with(tradingSince) { this?.setText(account!!.createdAt.toLocalDate().toString()) }
-                with(buyingPower) { this?.setText(formatter.format(buyingPowerVal)) }
+                with(buyingPower) { this?.text = formatter.format(buyingPowerVal) }
             }
-        })
+        }
 
         // Information
         val information = mView.findViewById<ImageButton>(R.id.settingsGear)

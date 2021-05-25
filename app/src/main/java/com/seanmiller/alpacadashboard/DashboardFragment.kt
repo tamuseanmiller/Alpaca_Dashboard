@@ -645,8 +645,12 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             } catch (e: AlpacaAPIRequestException) {
                 e.printStackTrace()
             }
-            var lastOpenDate2 = LocalDate.parse(calendar!![calendar.size - 2].date)
-            var oldTime = LocalTime.of(calendar[calendar.size - 2].open.substring(0, 2).toInt(), calendar[calendar.size - 2].open.substring(3, 5).toInt())
+            var lastOpenDate2 = LocalDate.now().minusDays(1)
+            var oldTime = LocalTime.now().minusHours(2)
+            if (calendar!!.size >= 2) {
+                lastOpenDate2 = LocalDate.parse(calendar[calendar.size - 2].date)
+                oldTime = LocalTime.of(calendar[calendar.size - 2].open.substring(0, 2).toInt(), calendar[calendar.size - 2].open.substring(3, 5).toInt())
+            }
 
             // Switch given open datetime from US/Eastern to System Default
             var zonedDateTime = ZonedDateTime.of(lastOpenDate2, oldTime, ZoneId.of("US/Eastern"))
@@ -688,8 +692,8 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             if (periodUnit == PortfolioPeriodUnit.DAY) {
 
                 // Assign last open datetime and check for if it is the morning of
-                var lastOpenDate = LocalDate.parse(calendar[calendar.size - 1].date)
-                oldTime = LocalTime.of(calendar[calendar.size - 1].open.substring(0, 2).toInt(), calendar[calendar.size - 1].open.substring(3, 5).toInt())
+                var lastOpenDate = LocalDate.parse(calendar.last().date)
+                oldTime = LocalTime.of(calendar.last().open.substring(0, 2).toInt(), calendar.last().open.substring(3, 5).toInt())
 
                 // Switch given open datetime from US/Eastern to System Default
                 zonedDateTime = ZonedDateTime.of(lastOpenDate2, oldTime, ZoneId.of("US/Eastern"))

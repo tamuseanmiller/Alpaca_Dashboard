@@ -227,24 +227,29 @@ class RecyclerViewAdapterPositions internal constructor(context: Context?, data:
 //
 
                 // Set values
-                val snapshot = alpacaAPI.getSnapshot(stockName)
-                val finalClose = snapshot.prevDailyBar.c.toFloat()
-//                val finalCurr = snapshot.latestQuote.ap.toFloat()
-                val finalCurr = snapshot.dailyBar.c.toFloat()
-                mainActivity.runOnUiThread {
-                    if (finalCurr != 0f && finalClose != 0f) {
-                        holder.priceOfStock.text = String.format("$%.2f", finalCurr)
-                        val temp = (finalCurr - finalClose) / finalClose * 100
+                try {
+                    val snapshot = alpacaAPI.getSnapshot(stockName)
+                    val finalClose = snapshot.prevDailyBar.c.toFloat()
+//                  val finalCurr = snapshot.latestQuote.ap.toFloat()
+                    val finalCurr = snapshot.dailyBar.c.toFloat()
 
-                        // Sets the precision and adds to view, then changes color
-                        if (temp >= 0) {
-                            holder.percentChange.text = String.format("+%.2f%%", temp)
-                            mClickListener!!.switchColors(holder, true)
-                        } else {
-                            holder.percentChange.text = String.format("%.2f%%", temp)
-                            mClickListener!!.switchColors(holder, false)
+                    mainActivity.runOnUiThread {
+                        if (finalCurr != 0f && finalClose != 0f) {
+                            holder.priceOfStock.text = String.format("$%.2f", finalCurr)
+                            val temp = (finalCurr - finalClose) / finalClose * 100
+
+                            // Sets the precision and adds to view, then changes color
+                            if (temp >= 0) {
+                                holder.percentChange.text = String.format("+%.2f%%", temp)
+                                mClickListener!!.switchColors(holder, true)
+                            } else {
+                                holder.percentChange.text = String.format("%.2f%%", temp)
+                                mClickListener!!.switchColors(holder, false)
+                            }
                         }
                     }
+                } catch (e: AlpacaAPIRequestException) {
+                    e.printStackTrace()
                 }
 
                 // Sleep for 1 minute
