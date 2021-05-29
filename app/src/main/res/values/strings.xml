@@ -65,4 +65,7 @@
     <string name="zero_shares">0 shares owned</string>
     <string name="buy_premium">Buy Premium</string>
     <string name="watchlist">Watchlist</string>
+    <string name="total_percent_change">Total Percent Change</string>
+    <string name="total_return">Total Return</string>
+    <string name="percent_change">Percent Change</string>
 </resources>

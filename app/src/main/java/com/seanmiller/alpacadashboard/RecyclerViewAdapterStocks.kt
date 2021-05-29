@@ -23,8 +23,6 @@ class RecyclerViewAdapterStocks internal constructor(context: Context?, data: Li
         val stockName = mData[position]
         holder.myTextView.text = stockName
 
-//        PolygonAPI polygonAPI = new PolygonAPI();
-//        AlpacaAPI alpacaAPI = new AlpacaAPI();
     }
 
     // total number of rows
@@ -34,8 +32,8 @@ class RecyclerViewAdapterStocks internal constructor(context: Context?, data: Li
 
     // stores and recycles views as they are scrolled off screen
     inner class ViewHolder internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
-        var myTextView: TextView
-        var percentChange: TextView
+        var myTextView: TextView = itemView.findViewById(R.id.stockName)
+        var percentChange: TextView = itemView.findViewById(R.id.currentPrice)
         override fun onClick(view: View) {
             if (mClickListener != null) {
                 mClickListener!!.onItemClick(view, adapterPosition)
@@ -43,8 +41,6 @@ class RecyclerViewAdapterStocks internal constructor(context: Context?, data: Li
         }
 
         init {
-            myTextView = itemView.findViewById(R.id.stockName)
-            percentChange = itemView.findViewById(R.id.currentPrice)
             itemView.setOnClickListener(this)
             myTextView.setOnClickListener(this)
         }

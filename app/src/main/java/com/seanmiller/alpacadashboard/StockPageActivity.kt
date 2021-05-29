@@ -49,13 +49,10 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.collections.ArrayList
 
-
-@RequiresApi(api = Build.VERSION_CODES.O)
 class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemClickListener {
     private var sparkViewStock: CustomSparkView? = null
     private var selectedAdapterStock: StockAdapter? = null
     private var recyclerOrdersStock: RecyclerView? = null
-    private val recycleAdapterOrders: RecyclerViewAdapterOrders? = null
     private var percentChangeStock: Button? = null
     private var ordersStock: ArrayList<Order>? = null
     private var order: ArrayList<Order>? = null
@@ -75,6 +72,7 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
     private var threeMonthStockAdapter: StockAdapter? = null
     private var oneYearStockAdapter: StockAdapter? = null
     private var prefs: SharedPreferencesManager? = null
+
     public override fun onResume() {
         super.onResume()
         isInFront = true
@@ -184,7 +182,7 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
         // Watchlist, set below
         val addWatchlist = findViewById<ImageButton>(R.id.addWatchlist)
 
-        val t3 = Thread {
+        val watchlistThread = Thread {
 
             // Check for watchlist
             var inWatchlist = false
@@ -205,24 +203,25 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
                 runOnUiThread { addWatchlist.setImageDrawable(onList) }
             }
 
-            val t = Thread {
-                addWatchlist.setOnClickListener {
-                    if (inWatchlist) {
-                        val offList = ContextCompat.getDrawable(this, R.drawable.eye_plus)
-                        runOnUiThread { addWatchlist.setImageDrawable(offList) }
-                        for (i in alpacaAPI.watchlists) {
-                            alpacaAPI.removeSymbolFromWatchlist(i.id, DashboardFragment.ticker!!.get())
-                        }
-
-                    } else {
-                        val onList = ContextCompat.getDrawable(this, R.drawable.eye_minus)
-                        runOnUiThread { addWatchlist.setImageDrawable(onList) }
-                        alpacaAPI.addWatchlistAsset(watchListId, DashboardFragment.ticker!!.get())
+            addWatchlist.setOnClickListener {
+                if (inWatchlist) {
+                    val offList = ContextCompat.getDrawable(this, R.drawable.eye_plus)
+                    runOnUiThread { addWatchlist.setImageDrawable(offList) }
+                    for (i in alpacaAPI.watchlists) {
+                        alpacaAPI.removeSymbolFromWatchlist(i.id, DashboardFragment.ticker!!.get())
                     }
-                    inWatchlist = !inWatchlist
+
+                } else {
+                    val onList = ContextCompat.getDrawable(this, R.drawable.eye_minus)
+                    runOnUiThread { addWatchlist.setImageDrawable(onList) }
+                    alpacaAPI.addWatchlistAsset(watchListId, DashboardFragment.ticker!!.get())
                 }
+                inWatchlist = !inWatchlist
             }
-            t.start()
+        }
+        watchlistThread.start()
+
+        val numPos = Thread {
 
             // Set number of stocks textview
             numPos = findViewById(R.id.numberOfStocks)
@@ -232,6 +231,8 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
             } catch (e: AlpacaAPIRequestException) {
                 e.printStackTrace()
             }
+
+            // Set number of shares owned
             runOnUiThread {
                 when (numPosition) {
                     "1" -> {
@@ -246,7 +247,7 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
                 }
             }
         }
-        t3.start()
+        numPos.start()
 
         // Set swipeRefresh
         swipeRefreshStock = findViewById(R.id.refreshStock)
@@ -276,7 +277,7 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
         selectedAdapterStock = oneDayStockAdapter
         sparkViewStock?.adapter = selectedAdapterStock
 
-        val t2 = Thread {
+        val initializeGraphsThread = Thread {
 
             // Initalize all graphs
             try {
@@ -289,7 +290,7 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
                 e.printStackTrace()
             }
         }
-        t2.start()
+        initializeGraphsThread.start()
 
         // Set colors on click, for toggle buttons
         val tV = TypedValue()
@@ -297,6 +298,8 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
         posOrNegColorLight = AtomicInteger(ContextCompat.getColor(this, tV.resourceId))
         theme.resolveAttribute(R.attr.colorPrimary, tV, true)
         val colorPrimary = ContextCompat.getColor(this, tV.resourceId)
+
+        // One Day Button Listener
         oneDayStock?.setOnClickListener {
             selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
             selectedButton = oneDayStock
@@ -305,6 +308,8 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
             sparkViewStock?.adapter = selectedAdapterStock
             setStockValues(oneDayStockAdapter)
         }
+
+        // One Week Button Listener
         oneWeekStock?.setOnClickListener {
             selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
             selectedButton = oneWeekStock
@@ -313,6 +318,8 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
             sparkViewStock?.adapter = selectedAdapterStock
             setStockValues(oneWeekStockAdapter)
         }
+
+        // One Month Button Listener
         oneMonthStock?.setOnClickListener {
             selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
             selectedButton = oneMonthStock
@@ -321,6 +328,8 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
             sparkViewStock?.adapter = selectedAdapterStock
             setStockValues(selectedAdapterStock)
         }
+
+        // Three Months Button Listener
         threeMonthStock?.setOnClickListener {
             selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
             selectedButton = threeMonthStock
@@ -329,6 +338,8 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
             sparkViewStock?.adapter = selectedAdapterStock
             setStockValues(selectedAdapterStock)
         }
+
+        // One Year Button Listener
         oneYearStock?.setOnClickListener {
             selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
             selectedButton = oneYearStock
@@ -338,8 +349,7 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
             setStockValues(selectedAdapterStock)
         }
 
-        val amount = AtomicReference<Double>()
-        val formatter = DecimalFormat("#,###.00")
+        // Set adapter
         sparkViewStock?.adapter = selectedAdapterStock
 
         // Scrub for chart
@@ -353,6 +363,8 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
 
             // Format to add commas
             if (value != null) {
+                val amount = AtomicReference<Double>()
+                val formatter = DecimalFormat("#,###.00")
                 amount.set(value.toString().toDouble())
                 tickerViewStock?.text = "$" + formatter.format(amount.get())
             }
@@ -366,12 +378,12 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
             e.printStackTrace()
         }
 
-        // Stream to chart
+        // Stream to chart if market open
         if (marketStatus) {
 
             // Stream live data for a stock
 //            streamStockData(alpacaAPI, DashboardFragment.ticker, tickerViewStock)
-            val t4 = Thread {
+            val liveUpdateThread = Thread {
                 while (true) {
                     try {
                         Thread.sleep(60000)
@@ -393,24 +405,11 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
                     runOnUiThread { setStockValues(selectedAdapterStock) }
                 }
             }
-            t4.start()
+            liveUpdateThread.start()
 
-        } else {
-            val t5 = Thread {
-                var askingPrice = 0f
-                try {
-//                    askingPrice = alpacaAPI.getLatestQuote(DashboardFragment.ticker!!.get()).quote.ap.toFloat()
-                    askingPrice = alpacaAPI.getSnapshot(DashboardFragment.ticker!!.get()).dailyBar.c.toFloat()
-                } catch (e: AlpacaAPIRequestException) {
-                    e.printStackTrace()
-                }
-                val finalAskingPrice = askingPrice
-                runOnUiThread { selectedAdapterStock!!.addVal(finalAskingPrice) }
-            }
-//            t5.start()
         }
 
-        val thread = Thread {
+        val ordersThread = Thread {
 
             // Fetch current orders
             ordersStock = ArrayList()
@@ -425,31 +424,29 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
             order?.clear()
             order?.addAll(ordersStock!!)
             ordersStock!!.clear()
-            //            int i = 0;
-//            while (i < ordersStock.size() && order.size() <= 10) {
-//                if (ordersStock.get(i).getSymbol().equals(ticker.get())) {
-//                    order.add(ordersStock.get(i));
-//                }
-//                i++;
-//            }
+
+            // Initialize recyclerview and adapter
             recyclerOrdersStock = findViewById(R.id.ordersStock)
             if (order?.isNotEmpty()!!) {
                 recycleAdapterOrdersStock = RecyclerViewAdapterOrders(this, order!!)
             }
+
+            // Add Decorations and set adapter
             runOnUiThread {
                 recyclerOrdersStock?.layoutManager = LinearLayoutManager(this)
                 recyclerOrdersStock?.addItemDecoration(LinearMarginDecoration.create(0, LinearLayoutManager.VERTICAL, false, null))
                 recyclerOrdersStock?.adapter = recycleAdapterOrdersStock
             }
         }
-        thread.start()
+        ordersThread.start()
 
         // Refresh Listener
         swipeRefreshStock?.setOnRefreshListener {
             onRefresh()
             swipeRefreshStock?.isNestedScrollingEnabled = false
         }
-        val t1 = Thread {
+
+        val financialsThread = Thread {
 
             // Set Statistics
             val dividend_yield = findViewById<TextView>(R.id.dividend_yield)
@@ -495,10 +492,10 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
 //        t1.start()
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
+    // Method that is called when swipe refresh is enabled
     fun onRefresh() {
         swipeRefreshStock!!.isRefreshing = true
-        val thread2 = Thread {
+        val ordersThread = Thread {
             val alpacaAPI = AlpacaAPI(null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
 
             // Fetch current orders
@@ -531,7 +528,7 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
             }
             swipeRefreshStock!!.isRefreshing = false
         }
-        thread2.start()
+        ordersThread.start()
     }
 
     @Throws(AlpacaAPIRequestException::class)
@@ -539,12 +536,7 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
 
         // Requests bars and adds to graph
         val alpacaAPI = AlpacaAPI(null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
-        val thread = Thread {
-
-//            val snapshot = alpacaAPI.getSnapshot(DashboardFragment.ticker!!.get())
-//            selectedAdapterInitial!!.setBaseline(snapshot.prevDailyBar.c.toFloat())
-//            selectedAdapterInitial.pushFront(snapshot.prevDailyBar.c.toFloat())
-
+        val initializationThread = Thread {
 
             // Fetch last open day's information
             var calendarInitial: ArrayList<Calendar>? = null
@@ -566,33 +558,18 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
             }
             val lastClose = AtomicReference(0.toFloat())
             var bars: BarsResponse? = null
-//            var aggs: ArrayList<Aggregate>? = null
-
-            // https://cloud.iexapis.com/stable/stock/AAPL/intraday-prices?token=
-            /*try {
-
-                // Fetch Daily Open Close endpoint
-                var nodeHttpResponse: JSONArray? = null
-                try {
-                    nodeHttpResponse = Unirest.get("https://cloud.iexapis.com/stable/stock/" + DashboardFragment.ticker!!.get() +
-                            "/intraday-prices?token=" + Properties.iexApiKey).asJson().body.array
-                    System.out.println("WE MADE IT")
-                } catch (e: UnirestException) {
-                    e.printStackTrace()
-                }
-            } catch (e: JSONException) {
-                e.printStackTrace()
-            }*/
 
             // Check if market is open
             // Get market status
-            var marketStatus = true
-            try {
-                marketStatus = alpacaAPI.clock.isOpen
-            } catch (e: AlpacaAPIRequestException) {
-                e.printStackTrace()
-            }
+//            var marketStatus = true
+//            try {
+//                marketStatus = alpacaAPI.clock.isOpen
+//            } catch (e: AlpacaAPIRequestException) {
+//                e.printStackTrace()
+//            }
 //            if (marketStatus) {
+
+            // If one day, get bars from only today
             if (selectedAdapterInitial == oneDayStockAdapter) {
                 try {
                     bars = alpacaAPI.getBars(DashboardFragment.ticker!!.get(), zonedDateTime, ZonedDateTime.now(), 10000, null, timeFrame)
@@ -600,99 +577,27 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
                     e.printStackTrace()
                 }
 
-            } else {
+            } else {  // Otherwise get bars from given datetime to now
                 try {
                     bars = alpacaAPI.getBars(DashboardFragment.ticker!!.get(), datetime, ZonedDateTime.now(), 10000, null, timeFrame)
                 } catch (e: AlpacaAPIRequestException) {
                     e.printStackTrace()
                 }
             }
-//            } else {
-//
-//                // If it's a day adapter and set baseline value
-//                if (datetime.toLocalDate() == ZonedDateTime.now().toLocalDate()) {
-//                    var temp = 0f
-//
-//                    // Fetch Daily Open Close endpoint
-////                  https://api.polygon.io/v1/open-close/AAPL/2020-10-14?apiKey=
-//                    var nodeHttpResponse: JSONObject? = null
-//                    try {
-//                        nodeHttpResponse = Unirest.get("https://api.polygon.io/v1/open-close/" +
-//                                DashboardFragment.ticker + "/" + lastOpenDate + "?apiKey=" +
-//                                prefs!!.retrieveString("polygon_id", "NULL"))
-//                                .asJson().body.getObject()
-//                    } catch (e: UnirestException) {
-//                        e.printStackTrace()
-//                    }
-//
-//                    // Add the close value to temp
-//                    if (nodeHttpResponse != null) {
-//                        try {
-//                            temp = nodeHttpResponse["close"].toString().toFloat()
-//                        } catch (e: JSONException) {
-//                            e.printStackTrace()
-//                        }
-//                    }
-//                    selectedAdapterInitial!!.pushFront(temp)
-//                    selectedAdapterInitial.setBaseline(temp)
-//                    oneDayStockAdapter!!.notifyDataSetChanged()
-//                }
-//                if (datetime.toLocalDate().toString() == ZonedDateTime.now().toLocalDate().toString()) {
-//
-//                    // Fetch last open day's information
-//                    var calendar: ArrayList<Calendar>? = null
-//                    try {
-//                        calendar = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(2), LocalDate.now()) as ArrayList<Calendar>?
-//                    } catch (e: AlpacaAPIRequestException) {
-//                        e.printStackTrace()
-//                    }
-//                    var lastOpenDate2 = LocalDate.parse(calendar!![calendar.size - 1].date)
-//                    oldTime = LocalTime.of(calendar[calendar.size - 1].open.substring(0, 2).toInt(), calendar[calendar.size - 1].open.substring(3, 5).toInt())
-//
-//                    // Switch given open datetime from US/Eastern to System Default
-//                    var time = calendar[calendar.size - 1].open
-//                    var lastOpenTimeStart = LocalTime.of(time.substring(0, 2).toInt(), time.substring(3).toInt())
-//                    if (standardDateTime.toLocalTime() > LocalTime.now()) {
-//                        time = calendar[calendar.size - 2].open
-//                        lastOpenTimeStart = LocalTime.of(time.substring(0, 2).toInt(), time.substring(3).toInt())
-//                        lastOpenDate2 = LocalDate.parse(calendar[calendar.size - 2].date)
-//                    }
-//                    try {
-//
-//                        bars = alpacaAPI.getBars(DashboardFragment.ticker!!.get(), datetime, ZonedDateTime.now(), 1000, null, timeFrame)
-//
-////                        bars = alpacaAPI.getBars(BarsTimeFrame.FIVE_MINUTE, DashboardFragment.ticker!!.get(), 1000,
-////                                ZonedDateTime.of(lastOpenDate2, lastOpenTimeStart, ZoneId.of("US/Eastern")), null, null, null)
-//
-////                        aggs = polygonAPI.getAggregates(ticker.get(), multiplier, timeFrame, datetime.toLocalDate().minusDays(1), LocalDate.now(), false).getResults();
-//                    } catch (e: AlpacaAPIRequestException) {
-//                        e.printStackTrace()
-//                    }
-//                } else {
-//                    try {
-//                        aggs = polygonAPI.getAggregates(DashboardFragment.ticker!!.get(),
-//                                multiplier,
-//                                timeFrame,
-//                                datetime.toLocalDate(),
-//                                LocalDate.now(),
-//                                false).results
-//                        //                        bars = alpacaAPI.getBars(timeFrame, ticker.get(), 1000, datetime, null, null, ZonedDateTime.now());
-//                    } catch (e: PolygonAPIRequestException) {
-//                        e.printStackTrace()
-//                    }
-//                }
-//            }
+
+            // Add all bar's close value to adapter
             for (bar in bars!!.bars) {
                 runOnUiThread {
                     bar.c.let { selectedAdapterInitial?.addVal(it.toFloat()) }
                 }
             }
 
-            if (datetime.year < ZonedDateTime.now().year || selectedAdapterStock == oneDayStockAdapter || selectedAdapterStock == oneWeekStockAdapter) {
+            // Smooth if too many data points
+            if (selectedAdapterStock?.count!! > 150) {
                 runOnUiThread { selectedAdapterInitial?.smoothGraph() }
             }
 
-            // Get Last value, check for weekend
+            // Get snapshot and add dailybar close to end and prevdailybar close to beginning
             var askingPrice: Snapshot? = null
             try {
                 askingPrice = alpacaAPI.getSnapshot(DashboardFragment.ticker!!.get())
@@ -710,10 +615,11 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
             }
 
         }
-        thread.start()
+        initializationThread.start()
     }
 
-    private fun setDashboardColors(pos: Boolean, profitLoss: Float, percentageChange: Float) {
+    // Helper method for colors for setStockValues
+    private fun setStockColors(pos: Boolean, profitLoss: Float, percentageChange: Float) {
         val tV = TypedValue()
         theme.resolveAttribute(R.attr.color_positive_light, tV, true)
         val posColorLight = AtomicInteger(ContextCompat.getColor(this, tV.resourceId))
@@ -778,9 +684,9 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
 
             // If positive
             if (profitLoss >= 0) {
-                setDashboardColors(true, profitLoss, percentageChange)
+                setStockColors(true, profitLoss, percentageChange)
             } else {
-                setDashboardColors(false, profitLoss, percentageChange)
+                setStockColors(false, profitLoss, percentageChange)
             }
         }
         val formatter = DecimalFormat("$#,###.00")
@@ -788,10 +694,12 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
         tickerViewStock!!.text = formatter.format(amount)
     }
 
+    // When back is pressed, finishes entire activity
     override fun onBackPressed() {
         finish()
     }
 
+    // Nothing happens when order is clicked yet
     override fun onItemClick(view: View?, position: Int) {}
 
     companion object {
