@@ -181,103 +181,103 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             initializeDashboardValues(1, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY, oneMonthAdapter)
             initializeDashboardValues(3, PortfolioPeriodUnit.MONTH, PortfolioTimeFrame.ONE_DAY, threeMonthAdapter)
             initializeDashboardValues(1, PortfolioPeriodUnit.YEAR, PortfolioTimeFrame.ONE_DAY, oneYearAdapter)
-        }
-        initializeValues.start()
 
-        // Set colors on click, for toggle buttons
-        requireActivity().theme.resolveAttribute(R.attr.color_positive_light, typedValue, true)
-        posOrNegColorLight = AtomicInteger(ContextCompat.getColor(requireActivity(), typedValue.resourceId))
-        requireActivity().theme.resolveAttribute(R.attr.colorPrimary, typedValue, true)
-        val colorPrimary = ContextCompat.getColor(requireActivity(), typedValue.resourceId)
+            // Set colors on click, for toggle buttons
+            requireActivity().theme.resolveAttribute(R.attr.color_positive_light, typedValue, true)
+            posOrNegColorLight = AtomicInteger(ContextCompat.getColor(requireActivity(), typedValue.resourceId))
+            requireActivity().theme.resolveAttribute(R.attr.colorPrimary, typedValue, true)
+            val colorPrimary = ContextCompat.getColor(requireActivity(), typedValue.resourceId)
 
-        // Position View Menu button initialization
-        val positionViewButton = mView.findViewById<MaterialButton>(R.id.menu_button)
-        when (prefs!!.retrieveInt("position_view", 1)) {
-            1 -> positionViewButton.text = getString(R.string.percent_change)
-            2 -> positionViewButton.text = getString(R.string.total_percent_change)
-            3 -> positionViewButton.text = getString(R.string.total_return)
-        }
-        positionViewButton.setOnClickListener { v: View ->
-            showMenu(v, R.menu.popup_menu)
-        }
+            // Position View Menu button initialization
+            val positionViewButton = mView.findViewById<MaterialButton>(R.id.menu_button)
+            when (prefs!!.retrieveInt("position_view", 1)) {
+                1 -> positionViewButton.text = getString(R.string.percent_change)
+                2 -> positionViewButton.text = getString(R.string.total_percent_change)
+                3 -> positionViewButton.text = getString(R.string.total_return)
+            }
+            positionViewButton.setOnClickListener { v: View ->
+                showMenu(v, R.menu.popup_menu)
+            }
 
-        // One Day Multibutton
-        oneDay?.setOnClickListener {
-            selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
-            selectedButton = oneDay
-            selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
-            selectedAdapter = oneDayAdapter
-            sparkView?.adapter = selectedAdapter
-            setDashboardValues()
-        }
+            // One Day Multibutton
+            oneDay?.setOnClickListener {
+                selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
+                selectedButton = oneDay
+                selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
+                selectedAdapter = oneDayAdapter
+                sparkView?.adapter = selectedAdapter
+                setDashboardValues()
+            }
 
-        // One Week Multibutton
-        oneWeek?.setOnClickListener {
-            selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
-            selectedButton = oneWeek
-            selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
-            selectedAdapter = oneWeekAdapter
-            sparkView?.adapter = selectedAdapter
-            setDashboardValues()
-        }
+            // One Week Multibutton
+            oneWeek?.setOnClickListener {
+                selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
+                selectedButton = oneWeek
+                selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
+                selectedAdapter = oneWeekAdapter
+                sparkView?.adapter = selectedAdapter
+                setDashboardValues()
+            }
 
-        // One Month Multibutton
-        oneMonth?.setOnClickListener {
-            selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
-            selectedButton = oneMonth
-            selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
-            selectedAdapter = oneMonthAdapter
-            sparkView?.adapter = selectedAdapter
-            setDashboardValues()
-        }
+            // One Month Multibutton
+            oneMonth?.setOnClickListener {
+                selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
+                selectedButton = oneMonth
+                selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
+                selectedAdapter = oneMonthAdapter
+                sparkView?.adapter = selectedAdapter
+                setDashboardValues()
+            }
 
-        // Three Month Multibutton
-        threeMonth?.setOnClickListener {
-            selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
-            selectedButton = threeMonth
-            selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
-            selectedAdapter = threeMonthAdapter
-            sparkView?.adapter = selectedAdapter
-            setDashboardValues()
-        }
+            // Three Month Multibutton
+            threeMonth?.setOnClickListener {
+                selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
+                selectedButton = threeMonth
+                selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
+                selectedAdapter = threeMonthAdapter
+                sparkView?.adapter = selectedAdapter
+                setDashboardValues()
+            }
 
-        // One Year Multibutton
-        oneYear?.setOnClickListener {
-            selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
-            selectedButton = oneYear
-            selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
-            selectedAdapter = oneYearAdapter
-            sparkView?.adapter = selectedAdapter
-            setDashboardValues()
-        }
+            // One Year Multibutton
+            oneYear?.setOnClickListener {
+                selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
+                selectedButton = oneYear
+                selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
+                selectedAdapter = oneYearAdapter
+                sparkView?.adapter = selectedAdapter
+                setDashboardValues()
+            }
 
-        // Set percent change
-        percentChange = mView.findViewById(R.id.percentChange)
+            // Set percent change
+            percentChange = mView.findViewById(R.id.percentChange)
 
-        // Ticker information
-        tickerView = mView.findViewById(R.id.tickerView)
-        tickerView?.setCharacterLists(TickerUtils.provideNumberList())
+            // Ticker information
+            tickerView = mView.findViewById(R.id.tickerView)
+            tickerView?.setCharacterLists(TickerUtils.provideNumberList())
 
-        // Set swipe refresh
-        swipeRefresh = mView.findViewById(R.id.refresh)
-        swipeRefresh?.translationZ = 100f
-        swipeRefresh?.bringToFront()
+            // Set swipe refresh
+            swipeRefresh = mView.findViewById(R.id.refresh)
+            swipeRefresh?.translationZ = 100f
+            swipeRefresh?.bringToFront()
 
-        requireActivity().theme.resolveAttribute(R.attr.colorPrimaryLight, typedValue, true)
-        val color = AtomicInteger(ContextCompat.getColor(requireActivity(), typedValue.resourceId))
+            requireActivity().theme.resolveAttribute(R.attr.colorPrimaryLight, typedValue, true)
+            val color = AtomicInteger(ContextCompat.getColor(requireActivity(), typedValue.resourceId))
 
-        // Scrub for chart
-        sparkView?.sparkAnimator = null
-        sparkView?.baseLineColor = color.get()
-        sparkView?.setScrubListener { value: Any? ->
+            // Scrub for chart
+            sparkView?.sparkAnimator = null
+            sparkView?.baseLineColor = color.get()
+            sparkView?.setScrubListener { value: Any? ->
 
-            // Format to add commas, scrub for ticker price
-            if (value != null) {
-                val amount = value.toString().toDouble()
-                val formatter = DecimalFormat("#,###.00")
-                tickerView?.text = "$" + formatter.format(amount)
+                // Format to add commas, scrub for ticker price
+                if (value != null) {
+                    val amount = value.toString().toDouble()
+                    val formatter = DecimalFormat("#,###.00")
+                    tickerView?.text = "$" + formatter.format(amount)
+                }
             }
         }
+        initializeValues.start()
 
         val tickerCounterThread = Thread {
             val formatter = DecimalFormat("#,###.00")
@@ -581,10 +581,10 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
                 temp.clear()
 
                 // Set Recycle Adapter for orders
-                recycleAdapterOrders = RecyclerViewAdapterOrders(requireActivity(), orders!!)
+//                recycleAdapterOrders = RecyclerViewAdapterOrders(requireActivity(), orders!!)
                 requireActivity().runOnUiThread {
-//                recycleAdapterOrders?.notifyDataSetChanged()
-                    recyclerOrders?.adapter = recycleAdapterOrders
+                    recycleAdapterOrders?.notifyDataSetChanged()
+//                    recyclerOrders?.adapter = recycleAdapterOrders
                 }
             }
         }
@@ -700,11 +700,11 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
     // Initialization for the stock graphs
     private fun initializeDashboardValues(periodLength: Int, periodUnit: PortfolioPeriodUnit, timeFrame: PortfolioTimeFrame, selectedAdapterInitial: StockAdapter?) {
         val alpacaAPI = AlpacaAPI(null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
-        val fetchFistoryThread = Thread {
+        val fetchHistoryThread = Thread {
             val historyInitial = AtomicReference(ArrayList<Double>())
 
             // Fetch last open day's information
-            var calendar: ArrayList<Calendar>? = null
+            val calendar: java.util.ArrayList<Calendar>?
             try {
                 calendar = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(1), LocalDate.now()) as ArrayList<Calendar>?
                 var lastOpenDate2 = LocalDate.now().minusDays(1)
@@ -829,7 +829,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             selectedAdapterInitial.notifyDataSetChanged()
             setDashboardValues() // Set here to allow ample time for instantiation
         }
-        fetchFistoryThread.start()
+        fetchHistoryThread.start()
 
         val setCurrentEquityThread = Thread {
             val currentValue: String?

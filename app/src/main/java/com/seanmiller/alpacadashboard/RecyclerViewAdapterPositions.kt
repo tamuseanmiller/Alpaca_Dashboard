@@ -40,10 +40,11 @@ class RecyclerViewAdapterPositions internal constructor(context: Context?, data:
             val percentChange = mData[position].changeToday
             val totalPercentChange = mData[position].unrealizedPlpc
             val totalReturn = mData[position].unrealizedPl
-            if (percentChange != "-1" || positionView != PositionView.PERCENT_CHANGE)
-                updateValues(holder, percentChange, totalPercentChange, totalReturn)  // Update the "percent change" parameter in holder
+            if (percentChange != "-1" || positionView != PositionView.PERCENT_CHANGE) {
+                // Update the "percent change" parameter in holder
+                mainActivity.runOnUiThread { updateValues(holder, percentChange, totalPercentChange, totalReturn) }
 
-            else {
+            } else {
                 // Set values
                 try {
                     val snapshot = alpacaAPI.getSnapshot(stockName)

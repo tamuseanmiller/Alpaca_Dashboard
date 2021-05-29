@@ -290,101 +290,101 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
             } catch (e: AlpacaAPIRequestException) {
                 e.printStackTrace()
             }
+
+            // Set colors on click, for toggle buttons
+            val tV = TypedValue()
+            theme.resolveAttribute(R.attr.color_positive_light, tV, true)
+            posOrNegColorLight = AtomicInteger(ContextCompat.getColor(this, tV.resourceId))
+            theme.resolveAttribute(R.attr.colorPrimary, tV, true)
+            val colorPrimary = ContextCompat.getColor(this, tV.resourceId)
+
+            // One Day Button Listener
+            oneDayStock?.setOnClickListener {
+                selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
+                selectedButton = oneDayStock
+                selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
+                selectedAdapterStock = oneDayStockAdapter
+                sparkViewStock?.adapter = selectedAdapterStock
+                setStockValues(oneDayStockAdapter)
+            }
+
+            // One Week Button Listener
+            oneWeekStock?.setOnClickListener {
+                selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
+                selectedButton = oneWeekStock
+                selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
+                selectedAdapterStock = oneWeekStockAdapter
+                sparkViewStock?.adapter = selectedAdapterStock
+                setStockValues(oneWeekStockAdapter)
+            }
+
+            // One Month Button Listener
+            oneMonthStock?.setOnClickListener {
+                selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
+                selectedButton = oneMonthStock
+                selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
+                selectedAdapterStock = oneMonthStockAdapter
+                sparkViewStock?.adapter = selectedAdapterStock
+                setStockValues(selectedAdapterStock)
+            }
+
+            // Three Months Button Listener
+            threeMonthStock?.setOnClickListener {
+                selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
+                selectedButton = threeMonthStock
+                selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
+                selectedAdapterStock = threeMonthStockAdapter
+                sparkViewStock?.adapter = selectedAdapterStock
+                setStockValues(selectedAdapterStock)
+            }
+
+            // One Year Button Listener
+            oneYearStock?.setOnClickListener {
+                selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
+                selectedButton = oneYearStock
+                selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
+                selectedAdapterStock = oneYearStockAdapter
+                sparkViewStock?.adapter = selectedAdapterStock
+                setStockValues(selectedAdapterStock)
+            }
+
+            // Set adapter
+            sparkViewStock?.adapter = selectedAdapterStock
+
+            // Scrub for chart
+            theme.resolveAttribute(R.attr.colorPrimaryLight, tV, true)
+            val color = AtomicInteger(ContextCompat.getColor(this, tV.resourceId))
+
+            // Scrub for chart
+            sparkViewStock?.sparkAnimator = null
+            sparkViewStock?.baseLineColor = color.get()
+            sparkViewStock?.setScrubListener { value: Any? ->
+
+                // Format to add commas
+                if (value != null) {
+                    val amount = AtomicReference<Double>()
+                    val formatter = DecimalFormat("#,###.00")
+                    amount.set(value.toString().toDouble())
+                    tickerViewStock?.text = "$" + formatter.format(amount.get())
+                }
+            }
         }
         initializeGraphsThread.start()
 
-        // Set colors on click, for toggle buttons
-        val tV = TypedValue()
-        theme.resolveAttribute(R.attr.color_positive_light, tV, true)
-        posOrNegColorLight = AtomicInteger(ContextCompat.getColor(this, tV.resourceId))
-        theme.resolveAttribute(R.attr.colorPrimary, tV, true)
-        val colorPrimary = ContextCompat.getColor(this, tV.resourceId)
-
-        // One Day Button Listener
-        oneDayStock?.setOnClickListener {
-            selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
-            selectedButton = oneDayStock
-            selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
-            selectedAdapterStock = oneDayStockAdapter
-            sparkViewStock?.adapter = selectedAdapterStock
-            setStockValues(oneDayStockAdapter)
-        }
-
-        // One Week Button Listener
-        oneWeekStock?.setOnClickListener {
-            selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
-            selectedButton = oneWeekStock
-            selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
-            selectedAdapterStock = oneWeekStockAdapter
-            sparkViewStock?.adapter = selectedAdapterStock
-            setStockValues(oneWeekStockAdapter)
-        }
-
-        // One Month Button Listener
-        oneMonthStock?.setOnClickListener {
-            selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
-            selectedButton = oneMonthStock
-            selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
-            selectedAdapterStock = oneMonthStockAdapter
-            sparkViewStock?.adapter = selectedAdapterStock
-            setStockValues(selectedAdapterStock)
-        }
-
-        // Three Months Button Listener
-        threeMonthStock?.setOnClickListener {
-            selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
-            selectedButton = threeMonthStock
-            selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
-            selectedAdapterStock = threeMonthStockAdapter
-            sparkViewStock?.adapter = selectedAdapterStock
-            setStockValues(selectedAdapterStock)
-        }
-
-        // One Year Button Listener
-        oneYearStock?.setOnClickListener {
-            selectedButton!!.backgroundTintList = ColorStateList.valueOf(colorPrimary)
-            selectedButton = oneYearStock
-            selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
-            selectedAdapterStock = oneYearStockAdapter
-            sparkViewStock?.adapter = selectedAdapterStock
-            setStockValues(selectedAdapterStock)
-        }
-
-        // Set adapter
-        sparkViewStock?.adapter = selectedAdapterStock
-
-        // Scrub for chart
-        theme.resolveAttribute(R.attr.colorPrimaryLight, tV, true)
-        val color = AtomicInteger(ContextCompat.getColor(this, tV.resourceId))
-
-        // Scrub for chart
-        sparkViewStock?.sparkAnimator = null
-        sparkViewStock?.baseLineColor = color.get()
-        sparkViewStock?.setScrubListener { value: Any? ->
-
-            // Format to add commas
-            if (value != null) {
-                val amount = AtomicReference<Double>()
-                val formatter = DecimalFormat("#,###.00")
-                amount.set(value.toString().toDouble())
-                tickerViewStock?.text = "$" + formatter.format(amount.get())
+        val liveUpdateThread = Thread {
+            // Get market status
+            var marketStatus = true
+            try {
+                marketStatus = alpacaAPI.clock.isOpen
+            } catch (e: AlpacaAPIRequestException) {
+                e.printStackTrace()
             }
-        }
 
-        // Get market status
-        var marketStatus = true
-        try {
-            marketStatus = alpacaAPI.clock.isOpen
-        } catch (e: AlpacaAPIRequestException) {
-            e.printStackTrace()
-        }
+            // Stream to chart if market open
+            if (marketStatus) {
 
-        // Stream to chart if market open
-        if (marketStatus) {
-
-            // Stream live data for a stock
+                // Stream live data for a stock
 //            streamStockData(alpacaAPI, DashboardFragment.ticker, tickerViewStock)
-            val liveUpdateThread = Thread {
                 while (true) {
                     try {
                         Thread.sleep(60000)
@@ -405,10 +405,10 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
                     runOnUiThread { selectedAdapterStock!!.addVal(finalAskingPrice) }
                     runOnUiThread { setStockValues(selectedAdapterStock) }
                 }
-            }
-            liveUpdateThread.start()
 
+            }
         }
+        liveUpdateThread.start()
 
         val ordersThread = Thread {
 
