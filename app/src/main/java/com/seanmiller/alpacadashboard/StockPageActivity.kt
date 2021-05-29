@@ -6,11 +6,11 @@ import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.TypedValue
 import android.view.View
+import android.view.View.GONE
 import android.view.WindowInsets
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -72,6 +72,7 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
     private var threeMonthStockAdapter: StockAdapter? = null
     private var oneYearStockAdapter: StockAdapter? = null
     private var prefs: SharedPreferencesManager? = null
+    private var ordersStockText: TextView? = null
 
     public override fun onResume() {
         super.onResume()
@@ -412,30 +413,34 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
         val ordersThread = Thread {
 
             // Fetch current orders
-            ordersStock = ArrayList()
             order = ArrayList()
             try {
                 val symbols = ArrayList<String>()
                 symbols.add(DashboardFragment.ticker!!.get())
-                ordersStock = alpacaAPI.getOrders(OrderStatus.CLOSED, 10, null, ZonedDateTime.now().plusDays(1), SortDirection.DESCENDING, false, symbols) as ArrayList<Order>?
+                order = alpacaAPI.getOrders(OrderStatus.CLOSED, 10, null, ZonedDateTime.now().plusDays(1), SortDirection.DESCENDING, false, symbols) as ArrayList<Order>?
             } catch (e: AlpacaAPIRequestException) {
                 e.printStackTrace()
             }
-            order?.clear()
-            order?.addAll(ordersStock!!)
-            ordersStock!!.clear()
 
-            // Initialize recyclerview and adapter
-            recyclerOrdersStock = findViewById(R.id.ordersStock)
-            if (order?.isNotEmpty()!!) {
-                recycleAdapterOrdersStock = RecyclerViewAdapterOrders(this, order!!)
-            }
+            // If there are no orders
+            ordersStockText = findViewById(R.id.ordersStockText)
+            if (order!!.isEmpty()) {
+                runOnUiThread { ordersStockText?.visibility = GONE }
 
-            // Add Decorations and set adapter
-            runOnUiThread {
-                recyclerOrdersStock?.layoutManager = LinearLayoutManager(this)
-                recyclerOrdersStock?.addItemDecoration(LinearMarginDecoration.create(0, LinearLayoutManager.VERTICAL, false, null))
-                recyclerOrdersStock?.adapter = recycleAdapterOrdersStock
+            } else {
+
+                // Initialize recyclerview and adapter
+                recyclerOrdersStock = findViewById(R.id.ordersStock)
+                if (order?.isNotEmpty()!!) {
+                    recycleAdapterOrdersStock = RecyclerViewAdapterOrders(this, order!!)
+                }
+
+                // Add Decorations and set adapter
+                runOnUiThread {
+                    recyclerOrdersStock?.layoutManager = LinearLayoutManager(this)
+                    recyclerOrdersStock?.addItemDecoration(LinearMarginDecoration.create(0, LinearLayoutManager.VERTICAL, false, null))
+                    recyclerOrdersStock?.adapter = recycleAdapterOrdersStock
+                }
             }
         }
         ordersThread.start()
@@ -493,7 +498,7 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
     }
 
     // Method that is called when swipe refresh is enabled
-    fun onRefresh() {
+    private fun onRefresh() {
         swipeRefreshStock!!.isRefreshing = true
         val ordersThread = Thread {
             val alpacaAPI = AlpacaAPI(null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
@@ -507,25 +512,36 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
             } catch (e: AlpacaAPIRequestException) {
                 e.printStackTrace()
             }
-            order?.clear()
-            order?.addAll(ordersStock!!)
-            ordersStock!!.clear()
+
+            // If there are no orders
+            if (ordersStock!!.isEmpty()) {
+                runOnUiThread {
+                    ordersStockText?.visibility = GONE
+                    recycleAdapterOrdersStock?.notifyDataSetChanged()
+                }
+
+            } else {
+
+                order?.clear()
+                order?.addAll(ordersStock!!)
+                ordersStock!!.clear()
+
+                recycleAdapterOrdersStock = RecyclerViewAdapterOrders(this, order!!)
+                runOnUiThread {
+                    recyclerOrdersStock!!.adapter = recycleAdapterOrdersStock
+                }
+            }
 
             // Set number of stocks textview
-            var numPosition: String? = null
+            val numPosition: String?
             try {
                 numPosition = alpacaAPI.getOpenPositionBySymbol(DashboardFragment.ticker!!.get()).qty
-                val finalNumPosition = numPosition
-                runOnUiThread { numPos!!.text = String.format("%s shares owned", finalNumPosition) }
+                runOnUiThread { numPos!!.text = String.format("%s shares owned", numPosition) }
             } catch (e: AlpacaAPIRequestException) {
                 runOnUiThread { numPos!!.text = "0 shares owned" }
                 e.printStackTrace()
             }
-            runOnUiThread {
-                recyclerOrdersStock!!.layoutManager = LinearLayoutManager(this)
-                recyclerOrdersStock!!.addItemDecoration(LinearMarginDecoration.create(0, LinearLayoutManager.VERTICAL, false, null))
-                recyclerOrdersStock!!.adapter = recycleAdapterOrdersStock
-            }
+
             swipeRefreshStock!!.isRefreshing = false
         }
         ordersThread.start()

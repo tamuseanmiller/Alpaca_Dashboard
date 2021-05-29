@@ -25,10 +25,6 @@ class RecyclerViewAdapterPositions internal constructor(context: Context?, data:
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
-        if (position > mData.size - 1) {
-            println("Here")
-        }
-
         // Set variables for each of the areas
         val mainActivity = MainActivity()
         val stockName = mData[position].symbol

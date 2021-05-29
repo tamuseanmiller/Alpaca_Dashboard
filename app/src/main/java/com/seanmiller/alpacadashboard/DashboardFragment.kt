@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.TypedValue
 import android.view.*
+import android.view.View.GONE
 import android.view.View.OnClickListener
 import android.widget.ImageButton
 import android.widget.PopupMenu
@@ -77,6 +78,9 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
     private var watchlist: ArrayList<String>? = null
     private var stocks: ArrayList<Position>? = null
     private var positionView: PositionView? = null
+    private var watchlistText: TextView? = null
+    private var positionsText: TextView? = null
+    private var ordersText: TextView? = null
 
     // Fetches the height of the screen being used in order to determine the size of the graph
     private fun fetchHeight(): Int {
@@ -203,9 +207,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             selectedButton = oneDay
             selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
             selectedAdapter = oneDayAdapter
-            sparkView.let {
-                sparkView!!.adapter = selectedAdapter
-            }
+            sparkView?.adapter = selectedAdapter
             setDashboardValues()
         }
 
@@ -235,7 +237,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             selectedButton = threeMonth
             selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
             selectedAdapter = threeMonthAdapter
-            with(sparkView) { this?.setAdapter(selectedAdapter) }
+            sparkView?.adapter = selectedAdapter
             setDashboardValues()
         }
 
@@ -245,7 +247,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             selectedButton = oneYear
             selectedButton!!.backgroundTintList = ColorStateList.valueOf(posOrNegColorLight!!.get())
             selectedAdapter = oneYearAdapter
-            with(sparkView) { this?.setAdapter(selectedAdapter) }
+            sparkView?.adapter = selectedAdapter
             setDashboardValues()
         }
 
@@ -325,29 +327,36 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
                 3 -> positionView = PositionView.TOTAL_RETURN
             }
 
-            // Fetch the Recycler View
-            recycleAdapterPositions = RecyclerViewAdapterPositions(requireActivity(), stocks!!, positionView!!)
-            recycleAdapterPositions!!.setClickListener(this)
-            requireActivity().runOnUiThread { recyclerViewPositions!!.adapter = recycleAdapterPositions }
+            // If there are no positions
+            positionsText = mView.findViewById(R.id.positionText)
+            if (stocks!!.isEmpty()) {
+                requireActivity().runOnUiThread { positionsText?.visibility = GONE }
 
-            try {
-                val calendar = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(1), LocalDate.now()) as ArrayList<Calendar>?
+            } else {
+                // Fetch the Recycler View
+                recycleAdapterPositions = RecyclerViewAdapterPositions(requireActivity(), stocks!!, positionView!!)
+                recycleAdapterPositions!!.setClickListener(this)
+                requireActivity().runOnUiThread { recyclerViewPositions!!.adapter = recycleAdapterPositions }
 
-                // Update positions if not market day
-                if (!calendar!!.last().date.equals(LocalDate.now().toString())) {
-                    val tempList: ArrayList<Position> = ArrayList()
-                    for (i in 0 until stocks?.size!!) {
-                        stocks?.get(i)?.changeToday = "-1"
-                        tempList.add(stocks?.get(i)!!)
+                try {
+                    val calendar = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(1), LocalDate.now()) as ArrayList<Calendar>?
+
+                    // Update positions if not market day
+                    if (!calendar!!.last().date.equals(LocalDate.now().toString())) {
+                        val tempList: ArrayList<Position> = ArrayList()
+                        for (i in 0 until stocks?.size!!) {
+                            stocks?.get(i)?.changeToday = "-1"
+                            tempList.add(stocks?.get(i)!!)
+                        }
+                        stocks!!.clear()
+                        stocks!!.addAll(tempList)
+                        tempList.clear()
+                        requireActivity().runOnUiThread { recycleAdapterPositions?.notifyDataSetChanged() }
                     }
-                    stocks!!.clear()
-                    stocks!!.addAll(tempList)
-                    tempList.clear()
-                    requireActivity().runOnUiThread { recycleAdapterPositions?.notifyDataSetChanged() }
-                }
 
-            } catch (e: AlpacaAPIRequestException) {
-                e.printStackTrace()
+                } catch (e: AlpacaAPIRequestException) {
+                    e.printStackTrace()
+                }
             }
         }
         positionsThread.start()
@@ -356,14 +365,13 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
 
             // Fetch watchlist
             watchlist = ArrayList()
-            val tempList: ArrayList<String> = ArrayList()
 
             // Add every stock in all watchlists
             try {
                 for (i in alpacaAPI.watchlists) {
                     for (j in alpacaAPI.getWatchlist(i.id).assets) {
-                        if (!tempList.contains(j.symbol))
-                            tempList.add(j.symbol)
+                        if (!watchlist?.contains(j.symbol)!!)
+                            watchlist?.add(j.symbol)
                     }
                 }
             } catch (e: AlpacaAPIRequestException) {
@@ -371,16 +379,14 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             }
 
             // If no stock in watchlist
-            if (tempList.isEmpty()) {
-//                val watchlistText: TextView = mView.findViewById(R.id.watchlistText)
-//                watchlistText.visibility = INVISIBLE
-                alpacaAPI.createWatchlist("alpaca_dashboard", "AAPL")
+            watchlistText = mView.findViewById(R.id.watchlistText)
+            if (watchlist!!.isEmpty()) {
+                requireActivity().runOnUiThread { watchlistText?.visibility = GONE }
+//                alpacaAPI.createWatchlist("alpaca_dashboard", "AAPL")
 
             } else {
 
                 // Set the recycler adapter
-                watchlist?.clear()
-                watchlist?.addAll(tempList)
                 recyclerViewAdapterWatchlist = RecyclerViewAdapterWatchlist(requireActivity(), watchlist!!)
                 recyclerViewAdapterWatchlist?.setClickListener(this)
                 requireActivity().runOnUiThread {
@@ -394,18 +400,22 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
 
             // Fetch curent orders
             orders = ArrayList()
-            var tempOrders: ArrayList<Order> = ArrayList()
             try {
-                tempOrders = (alpacaAPI.getOrders(OrderStatus.CLOSED, 10, null, ZonedDateTime.now(), SortDirection.DESCENDING, false, null) as ArrayList<Order>?)!!
+                orders = (alpacaAPI.getOrders(OrderStatus.CLOSED, 10, null, ZonedDateTime.now(), SortDirection.DESCENDING, false, null) as ArrayList<Order>?)!!
             } catch (e: AlpacaAPIRequestException) {
                 e.printStackTrace()
             }
 
-            // Set the recycler adapter
-            orders?.addAll(tempOrders)
-            tempOrders.clear()
-            recycleAdapterOrders = RecyclerViewAdapterOrders(requireActivity(), orders!!)
-            requireActivity().runOnUiThread { recyclerOrders?.adapter = recycleAdapterOrders }
+            // If there are no orders
+            ordersText = mView.findViewById(R.id.ordersText)
+            if (orders!!.isEmpty()) {
+                requireActivity().runOnUiThread { ordersText?.visibility = GONE }
+
+            } else {
+                // Set the recycler adapter
+                recycleAdapterOrders = RecyclerViewAdapterOrders(requireActivity(), orders!!)
+                requireActivity().runOnUiThread { recyclerOrders?.adapter = recycleAdapterOrders }
+            }
         }
         ordersThread.start()
 
@@ -527,13 +537,23 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             } catch (e: AlpacaAPIRequestException) {
                 e.printStackTrace()
             }
-            stocks!!.clear()
-            stocks!!.addAll(positions)
-            positions.clear()
 
-            // Set Recycle Adapter for positions
-            // Fetch the Recycler View
-            requireActivity().runOnUiThread { recycleAdapterPositions?.notifyDataSetChanged() }
+            // If there are no positions
+            if (stocks!!.isEmpty()) {
+                requireActivity().runOnUiThread {
+                    positionsText?.visibility = GONE
+                    recycleAdapterPositions?.notifyDataSetChanged()
+                }
+
+            } else {
+                stocks!!.clear()
+                stocks!!.addAll(positions)
+                positions.clear()
+
+                // Set Recycle Adapter for positions
+                // Fetch the Recycler View
+                requireActivity().runOnUiThread { recycleAdapterPositions?.notifyDataSetChanged() }
+            }
         }
         positionsThread.start()
 
@@ -548,14 +568,24 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             } catch (e: AlpacaAPIRequestException) {
                 e.printStackTrace()
             }
-            orders!!.addAll(temp)
-            temp.clear()
 
-            // Set Recycle Adapter for orders
-            recycleAdapterOrders = RecyclerViewAdapterOrders(requireActivity(), orders!!)
-            requireActivity().runOnUiThread {
+            // If there are no orders
+            if (temp.isEmpty()) {
+                requireActivity().runOnUiThread {
+                    ordersText?.visibility = GONE
+                    recycleAdapterOrders?.notifyDataSetChanged()
+                }
+
+            } else {
+                orders!!.addAll(temp)
+                temp.clear()
+
+                // Set Recycle Adapter for orders
+                recycleAdapterOrders = RecyclerViewAdapterOrders(requireActivity(), orders!!)
+                requireActivity().runOnUiThread {
 //                recycleAdapterOrders?.notifyDataSetChanged()
-                recyclerOrders?.adapter = recycleAdapterOrders
+                    recyclerOrders?.adapter = recycleAdapterOrders
+                }
             }
         }
         ordersThread.start()
@@ -578,11 +608,22 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
                 e.printStackTrace()
             }
 
-            // Set Recycle Adapter for positions
-//            recyclerViewAdapterWatchlist = RecyclerViewAdapterWatchlist(requireActivity(), watchlist!!)
-            watchlist?.addAll(tempList)
-            tempList.clear()
-            requireActivity().runOnUiThread { recyclerViewAdapterWatchlist?.notifyDataSetChanged() }
+            // If no stock in watchlist
+            if (tempList.isEmpty()) {
+                requireActivity().runOnUiThread {
+                    watchlistText?.visibility = GONE
+                    recyclerViewAdapterWatchlist?.notifyDataSetChanged()
+                }
+//                alpacaAPI.createWatchlist("alpaca_dashboard", "AAPL")
+
+            } else {
+
+                // Set Recycle Adapter for positions
+//              recyclerViewAdapterWatchlist = RecyclerViewAdapterWatchlist(requireActivity(), watchlist!!)
+                watchlist?.addAll(tempList)
+                tempList.clear()
+                requireActivity().runOnUiThread { recyclerViewAdapterWatchlist?.notifyDataSetChanged() }
+            }
             swipeRefresh!!.isRefreshing = false
         }
         watchlistThread.start()

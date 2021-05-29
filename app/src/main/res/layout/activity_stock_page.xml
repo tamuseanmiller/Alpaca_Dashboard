@@ -1,62 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.swiperefreshlayout.widget.SwipeRefreshLayout android:id="@+id/refreshStock"
-    app:swipeRefreshLayoutProgressSpinnerBackgroundColor="?attr/color_positive"
-    android:layout_height="match_parent"
-    android:layout_width="match_parent"
-    android:background="?attr/colorPrimary"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/refreshStock"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorPrimary"
+    app:swipeRefreshLayoutProgressSpinnerBackgroundColor="?attr/color_positive">
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:backgroundTint="?attr/color_positive"
-        android:id="@+id/placeOrder"
-        android:src="@drawable/plus"
-        android:elevation="2dp"
-        app:borderWidth="0dp"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="10dp"
-        android:layout_above="@id/fabCard"
-        android:layout_marginBottom="-30dp"
-        app:fab_stroke_visible="false"
-        app:tint="?attr/colorPrimary"
-        android:contentDescription="@string/places_orders" />
-
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/numberOfStocks"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="?attr/colorPrimarySlightLight"
-        android:text="@string/loading"
-        android:elevation="3dp"
-        android:layout_marginStart="20dp"
-        android:textSize="10sp"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="30dp"/>
-
-
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        app:cardCornerRadius="0dp"
-        app:cardElevation="2dp"
-        android:id="@+id/fabCard"
-        android:layout_gravity="bottom"
-        android:backgroundTint="?attr/colorPrimary"
-        android:layout_alignParentBottom="true">
-
-        <View
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/placeOrder"
             android:layout_width="wrap_content"
-            android:layout_height="4dp"
-            android:background="@drawable/shadow"/>
+            android:layout_height="wrap_content"
+            android:layout_above="@id/fabCard"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="-30dp"
+            android:contentDescription="@string/places_orders"
+            android:elevation="2dp"
+            android:src="@drawable/plus"
+            app:backgroundTint="?attr/color_positive"
+            app:borderWidth="0dp"
+            app:fab_stroke_visible="false"
+            app:tint="?attr/colorPrimary" />
 
-    </com.google.android.material.card.MaterialCardView>
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/numberOfStocks"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginStart="20dp"
+            android:layout_marginBottom="30dp"
+            android:elevation="3dp"
+            android:text="@string/loading"
+            android:textColor="?attr/colorPrimarySlightLight"
+            android:textSize="10sp" />
+
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/fabCard"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_alignParentBottom="true"
+            android:layout_gravity="bottom"
+            android:backgroundTint="?attr/colorPrimary"
+            app:cardCornerRadius="0dp"
+            app:cardElevation="2dp">
+
+            <View
+                android:layout_width="wrap_content"
+                android:layout_height="4dp"
+                android:background="@drawable/shadow" />
+
+        </com.google.android.material.card.MaterialCardView>
 
         <androidx.core.widget.NestedScrollView
             android:id="@+id/scrollIDStock"
@@ -72,605 +72,609 @@
                 android:paddingTop="@dimen/activity_vertical_margin"
                 android:paddingRight="@dimen/activity_horizontal_margin">
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
-
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <Button
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/percentChangeStock"
-                            android:text="@string/loading"
-                            android:textSize="10sp"
-                            android:clickable="false"
-                            android:gravity="center"
-                            android:layout_centerInParent="true"
-                            app:cornerRadius="15dp"
-                            android:layout_alignParentEnd="true"
-                            android:stateListAnimator="@null"
-                            app:iconSize="3dp"
-                            app:iconGravity="textEnd"
-                            android:elevation="0dp"
-                            app:iconTint="?attr/color_positive"
-                            android:textColor="?attr/color_positive"
-                            style="@style/Widget.MaterialComponents.Button.Icon"
-                            android:backgroundTint="?attr/color_positive_light"/>
-
-                        <androidx.appcompat.widget.AppCompatTextView
-                            android:id="@+id/stockTradedStock"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:paddingBottom="10dp"
-                            android:fontFamily="sans-serif-medium"
-                            android:textColor="?attr/colorLight"
-                            android:textSize="35sp" />
-
-                    </RelativeLayout>
-
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <com.robinhood.ticker.TickerView
-                            android:id="@+id/tickerViewStock"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:paddingTop="@dimen/activity_vertical_margin"
-                            android:textColor="?attr/colorLight"
-                            android:textSize="30sp" />
-
-                        <androidx.appcompat.widget.AppCompatImageButton
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:clickable="true"
-                            android:src="@drawable/eye"
-                            android:id="@+id/addWatchlist"
-                            android:padding="10dp"
-                            android:background="?attr/selectableItemBackgroundBorderless"
-                            android:backgroundTint="?attr/colorPrimary"
-                            android:stateListAnimator="@null"
-                            android:paddingBottom="10dp"
-                            android:layout_centerVertical="true"
-                            android:layout_alignParentEnd="true"
-                            app:tint="?attr/colorPrimaryLight"
-                            tools:ignore="RtlSymmetry"
-                            android:focusable="true" />
-
-                    </RelativeLayout>
-
-                </LinearLayout>
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:orientation="vertical">
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/sparkCardStock"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:backgroundTint="?attr/colorPrimary"
-                        android:clipChildren="true"
-                        android:elevation="0dp"
-                        app:cardCornerRadius="15dp"
-                        app:cardElevation="0dp"
-                        app:strokeWidth="1dp"
-                        app:strokeColor="?attr/colorAccentTransparent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:cardPreventCornerOverlap="false">
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            app:layout_constraintHeight_percent=".5"
-                            app:layout_constraintVertical_weight="1"
-                            android:orientation="vertical">
-
-                            <com.seanmiller.alpacadashboard.CustomSparkView
-                                android:id="@+id/sparkviewStock"
-                                android:layout_width="match_parent"
-                                android:layout_height="0dp"
-                                android:layout_weight="9"
-                                android:elevation="3dp"
-                                android:paddingTop="20dp"
-                                android:paddingEnd="20dp"
-                                android:paddingBottom="20dp"
-                                app:layout_constrainedHeight="true"
-                                app:layout_constraintBottom_toTopOf="@id/historical"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constrainedWidth="false"
-                                app:layout_constraintHeight_percent=".915"
-                                app:layout_constraintTop_toTopOf="parent"
-                                app:spark_lineColor="?attr/color_negative"
-                                app:spark_scrubEnabled="true"
-                                tools:ignore="RtlSymmetry" />
-
-                            <LinearLayout
-                                android:id="@+id/historicalStock"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:paddingStart="10dp"
-                                android:paddingEnd="10dp"
-                                android:paddingBottom="5dp">
-
-                                <com.google.android.material.button.MaterialButton
-                                    android:id="@+id/oneDayStock"
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:backgroundTint="?attr/color_positive_light"
-                                    android:gravity="center"
-                                    android:stateListAnimator="@null"
-                                    android:text="1D"
-                                    android:textColor="?attr/color_positive"
-                                    android:textSize="10sp"
-                                    app:cornerRadius="15dp"
-                                    app:layout_gravity="fill_horizontal"
-                                    app:rippleColor="?attr/color_positive" />
-
-                                <com.google.android.material.button.MaterialButton
-                                    android:id="@+id/oneWeekStock"
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:backgroundTint="?attr/colorPrimary"
-                                    android:gravity="center"
-                                    android:stateListAnimator="@null"
-                                    android:text="1W"
-                                    android:textColor="?attr/color_positive"
-                                    android:textSize="10sp"
-                                    app:cornerRadius="15dp"
-                                    app:layout_gravity="fill_horizontal"
-                                    app:rippleColor="?attr/color_positive" />
-
-                                <com.google.android.material.button.MaterialButton
-                                    android:id="@+id/oneMonthStock"
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:backgroundTint="?attr/colorPrimary"
-                                    android:gravity="center"
-                                    android:stateListAnimator="@null"
-                                    android:text="1M"
-                                    android:textColor="?attr/color_positive"
-                                    android:textSize="10sp"
-                                    app:cornerRadius="15dp"
-                                    app:layout_gravity="fill_horizontal"
-                                    app:rippleColor="?attr/color_positive" />
-
-                                <com.google.android.material.button.MaterialButton
-                                    android:id="@+id/threeMonthsStock"
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:backgroundTint="?attr/colorPrimary"
-                                    android:gravity="center"
-                                    android:stateListAnimator="@null"
-                                    android:text="3M"
-                                    android:textColor="?attr/color_positive"
-                                    android:textSize="10sp"
-                                    app:cornerRadius="15dp"
-                                    app:layout_gravity="fill_horizontal"
-                                    app:rippleColor="?attr/color_positive" />
-
-                                <com.google.android.material.button.MaterialButton
-                                    android:id="@+id/oneYearStock"
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:backgroundTint="?attr/colorPrimary"
-                                    android:gravity="center"
-                                    android:stateListAnimator="@null"
-                                    android:text="1Y"
-                                    android:textColor="?attr/color_positive"
-                                    android:textSize="10sp"
-                                    app:cornerRadius="15dp"
-                                    app:layout_gravity="fill_horizontal"
-                                    app:rippleColor="?attr/color_positive" />
-
-                            </LinearLayout>
-
-                        </LinearLayout>
-
-                    </com.google.android.material.card.MaterialCardView>
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:id="@+id/orderLinear"
-                        android:orientation="vertical"
-                        app:layout_constraintTop_toBottomOf="@id/sparkCardStock">
+                        android:orientation="vertical">
+
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                            <Button
+                                android:id="@+id/percentChangeStock"
+                                style="@style/Widget.MaterialComponents.Button.Icon"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentEnd="true"
+                                android:layout_centerInParent="true"
+                                android:backgroundTint="?attr/color_positive_light"
+                                android:clickable="false"
+                                android:elevation="0dp"
+                                android:gravity="center"
+                                android:stateListAnimator="@null"
+                                android:text="@string/loading"
+                                android:textColor="?attr/color_positive"
+                                android:textSize="10sp"
+                                app:cornerRadius="15dp"
+                                app:iconGravity="textEnd"
+                                app:iconSize="3dp"
+                                app:iconTint="?attr/color_positive" />
+
+                            <androidx.appcompat.widget.AppCompatTextView
+                                android:id="@+id/stockTradedStock"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="sans-serif-medium"
+                                android:paddingBottom="10dp"
+                                android:textColor="?attr/colorLight"
+                                android:textSize="35sp" />
+
+                        </RelativeLayout>
+
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                            <com.robinhood.ticker.TickerView
+                                android:id="@+id/tickerViewStock"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:paddingTop="@dimen/activity_vertical_margin"
+                                android:textColor="?attr/colorLight"
+                                android:textSize="30sp" />
+
+                            <androidx.appcompat.widget.AppCompatImageButton
+                                android:id="@+id/addWatchlist"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentEnd="true"
+                                android:layout_centerVertical="true"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                android:backgroundTint="?attr/colorPrimary"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:padding="10dp"
+                                android:paddingBottom="10dp"
+                                android:src="@drawable/eye"
+                                android:stateListAnimator="@null"
+                                app:tint="?attr/colorPrimaryLight"
+                                tools:ignore="RtlSymmetry" />
+
+                        </RelativeLayout>
+
+                    </LinearLayout>
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/sparkCardStock"
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:backgroundTint="?attr/colorPrimary"
+                            android:clipChildren="true"
+                            android:elevation="0dp"
+                            app:cardCornerRadius="15dp"
+                            app:cardElevation="0dp"
+                            app:cardPreventCornerOverlap="false"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:strokeColor="?attr/colorAccentTransparent"
+                            app:strokeWidth="1dp">
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                app:layout_constraintHeight_percent=".5"
+                                app:layout_constraintVertical_weight="1">
+
+                                <com.seanmiller.alpacadashboard.CustomSparkView
+                                    android:id="@+id/sparkviewStock"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="0dp"
+                                    android:layout_weight="9"
+                                    android:elevation="3dp"
+                                    android:paddingTop="20dp"
+                                    android:paddingEnd="20dp"
+                                    android:paddingBottom="20dp"
+                                    app:layout_constrainedHeight="true"
+                                    app:layout_constrainedWidth="false"
+                                    app:layout_constraintBottom_toTopOf="@id/historical"
+                                    app:layout_constraintEnd_toEndOf="parent"
+                                    app:layout_constraintHeight_percent=".915"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    app:spark_lineColor="?attr/color_negative"
+                                    app:spark_scrubEnabled="true"
+                                    tools:ignore="RtlSymmetry" />
+
+                                <LinearLayout
+                                    android:id="@+id/historicalStock"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:paddingStart="10dp"
+                                    android:paddingEnd="10dp"
+                                    android:paddingBottom="5dp">
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/oneDayStock"
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:backgroundTint="?attr/color_positive_light"
+                                        android:gravity="center"
+                                        android:stateListAnimator="@null"
+                                        android:text="1D"
+                                        android:textColor="?attr/color_positive"
+                                        android:textSize="10sp"
+                                        app:cornerRadius="15dp"
+                                        app:layout_gravity="fill_horizontal"
+                                        app:rippleColor="?attr/color_positive" />
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/oneWeekStock"
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:backgroundTint="?attr/colorPrimary"
+                                        android:gravity="center"
+                                        android:stateListAnimator="@null"
+                                        android:text="1W"
+                                        android:textColor="?attr/color_positive"
+                                        android:textSize="10sp"
+                                        app:cornerRadius="15dp"
+                                        app:layout_gravity="fill_horizontal"
+                                        app:rippleColor="?attr/color_positive" />
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/oneMonthStock"
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:backgroundTint="?attr/colorPrimary"
+                                        android:gravity="center"
+                                        android:stateListAnimator="@null"
+                                        android:text="1M"
+                                        android:textColor="?attr/color_positive"
+                                        android:textSize="10sp"
+                                        app:cornerRadius="15dp"
+                                        app:layout_gravity="fill_horizontal"
+                                        app:rippleColor="?attr/color_positive" />
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/threeMonthsStock"
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:backgroundTint="?attr/colorPrimary"
+                                        android:gravity="center"
+                                        android:stateListAnimator="@null"
+                                        android:text="3M"
+                                        android:textColor="?attr/color_positive"
+                                        android:textSize="10sp"
+                                        app:cornerRadius="15dp"
+                                        app:layout_gravity="fill_horizontal"
+                                        app:rippleColor="?attr/color_positive" />
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/oneYearStock"
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:backgroundTint="?attr/colorPrimary"
+                                        android:gravity="center"
+                                        android:stateListAnimator="@null"
+                                        android:text="1Y"
+                                        android:textColor="?attr/color_positive"
+                                        android:textSize="10sp"
+                                        app:cornerRadius="15dp"
+                                        app:layout_gravity="fill_horizontal"
+                                        app:rippleColor="?attr/color_positive" />
+
+                                </LinearLayout>
+
+                            </LinearLayout>
+
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <LinearLayout
+                            android:id="@+id/orderLinear"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            app:layout_constraintTop_toBottomOf="@id/sparkCardStock">
 
                             <androidx.appcompat.widget.AppCompatTextView
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:paddingBottom="5dp"
-                                android:paddingTop="20dp"
+                                android:visibility="gone"
                                 android:fontFamily="sans-serif-medium"
+                                android:paddingTop="20dp"
+                                android:paddingBottom="5dp"
+                                android:text="@string/statistics"
                                 android:textColor="?attr/colorLight"
-                                android:textSize="25sp"
-                                android:text="@string/statistics"/>
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:paddingBottom="10dp"
-                            android:id="@+id/financial_date"
-                            android:text="@string/loading"
-                            android:textSize="12sp"
-                            android:textColor="?attr/colorPrimaryLight"/>
-
-                        <androidx.gridlayout.widget.GridLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="10dp"
-                            android:paddingBottom="10dp"
-                            android:numColumns="2">
+                                android:textSize="25sp" />
 
                             <TextView
-                                android:layout_width="wrap_content"
+                                android:id="@+id/financial_date"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="20dp"
-                                app:layout_column="0"
-                                app:layout_row="0"
-                                app:layout_columnWeight="1"
-                                android:id="@+id/dividend_yield"
+                                android:visibility="gone"
+                                android:paddingBottom="10dp"
                                 android:text="@string/loading"
-                                android:textSize="18sp"
-                                android:textColor="?attr/colorLight"/>
+                                android:textColor="?attr/colorPrimaryLight"
+                                android:textSize="12sp" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
+                            <androidx.gridlayout.widget.GridLayout
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginEnd="5dp"
-                                android:layout_marginTop="5dp"
-                                app:layout_columnWeight="1"
-                                app:layout_row="1"
-                                android:text="@string/dividend_yield"
-                                app:layout_column="0"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorPrimaryLight"/>
+                                android:visibility="gone"
+                                android:layout_marginStart="10dp"
+                                android:numColumns="2"
+                                android:paddingBottom="10dp">
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="20dp"
-                                app:layout_columnWeight="1"
-                                app:layout_column="0"
-                                app:layout_row="2"
-                                android:id="@+id/assets"
-                                android:text="@string/loading"
-                                android:textSize="18sp"
-                                android:textColor="?attr/colorLight"/>
+                                <TextView
+                                    android:id="@+id/dividend_yield"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="20dp"
+                                    android:text="@string/loading"
+                                    android:textColor="?attr/colorLight"
+                                    android:textSize="18sp"
+                                    app:layout_column="0"
+                                    app:layout_columnWeight="1"
+                                    app:layout_row="0" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginEnd="5dp"
-                                android:layout_marginTop="5dp"
-                                app:layout_columnWeight="1"
-                                app:layout_row="3"
-                                android:text="@string/assets"
-                                app:layout_column="0"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorPrimaryLight"/>
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="5dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:text="@string/dividend_yield"
+                                    android:textColor="?attr/colorPrimaryLight"
+                                    android:textSize="12sp"
+                                    app:layout_column="0"
+                                    app:layout_columnWeight="1"
+                                    app:layout_row="1" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="20dp"
-                                app:layout_column="0"
-                                app:layout_columnWeight="1"
-                                app:layout_row="4"
-                                android:id="@+id/debt"
-                                android:text="@string/loading"
-                                android:textSize="18sp"
-                                android:textColor="?attr/colorLight"/>
+                                <TextView
+                                    android:id="@+id/assets"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="20dp"
+                                    android:text="@string/loading"
+                                    android:textColor="?attr/colorLight"
+                                    android:textSize="18sp"
+                                    app:layout_column="0"
+                                    app:layout_columnWeight="1"
+                                    app:layout_row="2" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginEnd="5dp"
-                                android:layout_marginTop="5dp"
-                                app:layout_row="5"
-                                app:layout_columnWeight="1"
-                                android:text="@string/debt"
-                                app:layout_column="0"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorPrimaryLight"/>
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="5dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:text="@string/assets"
+                                    android:textColor="?attr/colorPrimaryLight"
+                                    android:textSize="12sp"
+                                    app:layout_column="0"
+                                    app:layout_columnWeight="1"
+                                    app:layout_row="3" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="20dp"
-                                app:layout_column="0"
-                                app:layout_columnWeight="1"
-                                app:layout_row="6"
-                                android:id="@+id/debt_equity"
-                                android:text="@string/loading"
-                                android:textSize="18sp"
-                                android:textColor="?attr/colorLight"/>
+                                <TextView
+                                    android:id="@+id/debt"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="20dp"
+                                    android:text="@string/loading"
+                                    android:textColor="?attr/colorLight"
+                                    android:textSize="18sp"
+                                    app:layout_column="0"
+                                    app:layout_columnWeight="1"
+                                    app:layout_row="4" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginEnd="5dp"
-                                app:layout_columnWeight="1"
-                                android:layout_marginTop="5dp"
-                                app:layout_row="7"
-                                android:text="@string/debt_to_equity_ratio"
-                                app:layout_column="0"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorPrimaryLight"/>
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="5dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:text="@string/debt"
+                                    android:textColor="?attr/colorPrimaryLight"
+                                    android:textSize="12sp"
+                                    app:layout_column="0"
+                                    app:layout_columnWeight="1"
+                                    app:layout_row="5" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="20dp"
-                                app:layout_column="0"
-                                app:layout_columnWeight="1"
-                                app:layout_row="8"
-                                android:id="@+id/earnings_per_share"
-                                android:text="@string/loading"
-                                android:textSize="18sp"
-                                android:textColor="?attr/colorLight"/>
+                                <TextView
+                                    android:id="@+id/debt_equity"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="20dp"
+                                    android:text="@string/loading"
+                                    android:textColor="?attr/colorLight"
+                                    android:textSize="18sp"
+                                    app:layout_column="0"
+                                    app:layout_columnWeight="1"
+                                    app:layout_row="6" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginEnd="5dp"
-                                app:layout_columnWeight="1"
-                                android:layout_marginTop="5dp"
-                                app:layout_row="9"
-                                android:text="@string/earnings_per_share"
-                                app:layout_column="0"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorPrimaryLight"/>
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="5dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:text="@string/debt_to_equity_ratio"
+                                    android:textColor="?attr/colorPrimaryLight"
+                                    android:textSize="12sp"
+                                    app:layout_column="0"
+                                    app:layout_columnWeight="1"
+                                    app:layout_row="7" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="20dp"
-                                app:layout_column="0"
-                                app:layout_columnWeight="1"
-                                app:layout_row="10"
-                                android:id="@+id/gross_margin"
-                                android:text="@string/loading"
-                                android:textSize="18sp"
-                                android:textColor="?attr/colorLight"/>
+                                <TextView
+                                    android:id="@+id/earnings_per_share"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="20dp"
+                                    android:text="@string/loading"
+                                    android:textColor="?attr/colorLight"
+                                    android:textSize="18sp"
+                                    app:layout_column="0"
+                                    app:layout_columnWeight="1"
+                                    app:layout_row="8" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginEnd="5dp"
-                                app:layout_columnWeight="1"
-                                android:layout_marginTop="5dp"
-                                app:layout_row="11"
-                                android:text="@string/gross_margin"
-                                app:layout_column="0"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorPrimaryLight"/>
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="5dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:text="@string/earnings_per_share"
+                                    android:textColor="?attr/colorPrimaryLight"
+                                    android:textSize="12sp"
+                                    app:layout_column="0"
+                                    app:layout_columnWeight="1"
+                                    app:layout_row="9" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="20dp"
-                                app:layout_columnWeight="1"
-                                app:layout_column="1"
-                                app:layout_row="0"
-                                android:id="@+id/gross_profit"
-                                android:text="@string/loading"
-                                android:textSize="18sp"
-                                android:textColor="?attr/colorLight"/>
+                                <TextView
+                                    android:id="@+id/gross_margin"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="20dp"
+                                    android:text="@string/loading"
+                                    android:textColor="?attr/colorLight"
+                                    android:textSize="18sp"
+                                    app:layout_column="0"
+                                    app:layout_columnWeight="1"
+                                    app:layout_row="10" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginEnd="5dp"
-                                app:layout_columnWeight="1"
-                                android:layout_marginTop="5dp"
-                                app:layout_row="1"
-                                android:text="@string/gross_profit"
-                                app:layout_column="1"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorPrimaryLight"/>
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="5dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:text="@string/gross_margin"
+                                    android:textColor="?attr/colorPrimaryLight"
+                                    android:textSize="12sp"
+                                    app:layout_column="0"
+                                    app:layout_columnWeight="1"
+                                    app:layout_row="11" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="20dp"
-                                app:layout_columnWeight="1"
-                                app:layout_column="1"
-                                app:layout_row="2"
-                                android:id="@+id/market_cap"
-                                android:text="@string/loading"
-                                android:textSize="18sp"
-                                android:textColor="?attr/colorLight"/>
+                                <TextView
+                                    android:id="@+id/gross_profit"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="20dp"
+                                    android:text="@string/loading"
+                                    android:textColor="?attr/colorLight"
+                                    android:textSize="18sp"
+                                    app:layout_column="1"
+                                    app:layout_columnWeight="1"
+                                    app:layout_row="0" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginEnd="5dp"
-                                app:layout_columnWeight="1"
-                                android:layout_marginTop="5dp"
-                                app:layout_row="3"
-                                android:text="@string/market_cap"
-                                app:layout_column="1"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorPrimaryLight"/>
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="5dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:text="@string/gross_profit"
+                                    android:textColor="?attr/colorPrimaryLight"
+                                    android:textSize="12sp"
+                                    app:layout_column="1"
+                                    app:layout_columnWeight="1"
+                                    app:layout_row="1" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="20dp"
-                                app:layout_columnWeight="1"
-                                app:layout_column="1"
-                                app:layout_row="4"
-                                android:id="@+id/net_cash_flow"
-                                android:text="@string/loading"
-                                android:textSize="18sp"
-                                android:textColor="?attr/colorLight"/>
+                                <TextView
+                                    android:id="@+id/market_cap"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="20dp"
+                                    android:text="@string/loading"
+                                    android:textColor="?attr/colorLight"
+                                    android:textSize="18sp"
+                                    app:layout_column="1"
+                                    app:layout_columnWeight="1"
+                                    app:layout_row="2" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginEnd="5dp"
-                                app:layout_columnWeight="1"
-                                android:layout_marginTop="5dp"
-                                app:layout_row="5"
-                                android:text="@string/net_cash_flow"
-                                app:layout_column="1"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorPrimaryLight"/>
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="5dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:text="@string/market_cap"
+                                    android:textColor="?attr/colorPrimaryLight"
+                                    android:textSize="12sp"
+                                    app:layout_column="1"
+                                    app:layout_columnWeight="1"
+                                    app:layout_row="3" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="20dp"
-                                app:layout_columnWeight="1"
-                                app:layout_column="1"
-                                app:layout_row="6"
-                                android:id="@+id/price_earnings_ratio"
-                                android:text="@string/loading"
-                                android:textSize="18sp"
-                                android:textColor="?attr/colorLight"/>
+                                <TextView
+                                    android:id="@+id/net_cash_flow"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="20dp"
+                                    android:text="@string/loading"
+                                    android:textColor="?attr/colorLight"
+                                    android:textSize="18sp"
+                                    app:layout_column="1"
+                                    app:layout_columnWeight="1"
+                                    app:layout_row="4" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginEnd="5dp"
-                                app:layout_columnWeight="1"
-                                android:layout_marginTop="5dp"
-                                app:layout_row="7"
-                                android:text="@string/price_to_earnings_ratio"
-                                app:layout_column="1"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorPrimaryLight"/>
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="5dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:text="@string/net_cash_flow"
+                                    android:textColor="?attr/colorPrimaryLight"
+                                    android:textSize="12sp"
+                                    app:layout_column="1"
+                                    app:layout_columnWeight="1"
+                                    app:layout_row="5" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="20dp"
-                                app:layout_columnWeight="1"
-                                app:layout_column="1"
-                                app:layout_row="8"
-                                android:id="@+id/price_earnings"
-                                android:text="@string/loading"
-                                android:textSize="18sp"
-                                android:textColor="?attr/colorLight"/>
+                                <TextView
+                                    android:id="@+id/price_earnings_ratio"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="20dp"
+                                    android:text="@string/loading"
+                                    android:textColor="?attr/colorLight"
+                                    android:textSize="18sp"
+                                    app:layout_column="1"
+                                    app:layout_columnWeight="1"
+                                    app:layout_row="6" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginEnd="5dp"
-                                app:layout_columnWeight="1"
-                                android:layout_marginTop="5dp"
-                                app:layout_row="9"
-                                android:text="@string/price_to_earnings"
-                                app:layout_column="1"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorPrimaryLight"/>
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="5dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:text="@string/price_to_earnings_ratio"
+                                    android:textColor="?attr/colorPrimaryLight"
+                                    android:textSize="12sp"
+                                    app:layout_column="1"
+                                    app:layout_columnWeight="1"
+                                    app:layout_row="7" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="20dp"
-                                app:layout_columnWeight="1"
-                                app:layout_column="1"
-                                app:layout_row="10"
-                                android:id="@+id/revenues"
-                                android:text="@string/loading"
-                                android:textSize="18sp"
-                                android:textColor="?attr/colorLight"/>
+                                <TextView
+                                    android:id="@+id/price_earnings"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="20dp"
+                                    android:text="@string/loading"
+                                    android:textColor="?attr/colorLight"
+                                    android:textSize="18sp"
+                                    app:layout_column="1"
+                                    app:layout_columnWeight="1"
+                                    app:layout_row="8" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginEnd="5dp"
-                                app:layout_columnWeight="1"
-                                android:layout_marginTop="5dp"
-                                app:layout_row="11"
-                                android:text="@string/revenues"
-                                app:layout_column="1"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorPrimaryLight"/>
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="5dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:text="@string/price_to_earnings"
+                                    android:textColor="?attr/colorPrimaryLight"
+                                    android:textSize="12sp"
+                                    app:layout_column="1"
+                                    app:layout_columnWeight="1"
+                                    app:layout_row="9" />
 
-                        </androidx.gridlayout.widget.GridLayout>
+                                <TextView
+                                    android:id="@+id/revenues"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="20dp"
+                                    android:text="@string/loading"
+                                    android:textColor="?attr/colorLight"
+                                    android:textSize="18sp"
+                                    app:layout_column="1"
+                                    app:layout_columnWeight="1"
+                                    app:layout_row="10" />
 
-<!--                        <com.google.android.material.card.MaterialCardView-->
-<!--                            android:layout_width="match_parent"-->
-<!--                            android:layout_height="match_parent"-->
-<!--                            android:backgroundTint="?attr/colorPrimary"-->
-<!--                            android:clipChildren="true"-->
-<!--                            android:elevation="0dp"-->
-<!--                            app:cardCornerRadius="15dp"-->
-<!--                            app:cardElevation="0dp"-->
-<!--                            app:strokeWidth="1dp"-->
-<!--                            app:contentPaddingLeft="20dp"-->
-<!--                            app:contentPaddingBottom="10dp"-->
-<!--                            app:contentPaddingTop="10dp"-->
-<!--                            app:strokeColor="?attr/colorAccentTransparent"-->
-<!--                            app:cardPreventCornerOverlap="false">-->
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="5dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:text="@string/revenues"
+                                    android:textColor="?attr/colorPrimaryLight"
+                                    android:textSize="12sp"
+                                    app:layout_column="1"
+                                    app:layout_columnWeight="1"
+                                    app:layout_row="11" />
 
-<!--                            <LinearLayout-->
-<!--                                android:layout_width="match_parent"-->
-<!--                                android:layout_height="match_parent"-->
-<!--                                android:orientation="vertical">-->
+                            </androidx.gridlayout.widget.GridLayout>
 
-<!--                            <androidx.appcompat.widget.AppCompatTextView-->
-<!--                                android:layout_width="wrap_content"-->
-<!--                                android:layout_height="wrap_content"-->
-<!--                                android:textSize="14sp"-->
-<!--                                android:text="Net Income"-->
-<!--                                android:textColor="?attr/colorPrimaryLight"/>-->
+                            <!--                        <com.google.android.material.card.MaterialCardView-->
+                            <!--                            android:layout_width="match_parent"-->
+                            <!--                            android:layout_height="match_parent"-->
+                            <!--                            android:backgroundTint="?attr/colorPrimary"-->
+                            <!--                            android:clipChildren="true"-->
+                            <!--                            android:elevation="0dp"-->
+                            <!--                            app:cardCornerRadius="15dp"-->
+                            <!--                            app:cardElevation="0dp"-->
+                            <!--                            app:strokeWidth="1dp"-->
+                            <!--                            app:contentPaddingLeft="20dp"-->
+                            <!--                            app:contentPaddingBottom="10dp"-->
+                            <!--                            app:contentPaddingTop="10dp"-->
+                            <!--                            app:strokeColor="?attr/colorAccentTransparent"-->
+                            <!--                            app:cardPreventCornerOverlap="false">-->
 
-<!--                            <androidx.appcompat.widget.AppCompatTextView-->
-<!--                                android:layout_width="wrap_content"-->
-<!--                                android:layout_height="wrap_content"-->
-<!--                                android:textSize="16sp"-->
-<!--                                android:text="$1,000,000"-->
-<!--                                android:textColor="?attr/colorLight"-->
-<!--                                android:layout_marginBottom="20dp"/>-->
+                            <!--                            <LinearLayout-->
+                            <!--                                android:layout_width="match_parent"-->
+                            <!--                                android:layout_height="match_parent"-->
+                            <!--                                android:orientation="vertical">-->
 
-<!--                            </LinearLayout>-->
+                            <!--                            <androidx.appcompat.widget.AppCompatTextView-->
+                            <!--                                android:layout_width="wrap_content"-->
+                            <!--                                android:layout_height="wrap_content"-->
+                            <!--                                android:textSize="14sp"-->
+                            <!--                                android:text="Net Income"-->
+                            <!--                                android:textColor="?attr/colorPrimaryLight"/>-->
 
-<!--                        </com.google.android.material.card.MaterialCardView>-->
+                            <!--                            <androidx.appcompat.widget.AppCompatTextView-->
+                            <!--                                android:layout_width="wrap_content"-->
+                            <!--                                android:layout_height="wrap_content"-->
+                            <!--                                android:textSize="16sp"-->
+                            <!--                                android:text="$1,000,000"-->
+                            <!--                                android:textColor="?attr/colorLight"-->
+                            <!--                                android:layout_marginBottom="20dp"/>-->
 
-                        <androidx.appcompat.widget.AppCompatTextView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:paddingBottom="10dp"
-                            android:paddingTop="20dp"
-                            android:fontFamily="sans-serif-medium"
-                            android:textColor="?attr/colorLight"
-                            android:textSize="25sp"
-                            android:text="@string/orders"/>
+                            <!--                            </LinearLayout>-->
 
-                        <androidx.recyclerview.widget.RecyclerView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:id="@+id/ordersStock"
-                            android:paddingStart="-5dp"
-                            android:paddingEnd="-5dp"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            android:paddingBottom="60dp"/>
+                            <!--                        </com.google.android.material.card.MaterialCardView>-->
 
-                    </LinearLayout>
+                            <androidx.appcompat.widget.AppCompatTextView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:id="@+id/ordersStockText"
+                                android:fontFamily="sans-serif-medium"
+                                android:paddingTop="20dp"
+                                android:paddingBottom="10dp"
+                                android:text="@string/orders"
+                                android:textColor="?attr/colorLight"
+                                android:textSize="25sp" />
 
-                </androidx.constraintlayout.widget.ConstraintLayout>
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/ordersStock"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:paddingStart="-5dp"
+                                android:paddingEnd="-5dp"
+                                android:paddingBottom="60dp"
+                                app:layout_constraintBottom_toBottomOf="parent" />
 
-            </LinearLayout>
+                        </LinearLayout>
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </LinearLayout>
 
             </RelativeLayout>
 

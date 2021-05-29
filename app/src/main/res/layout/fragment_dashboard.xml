@@ -259,6 +259,7 @@
                             <androidx.appcompat.widget.AppCompatTextView
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:id="@+id/positionText"
                                 android:fontFamily="sans-serif-medium"
                                 android:layout_alignParentStart="true"
                                 android:text="@string/positions"
@@ -333,6 +334,7 @@
                             <androidx.appcompat.widget.AppCompatTextView
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
+                                android:id="@+id/ordersText"
                                 android:fontFamily="sans-serif-medium"
                                 android:paddingTop="20dp"
                                 android:paddingBottom="10dp"

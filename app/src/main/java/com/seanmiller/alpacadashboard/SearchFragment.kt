@@ -38,6 +38,7 @@ import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.IOException
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -384,25 +385,29 @@ public void onPurchaseHistoryRestored() {
         }
 
         private fun getNews(ticker: String): ArrayList<JSONObject?> {
+            val articles = ArrayList<JSONObject?>()
 
             // Call get news endpoint from IEX Cloud
-            val nodeHttpResponse: JSONArray?
-            val okHttpClient = OkHttpClient()
-            val request: Request = Request.Builder()
-                    .url("https://cloud-sse.iexapis.com/stable/stock/" + ticker + "/news/last/10?token=" + Properties.iexApiKey)
-                    .build()
-            val response = okHttpClient.newCall(request).execute()
-            nodeHttpResponse = JSONArray(response.body!!.string())
-
-            // Add to ArrayList
-            val articles = ArrayList<JSONObject?>()
             try {
-                for (i in 0 until nodeHttpResponse.length()) {
-                    if (nodeHttpResponse.getJSONObject(i)["lang"].toString() == "en") {
-                        articles.add(nodeHttpResponse.getJSONObject(i))
+                val nodeHttpResponse: JSONArray?
+                val okHttpClient = OkHttpClient()
+                val request: Request = Request.Builder()
+                        .url("https://cloud-sse.iexapis.com/stable/stock/" + ticker + "/news/last/10?token=" + Properties.iexApiKey)
+                        .build()
+                val response = okHttpClient.newCall(request).execute()
+                nodeHttpResponse = JSONArray(response.body!!.string())
+
+                // Add to ArrayList
+                try {
+                    for (i in 0 until nodeHttpResponse.length()) {
+                        if (nodeHttpResponse.getJSONObject(i)["lang"].toString() == "en") {
+                            articles.add(nodeHttpResponse.getJSONObject(i))
+                        }
                     }
+                } catch (e: JSONException) {
+                    e.printStackTrace()
                 }
-            } catch (e: JSONException) {
+            } catch (e: IOException) {
                 e.printStackTrace()
             }
             return articles
@@ -412,7 +417,7 @@ public void onPurchaseHistoryRestored() {
         @Throws(JSONException::class)
         fun removeDuplicates(news: ArrayList<JSONObject?>): ArrayList<JSONObject?> {
             for (i in news.indices) {
-                for (j in i until news.size - 1) {
+                for (j in i until news.size - 2) {
                     if (i != j && news[i]!!["headline"].toString() == news[j]!!["headline"].toString()) {
                         news.removeAt(i)
                     }
