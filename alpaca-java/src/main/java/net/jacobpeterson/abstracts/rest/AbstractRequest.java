@@ -51,15 +51,15 @@ public abstract class AbstractRequest {
      *
      * @return the {@link HttpResponse}
      *
-     * @throws UnirestException thrown for {@link UnirestException}s
      */
     public InputStream invokeGet(AbstractRequestBuilder abstractRequestBuilder)
-            throws UnirestException, IOException {
+            throws IOException {
         String url = abstractRequestBuilder.buildURL();
 
         LOGGER.debug("GET URL {}", url);
 
         OkHttpClient okHttpClient = new OkHttpClient();
+
         Request request = new Request.Builder()
                 .url(url)
                 .addHeader("Authorization", headers.get("Authorization"))

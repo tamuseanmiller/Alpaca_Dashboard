@@ -23,6 +23,7 @@ public class BarMessage
      * Open price
      * <p>
      * 
+
      * Corresponds to the "o" property.
      * 
      */
@@ -33,6 +34,7 @@ public class BarMessage
      * High price
      * <p>
      * 
+
      * Corresponds to the "h" property.
      * 
      */
@@ -43,6 +45,7 @@ public class BarMessage
      * Low price
      * <p>
      * 
+
      * Corresponds to the "l" property.
      * 
      */
@@ -53,6 +56,7 @@ public class BarMessage
      * Close price
      * <p>
      * 
+
      * Corresponds to the "c" property.
      * 
      */
@@ -63,6 +67,7 @@ public class BarMessage
      * Volume
      * <p>
      * 
+
      * Corresponds to the "v" property.
      * 
      */
@@ -73,6 +78,7 @@ public class BarMessage
      * Timestamp
      * <p>
      * 
+
      * Corresponds to the "t" property.
      * 
      */
@@ -111,6 +117,7 @@ public class BarMessage
      * Open price
      * <p>
      * 
+
      * Corresponds to the "o" property.
      * 
      */
@@ -122,6 +129,7 @@ public class BarMessage
      * Open price
      * <p>
      * 
+
      * Corresponds to the "o" property.
      * 
      */
@@ -133,6 +141,7 @@ public class BarMessage
      * High price
      * <p>
      * 
+
      * Corresponds to the "h" property.
      * 
      */
@@ -144,6 +153,7 @@ public class BarMessage
      * High price
      * <p>
      * 
+
      * Corresponds to the "h" property.
      * 
      */
@@ -155,6 +165,7 @@ public class BarMessage
      * Low price
      * <p>
      * 
+
      * Corresponds to the "l" property.
      * 
      */
@@ -166,6 +177,7 @@ public class BarMessage
      * Low price
      * <p>
      * 
+
      * Corresponds to the "l" property.
      * 
      */
@@ -177,6 +189,7 @@ public class BarMessage
      * Close price
      * <p>
      * 
+
      * Corresponds to the "c" property.
      * 
      */
@@ -188,6 +201,7 @@ public class BarMessage
      * Close price
      * <p>
      * 
+
      * Corresponds to the "c" property.
      * 
      */
@@ -199,6 +213,7 @@ public class BarMessage
      * Volume
      * <p>
      * 
+
      * Corresponds to the "v" property.
      * 
      */
@@ -210,6 +225,7 @@ public class BarMessage
      * Volume
      * <p>
      * 
+
      * Corresponds to the "v" property.
      * 
      */
@@ -221,6 +237,7 @@ public class BarMessage
      * Timestamp
      * <p>
      * 
+
      * Corresponds to the "t" property.
      * 
      */
@@ -232,6 +249,7 @@ public class BarMessage
      * Timestamp
      * <p>
      * 
+
      * Corresponds to the "t" property.
      * 
      */

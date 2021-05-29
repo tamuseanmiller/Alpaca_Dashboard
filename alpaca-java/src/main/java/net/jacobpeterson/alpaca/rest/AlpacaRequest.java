@@ -72,7 +72,7 @@ public class AlpacaRequest extends AbstractRequest {
             // }
 
             return getResponseObject(response, type);
-        } catch (UnirestException | IOException exception) {
+        } catch (IOException exception) {
             throw new AlpacaAPIRequestException(exception);
         }
     }

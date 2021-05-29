@@ -20,6 +20,7 @@ public class MarketDataMessage implements Serializable, StreamMessage
      * The message type.
      * <p>
      * 
+
      * Corresponds to the "T" property.
      * 
      */
@@ -48,6 +49,7 @@ public class MarketDataMessage implements Serializable, StreamMessage
      * The message type.
      * <p>
      * 
+
      * Corresponds to the "T" property.
      * 
      */
@@ -59,6 +61,7 @@ public class MarketDataMessage implements Serializable, StreamMessage
      * The message type.
      * <p>
      * 
+
      * Corresponds to the "T" property.
      * 
      */

@@ -22,6 +22,7 @@ public class SuccessMessage
      * The success message.
      * <p>
      * 
+
      * Corresponds to the "msg" property.
      * 
      */
@@ -50,6 +51,7 @@ public class SuccessMessage
      * The success message.
      * <p>
      * 
+
      * Corresponds to the "msg" property.
      * 
      */
@@ -61,6 +63,7 @@ public class SuccessMessage
      * The success message.
      * <p>
      * 
+
      * Corresponds to the "msg" property.
      * 
      */

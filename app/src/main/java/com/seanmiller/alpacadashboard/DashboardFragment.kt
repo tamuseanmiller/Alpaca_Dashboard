@@ -188,6 +188,11 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
 
         // Position View Menu button initialization
         val positionViewButton = mView.findViewById<MaterialButton>(R.id.menu_button)
+        when (prefs!!.retrieveInt("position_view", 1)) {
+            1 -> positionViewButton.text = getString(R.string.percent_change)
+            2 -> positionViewButton.text = getString(R.string.total_percent_change)
+            3 -> positionViewButton.text = getString(R.string.total_return)
+        }
         positionViewButton.setOnClickListener { v: View ->
             showMenu(v, R.menu.popup_menu)
         }
@@ -324,6 +329,26 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             recycleAdapterPositions = RecyclerViewAdapterPositions(requireActivity(), stocks!!, positionView!!)
             recycleAdapterPositions!!.setClickListener(this)
             requireActivity().runOnUiThread { recyclerViewPositions!!.adapter = recycleAdapterPositions }
+
+            try {
+                val calendar = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(1), LocalDate.now()) as ArrayList<Calendar>?
+
+                // Update positions if not market day
+                if (!calendar!!.last().date.equals(LocalDate.now().toString())) {
+                    val tempList: ArrayList<Position> = ArrayList()
+                    for (i in 0 until stocks?.size!!) {
+                        stocks?.get(i)?.changeToday = "-1"
+                        tempList.add(stocks?.get(i)!!)
+                    }
+                    stocks!!.clear()
+                    stocks!!.addAll(tempList)
+                    tempList.clear()
+                    requireActivity().runOnUiThread { recycleAdapterPositions?.notifyDataSetChanged() }
+                }
+
+            } catch (e: AlpacaAPIRequestException) {
+                e.printStackTrace()
+            }
         }
         positionsThread.start()
 
@@ -371,7 +396,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             orders = ArrayList()
             var tempOrders: ArrayList<Order> = ArrayList()
             try {
-                tempOrders = (alpacaAPI.getOrders(OrderStatus.CLOSED, 10, null, ZonedDateTime.now().plusDays(1), SortDirection.DESCENDING, false, null) as ArrayList<Order>?)!!
+                tempOrders = (alpacaAPI.getOrders(OrderStatus.CLOSED, 10, null, ZonedDateTime.now(), SortDirection.DESCENDING, false, null) as ArrayList<Order>?)!!
             } catch (e: AlpacaAPIRequestException) {
                 e.printStackTrace()
             }
@@ -641,23 +666,99 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             var calendar: ArrayList<Calendar>? = null
             try {
                 calendar = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(1), LocalDate.now()) as ArrayList<Calendar>?
+                var lastOpenDate2 = LocalDate.now().minusDays(1)
+                var oldTime = LocalTime.now().minusHours(2)
+                if (calendar!!.size >= 2) {
+                    lastOpenDate2 = LocalDate.parse(calendar[calendar.size - 2].date)
+                    oldTime = LocalTime.of(calendar[calendar.size - 2].open.substring(0, 2).toInt(), calendar[calendar.size - 2].open.substring(3, 5).toInt())
+                }
+
+                // Switch given open datetime from US/Eastern to System Default
+                var zonedDateTime = ZonedDateTime.of(lastOpenDate2, oldTime, ZoneId.of("US/Eastern"))
+                var standardDateTime = zonedDateTime.withZoneSameInstant(ZoneId.systemDefault())
+
+                // Check if it is the morning of
+                if (standardDateTime.toLocalTime() > LocalTime.now()) {
+                    lastOpenDate2 = LocalDate.parse(calendar[calendar.size - 3].date)
+                }
+
+                var history: ArrayList<Double?>? = null
+                if (PortfolioTimeFrame.FIVE_MINUTE == timeFrame) {
+
+                    // Gather old portfolio data
+                    historyInitial.set(ArrayList())
+                    try {
+                        historyInitial.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, lastOpenDate2, false).equity)
+                    } catch (e: AlpacaAPIRequestException) {
+                        e.printStackTrace()
+                    }
+
+                    if (historyInitial.get().isNotEmpty()) {
+                        val temp: Int = historyInitial.get().last().toInt()
+                        selectedAdapterInitial!!.pushFront(temp.toFloat())
+                        selectedAdapterInitial.setBaseline(selectedAdapterInitial.getValue(0))
+                        oneDayAdapter!!.notifyDataSetChanged()
+                    }
+                }
+
+                if (periodUnit == PortfolioPeriodUnit.DAY) {
+
+                    // Assign last open datetime and check for if it is the morning of
+                    var lastOpenDate = LocalDate.parse(calendar.last().date)
+                    oldTime = LocalTime.of(calendar.last().open.substring(0, 2).toInt(), calendar.last().open.substring(3, 5).toInt())
+
+                    // Switch given open datetime from US/Eastern to System Default
+                    zonedDateTime = ZonedDateTime.of(lastOpenDate2, oldTime, ZoneId.of("US/Eastern"))
+                    standardDateTime = zonedDateTime.withZoneSameInstant(ZoneId.systemDefault())
+                    if (standardDateTime.toLocalTime() > LocalTime.now()) {
+                        lastOpenDate = LocalDate.parse(calendar[calendar.size - 2].date)
+                    }
+
+                    // Gather old portfolio data
+                    try {
+                        val portVal = alpacaAPI.getPortfolioHistory(periodLength,
+                                periodUnit, timeFrame, lastOpenDate, true)
+                        history = portVal.equity
+                    } catch (e: AlpacaAPIRequestException) {
+                        e.printStackTrace()
+                    }
+                } else {
+
+                    // Gather old portfolio data
+                    history = ArrayList()
+                    try {
+                        val portVal = alpacaAPI.getPortfolioHistory(periodLength,
+                                periodUnit, timeFrame, LocalDate.now(), true)
+                        history = portVal.equity
+                    } catch (e: AlpacaAPIRequestException) {
+                        e.printStackTrace()
+                    }
+                }
+
+                // Fixes weird bug with repeating data on week period
+                if (periodUnit == PortfolioPeriodUnit.WEEK) {
+                    // Add data to chart
+                    if (history!!.size != 0) {
+                        for (i in 10 until history.size) {
+                            if (history[i] != null) {
+                                selectedAdapterInitial!!.addVal(history[i].toString().toFloat())
+                            }
+                        }
+                    }
+
+                } else {
+                    // Add data to chart
+                    if (history!!.size != 0) {
+                        for (i in history.indices) {
+                            if (history[i] != null) {
+                                selectedAdapterInitial!!.addVal(history[i].toString().toFloat())
+                            }
+                        }
+                    }
+                }
+
             } catch (e: AlpacaAPIRequestException) {
                 e.printStackTrace()
-            }
-            var lastOpenDate2 = LocalDate.now().minusDays(1)
-            var oldTime = LocalTime.now().minusHours(2)
-            if (calendar!!.size >= 2) {
-                lastOpenDate2 = LocalDate.parse(calendar[calendar.size - 2].date)
-                oldTime = LocalTime.of(calendar[calendar.size - 2].open.substring(0, 2).toInt(), calendar[calendar.size - 2].open.substring(3, 5).toInt())
-            }
-
-            // Switch given open datetime from US/Eastern to System Default
-            var zonedDateTime = ZonedDateTime.of(lastOpenDate2, oldTime, ZoneId.of("US/Eastern"))
-            var standardDateTime = zonedDateTime.withZoneSameInstant(ZoneId.systemDefault())
-
-            // Check if it is the morning of
-            if (standardDateTime.toLocalTime() > LocalTime.now()) {
-                lastOpenDate2 = LocalDate.parse(calendar[calendar.size - 3].date)
             }
 
             // Set baseline values
@@ -668,81 +769,6 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
 //            } catch (e: AlpacaAPIRequestException) {
 //                e.printStackTrace()
 //            }
-
-            var history: ArrayList<Double?>? = null
-            if (PortfolioTimeFrame.FIVE_MINUTE == timeFrame) {
-
-                // Gather old portfolio data
-                historyInitial.set(ArrayList())
-                try {
-                    historyInitial.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, lastOpenDate2, false).equity)
-                } catch (e: AlpacaAPIRequestException) {
-                    e.printStackTrace()
-                }
-
-                if (historyInitial.get().isNotEmpty()) {
-                    val temp: Int = historyInitial.get().last().toInt()
-                    selectedAdapterInitial!!.pushFront(temp.toFloat())
-                    selectedAdapterInitial.setBaseline(selectedAdapterInitial.getValue(0))
-                    oneDayAdapter!!.notifyDataSetChanged()
-                }
-            }
-
-            if (periodUnit == PortfolioPeriodUnit.DAY) {
-
-                // Assign last open datetime and check for if it is the morning of
-                var lastOpenDate = LocalDate.parse(calendar.last().date)
-                oldTime = LocalTime.of(calendar.last().open.substring(0, 2).toInt(), calendar.last().open.substring(3, 5).toInt())
-
-                // Switch given open datetime from US/Eastern to System Default
-                zonedDateTime = ZonedDateTime.of(lastOpenDate2, oldTime, ZoneId.of("US/Eastern"))
-                standardDateTime = zonedDateTime.withZoneSameInstant(ZoneId.systemDefault())
-                if (standardDateTime.toLocalTime() > LocalTime.now()) {
-                    lastOpenDate = LocalDate.parse(calendar[calendar.size - 2].date)
-                }
-
-                // Gather old portfolio data
-                try {
-                    val portVal = alpacaAPI.getPortfolioHistory(periodLength,
-                            periodUnit, timeFrame, lastOpenDate, true)
-                    history = portVal.equity
-                } catch (e: AlpacaAPIRequestException) {
-                    e.printStackTrace()
-                }
-            } else {
-
-                // Gather old portfolio data
-                history = ArrayList()
-                try {
-                    val portVal = alpacaAPI.getPortfolioHistory(periodLength,
-                            periodUnit, timeFrame, LocalDate.now(), true)
-                    history = portVal.equity
-                } catch (e: AlpacaAPIRequestException) {
-                    e.printStackTrace()
-                }
-            }
-
-            // Fixes weird bug with repeating data on week period
-            if (periodUnit == PortfolioPeriodUnit.WEEK) {
-                // Add data to chart
-                if (history!!.size != 0) {
-                    for (i in 10 until history.size) {
-                        if (history[i] != null) {
-                            selectedAdapterInitial!!.addVal(history[i].toString().toFloat())
-                        }
-                    }
-                }
-
-            } else {
-                // Add data to chart
-                if (history!!.size != 0) {
-                    for (i in history.indices) {
-                        if (history[i] != null) {
-                            selectedAdapterInitial!!.addVal(history[i].toString().toFloat())
-                        }
-                    }
-                }
-            }
 
             // Use data returned to get profit change
             val oldVal = selectedAdapterInitial!!.getValue(0)
@@ -765,17 +791,18 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
         fetchFistoryThread.start()
 
         val setCurrentEquityThread = Thread {
-            var currentValue: String? = null
+            val currentValue: String?
             try {
                 currentValue = alpacaAPI.account.portfolioValue
+                val amount = currentValue!!.toDouble()
+
+                // Format amount
+                val formatter = DecimalFormat("#,###.00")
+                requireActivity().runOnUiThread { tickerView!!.text = "$" + formatter.format(amount) }
+
             } catch (e: AlpacaAPIRequestException) {
                 e.printStackTrace()
             }
-            val amount = currentValue!!.toDouble()
-
-            // Format amount
-            val formatter = DecimalFormat("#,###.00")
-            requireActivity().runOnUiThread { tickerView!!.text = "$" + formatter.format(amount) }
         }
         setCurrentEquityThread.start()
     }

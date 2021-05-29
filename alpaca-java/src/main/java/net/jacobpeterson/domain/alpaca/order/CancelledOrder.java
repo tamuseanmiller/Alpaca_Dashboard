@@ -37,6 +37,7 @@ public class CancelledOrder implements Serializable
      * The cancelled order
      * <p>
      * 
+
      * Corresponds to the "body" property.
      * 
      */
@@ -109,6 +110,7 @@ public class CancelledOrder implements Serializable
      * The cancelled order
      * <p>
      * 
+
      * Corresponds to the "body" property.
      * 
      */
@@ -120,6 +122,7 @@ public class CancelledOrder implements Serializable
      * The cancelled order
      * <p>
      * 
+
      * Corresponds to the "body" property.
      * 
      */

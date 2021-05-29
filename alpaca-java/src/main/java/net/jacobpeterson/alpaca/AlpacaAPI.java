@@ -252,7 +252,7 @@ public class AlpacaAPI {
         InputStream response;
         try {
             response = alpacaRequest.invokeGet(urlBuilder);
-        } catch (UnirestException | IOException exception) {
+        } catch (IOException exception) {
             throw new AlpacaAPIRequestException(exception);
         }
 
@@ -1664,7 +1664,7 @@ public class AlpacaAPI {
         InputStream response;
         try {
             response = alpacaRequest.invokeGet(urlBuilder);
-        } catch (UnirestException | IOException exception) {
+        } catch (IOException exception) {
             throw new AlpacaAPIRequestException(exception);
         }
 

@@ -32,14 +32,113 @@ class RecyclerViewAdapterPositions internal constructor(context: Context?, data:
         // Set variables for each of the areas
         val mainActivity = MainActivity()
         val stockName = mData[position].symbol
-        val percentChange = mData[position].changeToday
-        val totalPercentChange = mData[position].unrealizedPlpc
-        val totalReturn = mData[position].unrealizedPl
         holder.stock_name.text = stockName
         val prefs = SharedPreferencesManager(mInflater.context)
         val alpacaAPI = AlpacaAPI(null, null, prefs.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
 
         holder.priceOfStock.text = String.format("$%.2f", mData[position].currentPrice.toFloat())
+
+        val initialThread = Thread {
+
+            // Initialize variables
+            val percentChange = mData[position].changeToday
+            val totalPercentChange = mData[position].unrealizedPlpc
+            val totalReturn = mData[position].unrealizedPl
+            if (percentChange != "-1" || positionView != PositionView.PERCENT_CHANGE)
+                updateValues(holder, percentChange, totalPercentChange, totalReturn)  // Update the "percent change" parameter in holder
+
+            else {
+                // Set values
+                try {
+                    val snapshot = alpacaAPI.getSnapshot(stockName)
+                    val finalClose = snapshot.prevDailyBar.c.toFloat()
+//                      val finalCurr = snapshot.latestQuote.ap.toFloat()
+                    val finalCurr = snapshot.dailyBar.c.toFloat()
+
+                    mainActivity.runOnUiThread {
+                        if (finalCurr != 0f && finalClose != 0f) {
+                            holder.priceOfStock.text = String.format("$%.2f", finalCurr)
+                            val temp = (finalCurr - finalClose) / finalClose
+
+                            updateValues(holder, temp.toString(), totalPercentChange, totalReturn)
+                        }
+                    }
+
+                } catch (e: AlpacaAPIRequestException) {
+                    e.printStackTrace()
+                }
+
+            }
+        }
+        initialThread.start()
+
+        val updateThread = Thread {
+
+            while (true) {
+
+                // Get Amount of shares owned
+                var shrOwned: Position? = null
+                try {
+                    shrOwned = alpacaAPI.getOpenPositionBySymbol(stockName)
+                } catch (e: AlpacaAPIRequestException) {
+                    e.printStackTrace()
+                }
+
+                // Set shares owned
+                val finalShrOwned = shrOwned
+                mainActivity.runOnUiThread {
+                    when (finalShrOwned!!.qty) {
+                        "1" -> holder.sharesOwned.text = String.format("%s share owned", finalShrOwned.qty)
+
+                        null -> holder.sharesOwned.text = String.format("%s shares owned", 0)
+
+                        else -> holder.sharesOwned.text = String.format("%s shares owned", finalShrOwned.qty)
+
+                    }
+                }
+
+                // Sleep for 1 minute
+                try {
+                    Thread.sleep(60000)
+                } catch (e: InterruptedException) {
+                    e.printStackTrace()
+                }
+
+                // Set values
+                try {
+                    val pos: Position = alpacaAPI.getOpenPositionBySymbol(stockName)
+                    val percentChange = pos.changeToday
+                    val totalPercentChange = pos.unrealizedPlpc
+                    val totalReturn = pos.unrealizedPl
+                    if (mData[position].changeToday != "-1") { // If market day
+                        mainActivity.runOnUiThread { updateValues(holder, percentChange, totalPercentChange, totalReturn) }
+
+                    } else {
+                        val snapshot = alpacaAPI.getSnapshot(stockName)
+                        val finalClose = snapshot.prevDailyBar.c.toFloat()
+//                      val finalCurr = snapshot.latestQuote.ap.toFloat()
+                        val finalCurr = snapshot.dailyBar.c.toFloat()
+
+                        mainActivity.runOnUiThread {
+                            if (finalCurr != 0f && finalClose != 0f) {
+                                holder.priceOfStock.text = String.format("$%.2f", finalCurr)
+                                val temp = (finalCurr - finalClose) / finalClose
+
+                                updateValues(holder, temp.toString(), totalPercentChange, totalReturn)
+                            }
+                        }
+                    }
+
+                } catch (e: AlpacaAPIRequestException) {
+                    e.printStackTrace()
+                }
+
+            }
+        }
+        updateThread.start()
+    }
+
+    private fun updateValues(holder: ViewHolder, percentChange: String, totalPercentChange: String, totalReturn: String) {
 
         // Sets value based on what positionView is
         if (positionView == PositionView.PERCENT_CHANGE) {
@@ -75,71 +174,6 @@ class RecyclerViewAdapterPositions internal constructor(context: Context?, data:
             }
 
         }
-
-        val updateThread = Thread {
-
-            while (true) {
-
-                // Get Amount of shares owned
-                var shrOwned: Position? = null
-                try {
-                    shrOwned = alpacaAPI.getOpenPositionBySymbol(stockName)
-                } catch (e: AlpacaAPIRequestException) {
-                    e.printStackTrace()
-                }
-
-                // Set shares owned
-                val finalShrOwned = shrOwned
-                mainActivity.runOnUiThread {
-                    when (finalShrOwned!!.qty) {
-                        "1" -> {
-                            holder.sharesOwned.text = String.format("%s share owned", finalShrOwned.qty)
-                        }
-                        null -> {
-                            holder.sharesOwned.text = String.format("%s shares owned", 0)
-                        }
-                        else -> {
-                            holder.sharesOwned.text = String.format("%s shares owned", finalShrOwned.qty)
-                        }
-                    }
-                }
-
-                // Sleep for 1 minute
-                try {
-                    Thread.sleep(60000)
-                } catch (e: InterruptedException) {
-                    e.printStackTrace()
-                }
-
-                // Set values
-                try {
-                    val snapshot = alpacaAPI.getSnapshot(stockName)
-                    val finalClose = snapshot.prevDailyBar.c.toFloat()
-//                  val finalCurr = snapshot.latestQuote.ap.toFloat()
-                    val finalCurr = snapshot.dailyBar.c.toFloat()
-
-                    mainActivity.runOnUiThread {
-                        if (finalCurr != 0f && finalClose != 0f) {
-                            holder.priceOfStock.text = String.format("$%.2f", finalCurr)
-                            val temp = (finalCurr - finalClose) / finalClose * 100
-
-                            // Sets the precision and adds to view, then changes color
-                            if (temp >= 0) {
-                                holder.percentChange.text = String.format("+%.2f%%", temp)
-                                mClickListener!!.switchColors(holder, true)
-                            } else {
-                                holder.percentChange.text = String.format("%.2f%%", temp)
-                                mClickListener!!.switchColors(holder, false)
-                            }
-                        }
-                    }
-                } catch (e: AlpacaAPIRequestException) {
-                    e.printStackTrace()
-                }
-
-            }
-        }
-        updateThread.start()
     }
 
     override fun getItemId(position: Int): Long {
