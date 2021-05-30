@@ -11,7 +11,7 @@ import android.util.DisplayMetrics
 import android.util.TypedValue
 import android.view.*
 import android.view.View.GONE
-import android.view.View.OnClickListener
+import android.view.View.VISIBLE
 import android.widget.ImageButton
 import android.widget.PopupMenu
 import android.widget.TextView
@@ -46,11 +46,10 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.collections.ArrayList
 import kotlin.math.abs
 import io.cabriole.decorator.ColumnProvider as ColumnProvider1
 
-class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickListener, RecyclerViewAdapterWatchlist.ItemClickListener, OnClickListener {
+class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickListener, RecyclerViewAdapterWatchlist.ItemClickListener, View.OnClickListener {
     private var sparkView: CustomSparkView? = null
     private var selectedAdapter: StockAdapter? = null
     private var recyclerViewPositions: RecyclerView? = null
@@ -336,7 +335,10 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
                 // Fetch the Recycler View
                 recycleAdapterPositions = RecyclerViewAdapterPositions(requireActivity(), stocks!!, positionView!!)
                 recycleAdapterPositions!!.setClickListener(this)
-                requireActivity().runOnUiThread { recyclerViewPositions!!.adapter = recycleAdapterPositions }
+                requireActivity().runOnUiThread {
+                    recyclerViewPositions!!.adapter = recycleAdapterPositions
+                    positionsText?.visibility = VISIBLE
+                }
 
                 try {
                     val calendar = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(1), LocalDate.now()) as ArrayList<Calendar>?
@@ -368,12 +370,33 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
 
             // Add every stock in all watchlists
             try {
-                for (i in alpacaAPI.watchlists) {
-                    for (j in alpacaAPI.getWatchlist(i.id).assets) {
-                        if (!watchlist?.contains(j.symbol)!!)
-                            watchlist?.add(j.symbol)
+                // Check for if primary watchlist's id is already cached
+                val watchlistId = prefs?.retrieveString("primary_watchlist", null)
+                if (!watchlistId.isNullOrBlank()) {
+
+                    // Loop through all assets and add symbol to list
+                    for (j in alpacaAPI.getWatchlist(watchlistId).assets) {
+                        watchlist?.add(j.symbol)
+                    }
+
+                } else {  // If not cached, find and cache it
+
+                    // Loop through all watchlists
+                    for (i in alpacaAPI.watchlists) {
+
+                        // Check for if this watchlist is primary
+                        if (i.name == "Primary Watchlist") {
+
+                            // Loop through all assets in primary watchlist and add to list
+                            for (j in alpacaAPI.getWatchlist(i.id).assets) {
+                                watchlist?.add(j.symbol)
+                            }
+                            prefs?.storeString("primary_watchlist", i.id)  // Store id
+                            break
+                        }
                     }
                 }
+
             } catch (e: AlpacaAPIRequestException) {
                 e.printStackTrace()
             }
@@ -391,6 +414,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
                 recyclerViewAdapterWatchlist?.setClickListener(this)
                 requireActivity().runOnUiThread {
                     recyclerViewWatchlist?.adapter = recyclerViewAdapterWatchlist
+                    watchlistText?.visibility = VISIBLE
                 }
             }
         }
@@ -414,7 +438,10 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             } else {
                 // Set the recycler adapter
                 recycleAdapterOrders = RecyclerViewAdapterOrders(requireActivity(), orders!!)
-                requireActivity().runOnUiThread { recyclerOrders?.adapter = recycleAdapterOrders }
+                requireActivity().runOnUiThread {
+                    recyclerOrders?.adapter = recycleAdapterOrders
+                    ordersText?.visibility = VISIBLE
+                }
             }
         }
         ordersThread.start()
@@ -527,6 +554,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
     // onRefresh method is what is called when swipe refresh is enabled
     private fun onRefresh() {
         swipeRefresh!!.isRefreshing = true  // Set refreshing for the animation
+
         val positionsThread = Thread {
             val alpacaAPI = AlpacaAPI(null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
 
@@ -552,7 +580,10 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
 
                 // Set Recycle Adapter for positions
                 // Fetch the Recycler View
-                requireActivity().runOnUiThread { recycleAdapterPositions?.notifyDataSetChanged() }
+                requireActivity().runOnUiThread {
+                    positionsText?.visibility = VISIBLE
+                    recycleAdapterPositions?.notifyDataSetChanged()
+                }
             }
         }
         positionsThread.start()
@@ -583,6 +614,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
                 // Set Recycle Adapter for orders
 //                recycleAdapterOrders = RecyclerViewAdapterOrders(requireActivity(), orders!!)
                 requireActivity().runOnUiThread {
+                    ordersText?.visibility = VISIBLE
                     recycleAdapterOrders?.notifyDataSetChanged()
 //                    recyclerOrders?.adapter = recycleAdapterOrders
                 }
@@ -598,14 +630,37 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             val tempList: ArrayList<String> = ArrayList()
 
             try {
-                for (i in alpacaAPI.watchlists) {
-                    for (j in alpacaAPI.getWatchlist(i.id).assets) {
-                        if (!tempList.contains(j.symbol))
-                            tempList.add(j.symbol)
+
+                // Check for if primary watchlist's id is already cached
+                val watchlistId = prefs?.retrieveString("primary_watchlist", null)
+                if (!watchlistId.isNullOrBlank()) {
+
+                    // Loop through all assets and add symbol to list
+                    for (j in alpacaAPI.getWatchlist(watchlistId).assets) {
+                        tempList.add(j.symbol)
+                    }
+
+                } else {  // If not cached, find and cache it
+
+                    // Loop through all watchlists
+                    for (i in alpacaAPI.watchlists) {
+
+                        // Check for if this watchlist is primary
+                        if (i.name == "Primary Watchlist") {
+
+                            // Loop through all assets in primary watchlist and add to list
+                            for (j in alpacaAPI.getWatchlist(i.id).assets) {
+                                tempList.add(j.symbol)
+                            }
+                            prefs?.storeString("primary_watchlist", i.id)  // Store id
+                            break
+                        }
                     }
                 }
+
             } catch (e: AlpacaAPIRequestException) {
                 e.printStackTrace()
+                swipeRefresh!!.isRefreshing = false
             }
 
             // If no stock in watchlist
@@ -614,7 +669,6 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
                     watchlistText?.visibility = GONE
                     recyclerViewAdapterWatchlist?.notifyDataSetChanged()
                 }
-//                alpacaAPI.createWatchlist("alpaca_dashboard", "AAPL")
 
             } else {
 
@@ -622,7 +676,10 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
 //              recyclerViewAdapterWatchlist = RecyclerViewAdapterWatchlist(requireActivity(), watchlist!!)
                 watchlist?.addAll(tempList)
                 tempList.clear()
-                requireActivity().runOnUiThread { recyclerViewAdapterWatchlist?.notifyDataSetChanged() }
+                requireActivity().runOnUiThread {
+                    watchlistText?.visibility = VISIBLE
+                    recyclerViewAdapterWatchlist?.notifyDataSetChanged()
+                }
             }
             swipeRefresh!!.isRefreshing = false
         }
@@ -642,7 +699,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
         }
     }
 
-    // Sets all of the colors for the entire dashbaord fragment based on if positive or negative for the day
+    // Sets all of the colors for the entire dashboard fragment based on if positive or negative for the day
     private fun setDashboardColors(pos: Boolean, profitLoss: Float, percentageChange: Float) {
         val typedValue = TypedValue()
         requireActivity().theme.resolveAttribute(R.attr.color_positive_light, typedValue, true)
@@ -851,15 +908,19 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
     // What is called to update the dashboard colors for each graph
     private fun setDashboardValues() {
 
-        // Updating the values on history switch
-        // Set colors
-        requireActivity().runOnUiThread {
-            if (selectedAdapter!!.profit >= 0) {
-                setDashboardColors(true, selectedAdapter!!.profit, selectedAdapter!!.percent)
-            } else {
-                setDashboardColors(false, selectedAdapter!!.profit, selectedAdapter!!.percent)
+        val setThread = Thread {
+
+            // Updating the values on history switch
+            // Set colors
+            requireActivity().runOnUiThread {
+                if (selectedAdapter!!.profit >= 0) {
+                    setDashboardColors(true, selectedAdapter!!.profit, selectedAdapter!!.percent)
+                } else {
+                    setDashboardColors(false, selectedAdapter!!.profit, selectedAdapter!!.percent)
+                }
             }
         }
+        setThread.start()
     }
 
     companion object {
@@ -881,7 +942,8 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
 
     // Popup menu for position view
     private fun showMenu(v: View, @MenuRes menuRes: Int) {
-        val popup = PopupMenu(requireContext(), v, Gravity.END)
+        val wrapper: Context = ContextThemeWrapper(requireActivity(), R.style.light_dark)
+        val popup = PopupMenu(wrapper, v, Gravity.END)
         popup.menuInflater.inflate(menuRes, popup.menu)
         val button: MaterialButton = v.findViewById(R.id.menu_button)
 

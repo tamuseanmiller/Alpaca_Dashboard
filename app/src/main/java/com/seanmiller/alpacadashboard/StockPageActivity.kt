@@ -56,7 +56,7 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
     private var percentChangeStock: Button? = null
     private var ordersStock: ArrayList<Order>? = null
     private var order: ArrayList<Order>? = null
-    private var recycleAdapterOrdersStock: RecyclerViewAdapterOrders? = null
+    private var recycleAdapterOrdersStock: RecyclerViewAdapterStocks? = null
     private var swipeRefreshStock: SwipeRefreshLayout? = null
     private var fab: FloatingActionButton? = null
     private var numPos: TextView? = null
@@ -187,37 +187,48 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
 
             // Check for watchlist
             var inWatchlist = false
-            var watchListId: String? = null
-            for (i in alpacaAPI.watchlists) {
-                watchListId = i.id
-                for (j in alpacaAPI.getWatchlist(i.id).assets) {
-                    if (j.symbol == DashboardFragment.ticker!!.get()) {
-                        val offList = ContextCompat.getDrawable(this, R.drawable.eye_minus)
-                        if (addWatchlist.drawable != offList)
-                            runOnUiThread { addWatchlist.setImageDrawable(offList) }
-                        inWatchlist = true
-                    }
+            val watchListId = prefs?.retrieveString("primary_watchlist", null)
+
+            // Loop through all assets in watchlist
+            for (j in alpacaAPI.getWatchlist(watchListId).assets) {
+
+                // Check to see if the watchlist contains the current stock
+                if (j.symbol == DashboardFragment.ticker!!.get()) {
+
+                    // Modify icon
+                    val offList = ContextCompat.getDrawable(this, R.drawable.eye_minus)
+                    if (addWatchlist.drawable != offList)
+                        runOnUiThread { addWatchlist.setImageDrawable(offList) }
+                    inWatchlist = true  // Mark to change icon to plus afterwards
+                    break
                 }
             }
+
+            // Follow previous comm
             if (!inWatchlist) {
                 val onList = ContextCompat.getDrawable(this, R.drawable.eye_plus)
                 runOnUiThread { addWatchlist.setImageDrawable(onList) }
             }
 
+            // If watchlist is clicked, add/remove asset from the watchlist and change icon
             addWatchlist.setOnClickListener {
-                if (inWatchlist) {
-                    val offList = ContextCompat.getDrawable(this, R.drawable.eye_plus)
-                    runOnUiThread { addWatchlist.setImageDrawable(offList) }
-                    for (i in alpacaAPI.watchlists) {
-                        alpacaAPI.removeSymbolFromWatchlist(i.id, DashboardFragment.ticker!!.get())
-                    }
 
-                } else {
-                    val onList = ContextCompat.getDrawable(this, R.drawable.eye_minus)
-                    runOnUiThread { addWatchlist.setImageDrawable(onList) }
-                    alpacaAPI.addWatchlistAsset(watchListId, DashboardFragment.ticker!!.get())
+                val onClickWatchlistThread = Thread {
+                    if (inWatchlist) {
+                        val offList = ContextCompat.getDrawable(this, R.drawable.eye_plus)
+                        runOnUiThread { addWatchlist.setImageDrawable(offList) }
+                        for (i in alpacaAPI.watchlists) {
+                            alpacaAPI.removeSymbolFromWatchlist(i.id, DashboardFragment.ticker!!.get())
+                        }
+
+                    } else {
+                        val onList = ContextCompat.getDrawable(this, R.drawable.eye_minus)
+                        runOnUiThread { addWatchlist.setImageDrawable(onList) }
+                        alpacaAPI.addWatchlistAsset(watchListId, DashboardFragment.ticker!!.get())
+                    }
+                    inWatchlist = !inWatchlist
                 }
-                inWatchlist = !inWatchlist
+                onClickWatchlistThread.start()
             }
         }
         watchlistThread.start()
@@ -432,11 +443,12 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
                 // Initialize recyclerview and adapter
                 recyclerOrdersStock = findViewById(R.id.ordersStock)
                 if (order?.isNotEmpty()!!) {
-                    recycleAdapterOrdersStock = RecyclerViewAdapterOrders(this, order!!)
+                    recycleAdapterOrdersStock = RecyclerViewAdapterStocks(this, order!!)
                 }
 
                 // Add Decorations and set adapter
                 runOnUiThread {
+                    ordersStockText?.visibility = View.VISIBLE
                     recyclerOrdersStock?.layoutManager = LinearLayoutManager(this)
                     recyclerOrdersStock?.addItemDecoration(LinearMarginDecoration.create(0, LinearLayoutManager.VERTICAL, false, null))
                     recyclerOrdersStock?.adapter = recycleAdapterOrdersStock
@@ -526,8 +538,9 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
                 order?.addAll(ordersStock!!)
                 ordersStock!!.clear()
 
-                recycleAdapterOrdersStock = RecyclerViewAdapterOrders(this, order!!)
+                recycleAdapterOrdersStock = RecyclerViewAdapterStocks(this, order!!)
                 runOnUiThread {
+                    ordersStockText?.visibility = View.VISIBLE
                     recyclerOrdersStock!!.adapter = recycleAdapterOrdersStock
                 }
             }

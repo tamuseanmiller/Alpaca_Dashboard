@@ -23,6 +23,8 @@
         <!--         Status bar color.-->
         <item name="android:statusBarColor" tools:targetApi="l">@color/colorPrimary</item>
         <!-- Customize your theme here. -->
+        <item name="actionOverflowMenuStyle">@style/light_dark</item>
+
     </style>
 
     <style name="Theme.Alpaca_Dashboard.Light" parent="Theme.MaterialComponents.Light.NoActionBar">
@@ -51,6 +53,14 @@
         <!--         Status bar color.-->
         <item name="android:statusBarColor" tools:targetApi="l">@color/colorPrimary_light</item>
         <!-- Customize your theme here. -->
+
+        <item name="actionOverflowMenuStyle">@style/light_dark</item>
+    </style>
+
+    <style name="light_dark" parent="@style/Widget.MaterialComponents.PopupMenu.Overflow">
+        <item name="android:textColor">?attr/colorLight</item>
+        <item name="android:popupBackground">@drawable/background_popup_menu</item>
+        <item name="android:itemBackground">?attr/colorPrimary</item>
     </style>
 
     <style name="LoginTextInputLayoutStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
