@@ -1,5 +1,4 @@
-<com.allattentionhere.fabulousfilter.AAH_FilterView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<com.allattentionhere.fabulousfilter.AAH_FilterView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -28,68 +27,39 @@
                 android:id="@+id/tickerName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:padding="30dp"
                 android:textColor="?attr/colorLight"
-                android:textSize="16dp"
-                android:padding="30dp"/>
+                android:textSize="16dp" />
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            style="@style/LoginTextInputLayoutStyle"
-            app:hintAnimationEnabled="true"
-            app:hintTextColor="?attr/color_positive"
-            app:boxStrokeColor="?attr/colorAccentTransparent"
-            app:boxStrokeErrorColor="?attr/color_negative"
-            android:textColorHint="?attr/colorPrimaryLight"
-            app:errorTextColor="?attr/color_negative"
-            android:layout_gravity="fill_horizontal"
-            android:gravity="center"
-            app:boxStrokeWidth=".5dp"
-            app:boxStrokeWidthFocused="1dp"
-            app:boxCornerRadiusBottomEnd="15dp"
-            app:boxCornerRadiusBottomStart="15dp"
-            app:boxCornerRadiusTopEnd="15dp"
-            app:boxCornerRadiusTopStart="15dp"
-            android:padding="20dp"
-            android:hint="Quantity"
-            android:layout_height="wrap_content">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/quantityTextField"
-                android:textColor="@color/colorPrimaryLight"
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/LoginTextInputLayoutStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="number"/>
+                android:layout_gravity="fill_horizontal"
+                android:gravity="center"
+                android:hint="Quantity"
+                android:padding="20dp"
+                android:textColorHint="?attr/colorPrimaryLight"
+                app:boxCornerRadiusBottomEnd="15dp"
+                app:boxCornerRadiusBottomStart="15dp"
+                app:boxCornerRadiusTopEnd="15dp"
+                app:boxCornerRadiusTopStart="15dp"
+                app:boxStrokeColor="?attr/colorAccentTransparent"
+                app:boxStrokeErrorColor="?attr/color_negative"
+                app:boxStrokeWidth=".5dp"
+                app:boxStrokeWidthFocused="1dp"
+                app:errorTextColor="?attr/color_negative"
+                app:hintAnimationEnabled="true"
+                app:hintTextColor="?attr/color_positive">
 
-        </com.google.android.material.textfield.TextInputLayout>
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/quantityTextField"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:textColor="@color/colorPrimaryLight" />
 
-<!--        <com.google.android.material.textfield.TextInputLayout-->
-<!--            android:id="@+id/tickerTextField"-->
-<!--            android:layout_width="match_parent"-->
-<!--            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"-->
-<!--            app:hintAnimationEnabled="true"-->
-<!--            app:hintTextColor="?attr/color_positive"-->
-<!--            app:boxStrokeColor="?attr/colorAccentTransparent"-->
-<!--            app:boxStrokeErrorColor="?attr/color_negative"-->
-<!--            android:textColorHint="?attr/colorPrimaryLight"-->
-<!--            app:errorTextColor="?attr/color_negative"-->
-<!--            android:layout_gravity="fill_horizontal"-->
-<!--            android:gravity="center"-->
-<!--            app:boxStrokeWidth=".5dp"-->
-<!--            app:boxStrokeWidthFocused="1dp"-->
-<!--            app:boxCornerRadiusBottomEnd="15dp"-->
-<!--            app:boxCornerRadiusBottomStart="15dp"-->
-<!--            app:boxCornerRadiusTopEnd="15dp"-->
-<!--            app:boxCornerRadiusTopStart="15dp"-->
-<!--            android:padding="20dp"-->
-<!--            android:hint="Stock Ticker"-->
-<!--            android:paddingTop="60dp"-->
-<!--            android:layout_height="wrap_content">-->
-
-<!--            <com.google.android.material.textfield.TextInputEditText-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="wrap_content"/>-->
-
-<!--        </com.google.android.material.textfield.TextInputLayout>-->
+            </com.google.android.material.textfield.TextInputLayout>
 
         </LinearLayout>
 
@@ -99,47 +69,47 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_centerInParent="true"
-            android:paddingEnd="20dp"
+            android:layout_marginBottom="30dp"
             android:paddingStart="20dp"
-            android:layout_marginBottom="30dp">
+            android:paddingEnd="20dp">
 
             <RelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingBottom="10dp"
-                android:layout_centerInParent="true">
+                android:layout_centerInParent="true"
+                android:paddingBottom="10dp">
 
-            <com.google.android.material.button.MaterialButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:cornerRadius="15dp"
-                app:rippleColor="?attr/color_positive"
-                android:text="Buy"
-                android:backgroundTint="?attr/color_positive_light"
-                app:layout_gravity="fill_horizontal"
-                android:layout_marginStart="20dp"
-                android:gravity="center"
-                android:textColor="?attr/color_positive"
-                android:layout_centerVertical="true"
-                android:stateListAnimator="@null"
-                android:id="@+id/btn_close" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_close"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="20dp"
+                    android:backgroundTint="?attr/color_positive_light"
+                    android:gravity="center"
+                    android:stateListAnimator="@null"
+                    android:text="Buy"
+                    android:textColor="?attr/color_positive"
+                    app:cornerRadius="15dp"
+                    app:layout_gravity="fill_horizontal"
+                    app:rippleColor="?attr/color_positive" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/sell_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:rippleColor="?attr/color_negative"
-                android:layout_toEndOf="@id/btn_close"
-                android:layout_marginStart="20dp"
-                app:cornerRadius="15dp"
-                android:layout_centerVertical="true"
-                android:backgroundTint="?attr/color_negative_light"
-                app:layout_gravity="fill_horizontal"
-                android:gravity="center"
-                android:textColor="?attr/color_negative"
-                app:layout_columnWeight="1"
-                android:stateListAnimator="@null"
-                android:text="Sell" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/sell_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="20dp"
+                    android:layout_toEndOf="@id/btn_close"
+                    android:backgroundTint="?attr/color_negative_light"
+                    android:gravity="center"
+                    android:stateListAnimator="@null"
+                    android:text="Sell"
+                    android:textColor="?attr/color_negative"
+                    app:cornerRadius="15dp"
+                    app:layout_columnWeight="1"
+                    app:layout_gravity="fill_horizontal"
+                    app:rippleColor="?attr/color_negative" />
 
             </RelativeLayout>
 

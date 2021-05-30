@@ -4,5 +4,5 @@
     <item>
         <shape android:shape="rectangle" android:tint="?attr/colorPrimary" android:innerRadius="40dp"/>
     </item>
-    <item android:gravity="center" android:height="200dp" android:width="200dp" android:drawable="@drawable/ic_launcher"/>
+    <item android:gravity="center" android:height="200dp" android:width="200dp" android:drawable="@drawable/play_store"/>
 </layer-list>

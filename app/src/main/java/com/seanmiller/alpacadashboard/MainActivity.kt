@@ -66,13 +66,10 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        var check = false
 
         // Check to see if pending OAuth
-        if (prefs!!.retrieveString("auth_token", "NULL") == "NULL" || prefs!!.retrieveString("polygon_id", "NULL") == "NULL") {
+        if (prefs!!.retrieveString("auth_token", "NULL") == "NULL") {
             finishAuthentication()
-            if (prefs!!.retrieveString("auth_token", "NULL") == "NULL") return
-            check = true
         }
 
         // Set up billing client
@@ -92,7 +89,6 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         bottomNavigation?.setOnNavigationItemSelectedListener(this)
         t1 = Thread {
 
-
             // Initialize fragments and pagerAdapter
             dashboardFragment = DashboardFragment()
             searchFragment = SearchFragment()
@@ -105,17 +101,11 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
             val informationFragment = InformationFragment()
             pagerAdapter!!.addFragments(informationFragment)
             runOnUiThread {
-                viewPager?.setAdapter(pagerAdapter)
-                viewPager?.setCurrentItem(DASHBOARD_FRAGMENT)
+                viewPager?.adapter = pagerAdapter
+                viewPager?.currentItem = DASHBOARD_FRAGMENT
             }
         }
-        if (prefs!!.retrieveString("auth_token", "NULL") != "NULL" &&
-                prefs!!.retrieveString("polygon_id", "NULL") != "NULL" &&
-                !check) {
-            t1!!.start()
-        }
 
-//        t1.start();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -166,7 +156,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
         // Reinitialize the service configuration for continued use
         val serviceConfig = AuthorizationServiceConfiguration(
-                Uri.parse("https://app.alpaca.markets/oauth/authorize"),  // authorindeization endpoint
+                Uri.parse("https://app.alpaca.markets/oauth/authorize"),  // authorization endpoint
                 Uri.parse("https://api.alpaca.markets/oauth/token")) // token endpoint
 
         // Create Authstate for further reference after authorization
@@ -229,28 +219,6 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
                 if (account != null && account.portfolioValue.toFloat() > 0 && account.status.equals(AccountStatus.ACTIVE)) {
                     prefs!!.storeString("auth_token", tokenResponse.accessToken)
 
-                    // Fetch Polygon Id and add to SharedPreferences
-                    try {
-
-                        // Create Client and request
-                        val client = OkHttpClient()
-                        val request: Request = Request.Builder()
-                                .url("https://api.alpaca.markets/oauth/token")
-                                .addHeader("Authorization", "Bearer " + tokenResponse.accessToken).build()
-
-                        // Catch response after execution
-                        val response = client.newCall(request).execute()
-
-                        // Convert response to json to find the field
-                        val jsonObject = JSONObject(response.body!!.string())
-                        println(jsonObject["id"])
-                        prefs!!.storeString("polygon_id", jsonObject["id"].toString())
-                    } catch (e: IOException) {
-                        e.printStackTrace()
-                    } catch (e: JSONException) {
-                        e.printStackTrace()
-                    }
-
                     // If account is not funded, send back to Login Activity with dialog
                 } else {
                     val dialogBuilder = AtomicReference(MaterialAlertDialogBuilder(this, R.style.DialogThemePositive))
@@ -273,14 +241,14 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
             // Check if both are still the default values, then send back to LoginActivity
             // This helps for crashes
-            if (prefs!!.retrieveString("auth_token", "NULL") == "NULL" || prefs!!.retrieveString("polygon_id", "NULL") == "NULL") {
+            if (prefs!!.retrieveString("auth_token", "NULL") == "NULL") {
                 val intent = Intent(this@MainActivity, LoginActivity::class.java)
                 startActivity(intent)
                 finish()
             }
 
             // Start main thread, after authorization is complete
-//            t1!!.start()
+            t1!!.start()
         }
     }
 

@@ -18,6 +18,7 @@ import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException
 import java.util.concurrent.atomic.AtomicReference
 
 class PlaceOrderFragment : AAH_FabulousFragment() {
+
     // Shows the actual dialog for confirmation of order
     private fun showDialog(qty: TextInputEditText, alpacaAPI: AlpacaAPI, side: OrderSide) {
         val dialogBuilder = AtomicReference(MaterialAlertDialogBuilder(requireContext(), R.style.DialogThemePositive))
@@ -55,7 +56,7 @@ class PlaceOrderFragment : AAH_FabulousFragment() {
         val qty: TextInputEditText = contentView.findViewById(R.id.quantityTextField)
 
         // Place buy order on button click
-        val alpacaAPI = AlpacaAPI(null, null, SharedPreferencesManager(requireActivity())!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
+        val alpacaAPI = AlpacaAPI(null, null, SharedPreferencesManager(requireActivity()).retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
         val buy: MaterialButton = contentView.findViewById(R.id.btn_close)
         buy.setOnClickListener {
             if (qty.text.toString().isEmpty()) {
@@ -87,7 +88,7 @@ class PlaceOrderFragment : AAH_FabulousFragment() {
         setAnimationDuration(350) //optional; default 500ms
         setPeekHeight(300) // optional; default 400dp
         //        setCallbacks((Callbacks) getActivity()); //optional; to get back result
-//        setAnimationListener((AnimationListener) getActivity()); //optional; to get animation callbacks
+        //        setAnimationListener((AnimationListener) getActivity()); //optional; to get animation callbacks
         setViewgroupStatic(ll_buttons) // optional; layout to stick at bottom on slide
         //        setViewPager(MainActivity.viewPager); //optional; if you use viewpager that has scrollview
         setViewMain(rl_content) //necessary; main bottomsheet view
