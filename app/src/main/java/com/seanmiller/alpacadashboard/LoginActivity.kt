@@ -4,11 +4,9 @@ import android.app.PendingIntent
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.browser.customtabs.CustomTabsIntent
 import com.google.android.material.button.MaterialButton
-import com.seanmiller.alpacadashboard.LoginActivity
 import net.openid.appauth.AuthorizationRequest
 import net.openid.appauth.AuthorizationService
 import net.openid.appauth.AuthorizationServiceConfiguration
@@ -30,11 +28,13 @@ class LoginActivity : AppCompatActivity() {
         setContentView(R.layout.activity_login)
 
         // On authenticate click
-        val button_login = findViewById<MaterialButton>(R.id.button_login)
-        button_login.setOnClickListener { authenticate() }
+        val buttonSignIn = findViewById<MaterialButton>(R.id.button_sign_in)
+        val buttonSignUp = findViewById<MaterialButton>(R.id.button_sign_up)
+        buttonSignIn.setOnClickListener { authenticate() }
+        buttonSignUp.setOnClickListener { authenticate() }
     }
 
-    fun authenticate() {
+    private fun authenticate() {
 
         // Create success and fail PendingIntents to next Activity
         val intent = Intent(this@LoginActivity, MainActivity::class.java)

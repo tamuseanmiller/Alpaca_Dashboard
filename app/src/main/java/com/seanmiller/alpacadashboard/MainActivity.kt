@@ -105,6 +105,8 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
                 viewPager?.currentItem = DASHBOARD_FRAGMENT
             }
         }
+        if (prefs!!.retrieveString("auth_token", "NULL") != "NULL")
+            t1!!.start()
 
     }
 
