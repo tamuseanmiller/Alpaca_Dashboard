@@ -260,6 +260,11 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             swipeRefresh?.translationZ = 100f
             swipeRefresh?.bringToFront()
 
+            // Swipe to refresh recycler data
+            swipeRefresh?.setOnRefreshListener {
+                onRefresh()
+            }
+
             requireActivity().theme.resolveAttribute(R.attr.colorPrimaryLight, typedValue, true)
             val color = AtomicInteger(ContextCompat.getColor(requireActivity(), typedValue.resourceId))
 
@@ -464,11 +469,6 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
 
         recyclerViewWatchlist?.layoutManager = GridLayoutManager(requireActivity(), numColumns)
         recyclerViewWatchlist?.addItemDecoration(GridMarginDecoration(0, col2, GridLayoutManager.VERTICAL, false, null))
-
-        // Swipe to refresh recycler data
-        swipeRefresh?.setOnRefreshListener {
-            onRefresh()
-        }
 
         return mView
     }
