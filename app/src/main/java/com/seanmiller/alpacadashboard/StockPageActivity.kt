@@ -428,7 +428,9 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
             try {
                 val symbols = ArrayList<String>()
                 symbols.add(DashboardFragment.ticker!!.get())
-                order = alpacaAPI.getOrders(OrderStatus.CLOSED, 10, null, ZonedDateTime.now().plusDays(1), SortDirection.DESCENDING, false, symbols) as ArrayList<Order>?
+                order = alpacaAPI.getOrders(OrderStatus.CLOSED, 10,
+                        ZonedDateTime.of(2000, 12, 23, 0, 0, 0, 0, ZoneId.of("America/New_York")),
+                        ZonedDateTime.now().plusDays(1), SortDirection.DESCENDING, false, symbols) as ArrayList<Order>?
             } catch (e: AlpacaAPIRequestException) {
                 e.printStackTrace()
             }

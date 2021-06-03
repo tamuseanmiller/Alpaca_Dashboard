@@ -430,7 +430,13 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             // Fetch curent orders
             orders = ArrayList()
             try {
-                orders = (alpacaAPI.getOrders(OrderStatus.CLOSED, 10, null, ZonedDateTime.now(), SortDirection.DESCENDING, false, null) as ArrayList<Order>?)!!
+                orders = alpacaAPI.getOrders(
+                        OrderStatus.CLOSED,
+                        10,
+                        ZonedDateTime.of(2000, 12, 23, 0, 0, 0, 0, ZoneId.of("America/New_York")),
+                        ZonedDateTime.now().plusDays(1),
+                        SortDirection.ASCENDING,
+                        false, null) as ArrayList<Order>?
             } catch (e: AlpacaAPIRequestException) {
                 e.printStackTrace()
             }
