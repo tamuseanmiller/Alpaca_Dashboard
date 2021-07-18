@@ -18,11 +18,14 @@ import com.anjlab.android.iab.v3.TransactionDetails
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import net.jacobpeterson.alpaca.AlpacaAPI
-import net.jacobpeterson.alpaca.enums.account.AccountStatus
-import net.jacobpeterson.alpaca.enums.api.DataAPIType
-import net.jacobpeterson.alpaca.enums.api.EndpointAPIType
-import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException
-import net.jacobpeterson.domain.alpaca.account.Account
+import net.jacobpeterson.alpaca.model.endpoint.account.Account
+import net.jacobpeterson.alpaca.model.endpoint.account.enums.AccountStatus
+import net.jacobpeterson.alpaca.rest.AlpacaClientException
+//import net.jacobpeterson.alpaca.enums.account.AccountStatus
+//import net.jacobpeterson.alpaca.enums.api.DataAPIType
+//import net.jacobpeterson.alpaca.enums.api.EndpointAPIType
+//import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException
+//import net.jacobpeterson.domain.alpaca.account.Account
 import net.openid.appauth.*
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -210,10 +213,10 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
                 // Fetch account using alpaca-java
                 var account: Account? = null
-                val alpacaAPI = AlpacaAPI(null, null, tokenResponse.accessToken, EndpointAPIType.PAPER, DataAPIType.IEX)
+                val alpacaAPI = AlpacaAPI(tokenResponse.accessToken)
                 try {
-                    account = alpacaAPI.account
-                } catch (e: AlpacaAPIRequestException) {
+                    account = alpacaAPI.account().get()
+                } catch (e: AlpacaClientException) {
                     e.printStackTrace()
                 }
 

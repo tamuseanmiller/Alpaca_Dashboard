@@ -9,10 +9,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import net.jacobpeterson.alpaca.AlpacaAPI
-import net.jacobpeterson.alpaca.enums.api.DataAPIType
-import net.jacobpeterson.alpaca.enums.api.EndpointAPIType
-import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException
-import net.jacobpeterson.domain.alpaca.position.Position
+import net.jacobpeterson.alpaca.model.endpoint.position.Position
+import net.jacobpeterson.alpaca.model.properties.DataAPIType
+import net.jacobpeterson.alpaca.model.properties.EndpointAPIType
+import net.jacobpeterson.alpaca.rest.AlpacaClientException
+//import net.jacobpeterson.alpaca.enums.api.DataAPIType
+//import net.jacobpeterson.alpaca.enums.api.EndpointAPIType
+//import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException
+//import net.jacobpeterson.domain.alpaca.position.Position
 import java.text.DecimalFormat
 
 class RecyclerViewAdapterPositions internal constructor(context: Context?, data: List<Position>, positionV: PositionView) : RecyclerView.Adapter<RecyclerViewAdapterPositions.ViewHolder>() {
@@ -30,7 +34,7 @@ class RecyclerViewAdapterPositions internal constructor(context: Context?, data:
         val stockName = mData[position].symbol
         holder.stock_name.text = stockName
         val prefs = SharedPreferencesManager(mInflater.context)
-        val alpacaAPI = AlpacaAPI(null, null, prefs.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
+        val alpacaAPI = AlpacaAPI(null, null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
 
         holder.priceOfStock.text = String.format("$%.2f", mData[position].currentPrice.toFloat())
 
@@ -47,7 +51,7 @@ class RecyclerViewAdapterPositions internal constructor(context: Context?, data:
             } else {
                 // Set values
                 try {
-                    val snapshot = alpacaAPI.getSnapshot(stockName)
+                    val snapshot = alpacaAPI.marketData().getSnapshot(stockName)
                     val finalClose = snapshot.prevDailyBar.c.toFloat()
 //                      val finalCurr = snapshot.latestQuote.ap.toFloat()
                     val finalCurr = snapshot.dailyBar.c.toFloat()
@@ -61,7 +65,7 @@ class RecyclerViewAdapterPositions internal constructor(context: Context?, data:
                         }
                     }
 
-                } catch (e: AlpacaAPIRequestException) {
+                } catch (e: AlpacaClientException) {
                     e.printStackTrace()
                 }
 
@@ -76,8 +80,8 @@ class RecyclerViewAdapterPositions internal constructor(context: Context?, data:
                 // Get Amount of shares owned
                 var shrOwned: Position? = null
                 try {
-                    shrOwned = alpacaAPI.getOpenPositionBySymbol(stockName)
-                } catch (e: AlpacaAPIRequestException) {
+                    shrOwned = alpacaAPI.positions().getBySymbol(stockName)
+                } catch (e: AlpacaClientException) {
                     e.printStackTrace()
                 }
 
@@ -103,7 +107,7 @@ class RecyclerViewAdapterPositions internal constructor(context: Context?, data:
 
                 // Set values
                 try {
-                    val pos: Position = alpacaAPI.getOpenPositionBySymbol(stockName)
+                    val pos: Position = alpacaAPI.positions().getBySymbol(stockName)
                     val percentChange = pos.changeToday
                     val totalPercentChange = pos.unrealizedPlpc
                     val totalReturn = pos.unrealizedPl
@@ -111,7 +115,7 @@ class RecyclerViewAdapterPositions internal constructor(context: Context?, data:
                         mainActivity.runOnUiThread { updateValues(holder, percentChange, totalPercentChange, totalReturn) }
 
                     } else {
-                        val snapshot = alpacaAPI.getSnapshot(stockName)
+                        val snapshot = alpacaAPI.marketData().getSnapshot(stockName)
                         val finalClose = snapshot.prevDailyBar.c.toFloat()
 //                      val finalCurr = snapshot.latestQuote.ap.toFloat()
                         val finalCurr = snapshot.dailyBar.c.toFloat()
@@ -126,7 +130,7 @@ class RecyclerViewAdapterPositions internal constructor(context: Context?, data:
                         }
                     }
 
-                } catch (e: AlpacaAPIRequestException) {
+                } catch (e: AlpacaClientException) {
                     e.printStackTrace()
                 }
 

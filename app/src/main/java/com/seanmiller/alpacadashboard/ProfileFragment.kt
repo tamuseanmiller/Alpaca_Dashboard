@@ -20,10 +20,14 @@ import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.formatter.PercentFormatter
 import com.google.android.material.button.MaterialButton
 import net.jacobpeterson.alpaca.AlpacaAPI
-import net.jacobpeterson.alpaca.enums.api.DataAPIType
-import net.jacobpeterson.alpaca.enums.api.EndpointAPIType
-import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException
-import net.jacobpeterson.domain.alpaca.account.Account
+import net.jacobpeterson.alpaca.model.endpoint.account.Account
+import net.jacobpeterson.alpaca.model.properties.DataAPIType
+import net.jacobpeterson.alpaca.model.properties.EndpointAPIType
+import net.jacobpeterson.alpaca.rest.AlpacaClientException
+//import net.jacobpeterson.alpaca.enums.api.DataAPIType
+//import net.jacobpeterson.alpaca.enums.api.EndpointAPIType
+//import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException
+//import net.jacobpeterson.domain.alpaca.account.Account
 import java.text.DecimalFormat
 import java.util.*
 
@@ -46,10 +50,10 @@ class ProfileFragment : Fragment() {
 
 
             // Fetch various account data
-            val alpacaAPI = AlpacaAPI(null, null, prefs.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
+            val alpacaAPI = AlpacaAPI(null, null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
             try {
-                account = alpacaAPI.account
-            } catch (e: AlpacaAPIRequestException) {
+                account = alpacaAPI.account().get()
+            } catch (e: AlpacaClientException) {
                 e.printStackTrace()
             }
             t1!!.start()

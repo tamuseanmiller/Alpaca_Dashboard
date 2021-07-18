@@ -4,8 +4,8 @@ import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.robinhood.spark.SparkAdapter
-import net.jacobpeterson.alpaca.enums.portfolio.PortfolioPeriodUnit
-import net.jacobpeterson.alpaca.enums.portfolio.PortfolioTimeFrame
+//import net.jacobpeterson.alpaca.enums.portfolio.PortfolioPeriodUnit
+//import net.jacobpeterson.alpaca.enums.portfolio.PortfolioTimeFrame
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.collections.ArrayList
@@ -36,6 +36,7 @@ class StockAdapter @RequiresApi(api = Build.VERSION_CODES.O) constructor(context
         notifyDataSetChanged()
     }
 
+    // Solely for testing purposes
     fun clearData() {
         yData.clear()
         notifyDataSetChanged()
