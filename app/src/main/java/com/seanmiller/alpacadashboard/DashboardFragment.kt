@@ -862,7 +862,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
                     // Add data to chart
                     if (history!!.size != 0) {
                         for (i in history.indices) {
-                            if (history[i] != null) {
+                            if (history[i] != null && i != history.size - 1) {
                                 selectedAdapterInitial!!.addVal(history[i]?.equity.toString().toFloat())
                             }
                         }

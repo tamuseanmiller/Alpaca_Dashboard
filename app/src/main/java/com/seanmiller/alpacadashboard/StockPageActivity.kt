@@ -731,7 +731,7 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
                         ZonedDateTime.now(),
                         10000,
                         null,
-                        1,
+                        multiplier,
                         timeFrame,
                         BarAdjustment.SPLIT
                     )
@@ -747,7 +747,7 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
                         ZonedDateTime.now(),
                         10000,
                         null,
-                        1,
+                        multiplier,
                         timeFrame,
                         BarAdjustment.SPLIT
                     )
