@@ -27,10 +27,14 @@ import com.lapism.search.widget.MaterialSearchView
 import com.mashape.unirest.http.HttpResponse
 import io.cabriole.decorator.LinearMarginDecoration
 import net.jacobpeterson.alpaca.AlpacaAPI
-import net.jacobpeterson.alpaca.enums.api.DataAPIType
-import net.jacobpeterson.alpaca.enums.api.EndpointAPIType
-import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException
-import net.jacobpeterson.domain.alpaca.position.Position
+import net.jacobpeterson.alpaca.model.endpoint.position.Position
+import net.jacobpeterson.alpaca.model.properties.DataAPIType
+import net.jacobpeterson.alpaca.model.properties.EndpointAPIType
+import net.jacobpeterson.alpaca.rest.AlpacaClientException
+//import net.jacobpeterson.alpaca.enums.api.DataAPIType
+//import net.jacobpeterson.alpaca.enums.api.EndpointAPIType
+//import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException
+//import net.jacobpeterson.domain.alpaca.position.Position
 import net.jacobpeterson.domain.polygon.tickers.ticker.Ticker
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
@@ -131,7 +135,7 @@ class SearchFragment : Fragment(), SearchLayout.OnQueryTextListener, SearchableA
 
     override fun onQueryTextChange(newText: CharSequence): Boolean {
         val thread = Thread {
-            val alpacaAPI = AlpacaAPI(null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
+            val alpacaAPI = AlpacaAPI(null, null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
 
             // Calls yahoo finance api
             // http://d.yimg.com/aq/autoc?query=y&region=US&lang=en-US&callback=YAHOO.util.ScriptNodeDataSource.callbacks
@@ -181,7 +185,7 @@ class SearchFragment : Fragment(), SearchLayout.OnQueryTextListener, SearchableA
 
     override fun onQueryTextSubmit(charSequence: CharSequence): Boolean {
         val thread = Thread {
-            val alpacaAPI = AlpacaAPI(null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
+            val alpacaAPI = AlpacaAPI(null, null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
 
             // Calls yahoo finance api
             // http://d.yimg.com/aq/autoc?query=y&region=US&lang=en-US&callback=YAHOO.util.ScriptNodeDataSource.callbacks
@@ -328,12 +332,12 @@ public void onPurchaseHistoryRestored() {
 
 
                 // Initialize Alpaca's API
-                val alpacaAPI = AlpacaAPI(null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
+                val alpacaAPI = AlpacaAPI(null, null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
                 activity!!.runOnUiThread { refreshLayout!!.isRefreshing = true }
                 var positions: ArrayList<Position>? = null
                 try {
-                    positions = alpacaAPI.openPositions
-                } catch (e: AlpacaAPIRequestException) {
+                    positions = alpacaAPI.positions().get() as ArrayList<Position>?
+                } catch (e: AlpacaClientException) {
                     e.printStackTrace()
                 }
                 var news = ArrayList<JSONObject?>()

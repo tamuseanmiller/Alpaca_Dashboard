@@ -11,12 +11,18 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import net.jacobpeterson.alpaca.AlpacaAPI
-import net.jacobpeterson.alpaca.enums.api.DataAPIType
-import net.jacobpeterson.alpaca.enums.api.EndpointAPIType
-import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException
-import net.jacobpeterson.domain.alpaca.position.Position
+import net.jacobpeterson.alpaca.model.endpoint.position.Position
+import net.jacobpeterson.alpaca.model.properties.DataAPIType
+import net.jacobpeterson.alpaca.model.properties.EndpointAPIType
+import net.jacobpeterson.alpaca.rest.AlpacaClientException
 
-class RecyclerViewAdapterWatchlist internal constructor(context: Context?, data: List<String>) : RecyclerView.Adapter<RecyclerViewAdapterWatchlist.ViewHolder>() {
+//import net.jacobpeterson.alpaca.enums.api.DataAPIType
+//import net.jacobpeterson.alpaca.enums.api.EndpointAPIType
+//import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException
+//import net.jacobpeterson.domain.alpaca.position.Position
+
+class RecyclerViewAdapterWatchlist internal constructor(context: Context?, data: List<String>) :
+    RecyclerView.Adapter<RecyclerViewAdapterWatchlist.ViewHolder>() {
     private val mInflater: LayoutInflater = LayoutInflater.from(context)
     private var mClickListener: ItemClickListener? = null
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -24,28 +30,46 @@ class RecyclerViewAdapterWatchlist internal constructor(context: Context?, data:
         return ViewHolder(view)
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
         val mainActivity = MainActivity()
         val stockName = mData[position]
         holder.stock_name.text = stockName
         val prefs = SharedPreferencesManager(mInflater.context)
-        val alpacaAPI = AlpacaAPI(null, null, prefs.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
+        val alpacaAPI = AlpacaAPI(
+            null,
+            null,
+            null,
+            prefs.retrieveString("auth_token", "NULL"),
+            EndpointAPIType.PAPER,
+            DataAPIType.IEX
+        )
+        val alpacaData = AlpacaAPI(
+            null,
+            Properties.apiKey,
+            Properties.secretKey,
+            null,
+            EndpointAPIType.PAPER,
+            DataAPIType.IEX
+        )
         val thread = Thread {
 
             // Get Amount of shares owned
             var shrOwned: Position? = null
             try {
-                shrOwned = alpacaAPI.getOpenPositionBySymbol(stockName)
-            } catch (e: AlpacaAPIRequestException) {
+                shrOwned = alpacaAPI.positions().getBySymbol(stockName)
+            } catch (e: AlpacaClientException) {
                 e.printStackTrace()
             }
 
             // Set shares owned
             val finalShrOwned = shrOwned
             mainActivity.runOnUiThread {
-                when (finalShrOwned!!.qty) {
+                if (finalShrOwned == null) {
+                    holder.sharesOwned.text = String.format("%s shares owned", 0)
+                    return@runOnUiThread;
+                }
+                when (finalShrOwned.qty) {
                     "1" -> {
                         holder.sharesOwned.text = String.format("%s share owned", finalShrOwned.qty)
                     }
@@ -53,7 +77,8 @@ class RecyclerViewAdapterWatchlist internal constructor(context: Context?, data:
                         holder.sharesOwned.text = String.format("%s shares owned", 0)
                     }
                     else -> {
-                        holder.sharesOwned.text = String.format("%s shares owned", finalShrOwned.qty)
+                        holder.sharesOwned.text =
+                            String.format("%s shares owned", finalShrOwned.qty)
                     }
                 }
             }
@@ -223,7 +248,7 @@ class RecyclerViewAdapterWatchlist internal constructor(context: Context?, data:
 
                 // Set values
                 try {
-                    val snapshot = alpacaAPI.getSnapshot(stockName)
+                    val snapshot = alpacaData.marketData().getSnapshot(stockName)
                     val finalClose = snapshot.prevDailyBar.c.toFloat()
 //                  val finalCurr = snapshot.latestQuote.ap.toFloat()
                     val finalCurr = snapshot.dailyBar.c.toFloat()
@@ -243,7 +268,7 @@ class RecyclerViewAdapterWatchlist internal constructor(context: Context?, data:
                             }
                         }
                     }
-                } catch (e: AlpacaAPIRequestException) {
+                } catch (e: AlpacaClientException) {
                     e.printStackTrace()
                 }
 
@@ -272,7 +297,8 @@ class RecyclerViewAdapterWatchlist internal constructor(context: Context?, data:
     }
 
     // stores and recycles views as they are scrolled off screen
-    inner class ViewHolder internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
+    inner class ViewHolder internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView),
+        View.OnClickListener {
         var stock_name: TextView = itemView.findViewById(R.id.stockName)
         var percentChange: MaterialButton = itemView.findViewById(R.id.currentPrice)
         var sharesOwned: TextView = itemView.findViewById(R.id.sharesOwned)

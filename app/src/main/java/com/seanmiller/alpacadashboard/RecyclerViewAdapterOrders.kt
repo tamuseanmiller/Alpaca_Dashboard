@@ -9,7 +9,8 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
-import net.jacobpeterson.domain.alpaca.order.Order
+import net.jacobpeterson.alpaca.model.endpoint.order.Order
+//import net.jacobpeterson.domain.alpaca.order.Order
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 
@@ -65,7 +66,7 @@ class RecyclerViewAdapterOrders internal constructor(context: Context?, data: Li
                     hour.set(finalHourTemp.toString())
                     holder.timeClosed.text = "$hour:$finalMinute"
                     holder.price.text = "$" + mData[position].filledAvgPrice
-                    holder.pricePlaced.text = mData[position].side + " " + mData[position].qty
+                    holder.pricePlaced.text = mData[position].side.toString() + " " + mData[position].qty
                 }
             } else {
                 val zonedDateTime = mData[position].canceledAt
@@ -92,7 +93,7 @@ class RecyclerViewAdapterOrders internal constructor(context: Context?, data: Li
                     hour.set(finalHourTemp.toString())
                     holder.timeClosed.text = "$hour:$finalMinute"
                     holder.price.text = "Cancelled"
-                    holder.pricePlaced.text = mData[position].side + " " + mData[position].qty
+                    holder.pricePlaced.text = mData[position].side.toString() + " " + mData[position].qty
                 }
             }
         }

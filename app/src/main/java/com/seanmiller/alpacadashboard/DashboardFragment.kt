@@ -22,23 +22,34 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.android.material.appbar.CollapsingToolbarLayout
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.robinhood.ticker.TickerUtils
 import com.robinhood.ticker.TickerView
 import io.cabriole.decorator.GridMarginDecoration
 import io.cabriole.decorator.LinearMarginDecoration
-import net.jacobpeterson.abstracts.enums.SortDirection
+//import net.jacobpeterson.abstracts.enums.SortDirection
 import net.jacobpeterson.alpaca.AlpacaAPI
-import net.jacobpeterson.alpaca.enums.api.DataAPIType
-import net.jacobpeterson.alpaca.enums.api.EndpointAPIType
-import net.jacobpeterson.alpaca.enums.order.OrderStatus
-import net.jacobpeterson.alpaca.enums.portfolio.PortfolioPeriodUnit
-import net.jacobpeterson.alpaca.enums.portfolio.PortfolioTimeFrame
-import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException
-import net.jacobpeterson.domain.alpaca.calendar.Calendar
-import net.jacobpeterson.domain.alpaca.order.Order
-import net.jacobpeterson.domain.alpaca.position.Position
+//import net.jacobpeterson.alpaca.enums.api.DataAPIType
+//import net.jacobpeterson.alpaca.enums.api.EndpointAPIType
+//import net.jacobpeterson.alpaca.enums.order.OrderStatus
+//import net.jacobpeterson.alpaca.enums.portfolio.PortfolioPeriodUnit
+//import net.jacobpeterson.alpaca.enums.portfolio.PortfolioTimeFrame
+import net.jacobpeterson.alpaca.model.endpoint.calendar.Calendar
+import net.jacobpeterson.alpaca.model.endpoint.common.enums.SortDirection
+import net.jacobpeterson.alpaca.model.endpoint.order.Order
+import net.jacobpeterson.alpaca.model.endpoint.order.enums.CurrentOrderStatus
+import net.jacobpeterson.alpaca.model.endpoint.order.enums.OrderStatus
+import net.jacobpeterson.alpaca.model.endpoint.portfoliohistory.PortfolioHistoryDataPoint
+import net.jacobpeterson.alpaca.model.endpoint.portfoliohistory.enums.PortfolioPeriodUnit
+import net.jacobpeterson.alpaca.model.endpoint.portfoliohistory.enums.PortfolioTimeFrame
+import net.jacobpeterson.alpaca.model.endpoint.position.Position
+import net.jacobpeterson.alpaca.model.properties.DataAPIType
+import net.jacobpeterson.alpaca.model.properties.EndpointAPIType
+import net.jacobpeterson.alpaca.rest.AlpacaClientException
+
 import java.text.DecimalFormat
 import java.time.LocalDate
 import java.time.LocalTime
@@ -111,7 +122,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
 
         // Vary size of spark view by height of screen size
         val height = fetchHeight()
-        sparkCard!!.minimumHeight = (height / 1.75).toInt()
+        sparkCard!!.layoutParams.height = (height / 1.75).toInt()
     }
 
     // Main onCreate method
@@ -124,9 +135,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
         val height = fetchHeight()
         sparkView = mView.findViewById(R.id.sparkview)
         sparkCard = mView.findViewById(R.id.sparkCard)
-        with(sparkCard) {
-            this?.setMinimumHeight((height / 1.75).toInt())
-        }
+        sparkCard!!.layoutParams.height = (height / 1.75).toInt()
 
         // Set theme and icon
         val themeChange = mView.findViewById<ImageButton>(R.id.themeChange)
@@ -149,7 +158,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
         val negColorLight = AtomicInteger(ContextCompat.getColor(requireActivity(), typedValue.resourceId))
         negColorLight.set(ContextCompat.getColor(requireActivity(), typedValue.resourceId))
 
-        val alpacaAPI = AlpacaAPI(null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
+        val alpacaAPI = AlpacaAPI(prefs!!.retrieveString("auth_token", "NULL"))
 
         // Set title
         val totalEquity = mView.findViewById<TextView>(R.id.stockTraded)
@@ -293,12 +302,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
                 } catch (e: InterruptedException) {
                     e.printStackTrace()
                 }
-                var currentValue: String? = null
-                try {
-                    currentValue = alpacaAPI.account.portfolioValue
-                } catch (e: AlpacaAPIRequestException) {
-                    e.printStackTrace()
-                }
+                var currentValue = alpacaAPI.account().get().portfolioValue
 
                 // Format amount
                 val amount = currentValue!!.toDouble()
@@ -318,13 +322,9 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
         // Threads for getting recycler data
         val positionsThread = Thread {
 
-            // Fetch current positions
+            // Fetch current positions♥
             stocks = ArrayList()
-            try {
-                stocks = alpacaAPI.openPositions
-            } catch (e: AlpacaAPIRequestException) {
-                e.printStackTrace()
-            }
+            stocks = alpacaAPI.positions().get() as ArrayList<Position>?
             when (prefs!!.retrieveInt("position_view", 1)) {
                 1 -> positionView = PositionView.PERCENT_CHANGE
                 2 -> positionView = PositionView.TOTAL_PERCENT_CHANGE
@@ -346,7 +346,8 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
                 }
 
                 try {
-                    val calendar = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(1), LocalDate.now()) as ArrayList<Calendar>?
+                    alpacaAPI.calendar().get()
+                    val calendar = alpacaAPI.calendar().get(LocalDate.now().minusWeeks(1), LocalDate.now()) as ArrayList<Calendar>?
 
                     // Update positions if not market day
                     if (!calendar!!.last().date.equals(LocalDate.now().toString())) {
@@ -361,7 +362,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
                         requireActivity().runOnUiThread { recycleAdapterPositions?.notifyDataSetChanged() }
                     }
 
-                } catch (e: AlpacaAPIRequestException) {
+                } catch (e: AlpacaClientException) {
                     e.printStackTrace()
                 }
             }
@@ -380,20 +381,20 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
                 if (!watchlistId.isNullOrBlank()) {
 
                     // Loop through all assets and add symbol to list
-                    for (j in alpacaAPI.getWatchlist(watchlistId).assets) {
+                    for (j in alpacaAPI.watchlist().get(watchlistId).assets) {
                         watchlist?.add(j.symbol)
                     }
 
                 } else {  // If not cached, find and cache it
 
                     // Loop through all watchlists
-                    for (i in alpacaAPI.watchlists) {
+                    for (i in alpacaAPI.watchlist().get()) {
 
                         // Check for if this watchlist is primary
                         if (i.name == "Primary Watchlist") {
 
                             // Loop through all assets in primary watchlist and add to list
-                            for (j in alpacaAPI.getWatchlist(i.id).assets) {
+                            for (j in alpacaAPI.watchlist().get(i.id).assets) {
                                 watchlist?.add(j.symbol)
                             }
                             prefs?.storeString("primary_watchlist", i.id)  // Store id
@@ -402,7 +403,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
                     }
                 }
 
-            } catch (e: AlpacaAPIRequestException) {
+            } catch (e: AlpacaClientException) {
                 e.printStackTrace()
             }
 
@@ -430,14 +431,14 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
             // Fetch curent orders
             orders = ArrayList()
             try {
-                orders = alpacaAPI.getOrders(
-                        OrderStatus.CLOSED,
+                orders = alpacaAPI.orders().get(
+                        CurrentOrderStatus.CLOSED,
                         10,
                         ZonedDateTime.of(2000, 12, 23, 0, 0, 0, 0, ZoneId.of("America/New_York")),
                         ZonedDateTime.now().plusDays(1),
                         SortDirection.ASCENDING,
                         false, null) as ArrayList<Order>?
-            } catch (e: AlpacaAPIRequestException) {
+            } catch (e: AlpacaClientException) {
                 e.printStackTrace()
             }
 
@@ -562,13 +563,13 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
         swipeRefresh!!.isRefreshing = true  // Set refreshing for the animation
 
         val positionsThread = Thread {
-            val alpacaAPI = AlpacaAPI(null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
+            val alpacaAPI = AlpacaAPI(null, null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
 
             // Fetch current positions
             var positions = ArrayList<Position>()
             try {
-                positions = alpacaAPI.openPositions
-            } catch (e: AlpacaAPIRequestException) {
+                positions = alpacaAPI.positions().get() as ArrayList<Position>
+            } catch (e: AlpacaClientException) {
                 e.printStackTrace()
             }
 
@@ -595,14 +596,20 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
         positionsThread.start()
 
         val ordersThread = Thread {
-            val alpacaAPI = AlpacaAPI(null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
+            val alpacaAPI = AlpacaAPI(null, null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
 
             // Fetch curent orders
             orders!!.clear()
             var temp: ArrayList<Order> = ArrayList()
             try {
-                temp = alpacaAPI.getOrders(OrderStatus.CLOSED, 10, null, ZonedDateTime.now().plusDays(1), SortDirection.DESCENDING, false, null) as ArrayList<Order>
-            } catch (e: AlpacaAPIRequestException) {
+                temp = (alpacaAPI.orders().get(
+                        CurrentOrderStatus.CLOSED,
+                        10,
+                        ZonedDateTime.of(2000, 12, 23, 0, 0, 0, 0, ZoneId.of("America/New_York")),
+                        ZonedDateTime.now().plusDays(1),
+                        SortDirection.ASCENDING,
+                        false, null) as ArrayList<Order>?)!!
+            } catch (e: AlpacaClientException) {
                 e.printStackTrace()
             }
 
@@ -629,7 +636,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
         ordersThread.start()
 
         val watchlistThread = Thread {
-            val alpacaAPI = AlpacaAPI(null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
+            val alpacaAPI = AlpacaAPI(null, null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
 
             // Fetch watchlist
             watchlist?.clear()
@@ -642,20 +649,20 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
                 if (!watchlistId.isNullOrBlank()) {
 
                     // Loop through all assets and add symbol to list
-                    for (j in alpacaAPI.getWatchlist(watchlistId).assets) {
+                    for (j in alpacaAPI.watchlist().get(watchlistId).assets) {
                         tempList.add(j.symbol)
                     }
 
                 } else {  // If not cached, find and cache it
 
                     // Loop through all watchlists
-                    for (i in alpacaAPI.watchlists) {
+                    for (i in alpacaAPI.watchlist().get()) {
 
                         // Check for if this watchlist is primary
                         if (i.name == "Primary Watchlist") {
 
                             // Loop through all assets in primary watchlist and add to list
-                            for (j in alpacaAPI.getWatchlist(i.id).assets) {
+                            for (j in alpacaAPI.watchlist().get(i.id).assets) {
                                 tempList.add(j.symbol)
                             }
                             prefs?.storeString("primary_watchlist", i.id)  // Store id
@@ -664,7 +671,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
                     }
                 }
 
-            } catch (e: AlpacaAPIRequestException) {
+            } catch (e: AlpacaClientException) {
                 e.printStackTrace()
                 swipeRefresh!!.isRefreshing = false
             }
@@ -762,19 +769,20 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
 
     // Initialization for the stock graphs
     private fun initializeDashboardValues(periodLength: Int, periodUnit: PortfolioPeriodUnit, timeFrame: PortfolioTimeFrame, selectedAdapterInitial: StockAdapter?) {
-        val alpacaAPI = AlpacaAPI(null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
+        val alpacaAPI = AlpacaAPI(null, null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
+        val alpacaData = AlpacaAPI(Properties.apiKey, Properties.secretKey);
         val fetchHistoryThread = Thread {
-            val historyInitial = AtomicReference(ArrayList<Double>())
+            val historyInitial = AtomicReference(ArrayList<PortfolioHistoryDataPoint>())
 
             // Fetch last open day's information
             val calendar: java.util.ArrayList<Calendar>?
             try {
-                calendar = alpacaAPI.getCalendar(LocalDate.now().minusWeeks(1), LocalDate.now()) as ArrayList<Calendar>?
+                calendar = alpacaData.calendar().get(LocalDate.now().minusWeeks(1), LocalDate.now()) as ArrayList<Calendar>?
                 var lastOpenDate2 = LocalDate.now().minusDays(1)
                 var oldTime = LocalTime.now().minusHours(2)
                 if (calendar!!.size >= 2) {
-                    lastOpenDate2 = LocalDate.parse(calendar[calendar.size - 2].date)
-                    oldTime = LocalTime.of(calendar[calendar.size - 2].open.substring(0, 2).toInt(), calendar[calendar.size - 2].open.substring(3, 5).toInt())
+                    lastOpenDate2 = LocalDate.parse(calendar[calendar.size - 2].date.toString())
+                    oldTime = LocalTime.of(calendar[calendar.size - 2].open.toString().substring(0, 2).toInt(), calendar[calendar.size - 2].open.toString().substring(3, 5).toInt())
                 }
 
                 // Switch given open datetime from US/Eastern to System Default
@@ -783,22 +791,22 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
 
                 // Check if it is the morning of
                 if (standardDateTime.toLocalTime() > LocalTime.now()) {
-                    lastOpenDate2 = LocalDate.parse(calendar[calendar.size - 3].date)
+                    lastOpenDate2 = LocalDate.parse(calendar[calendar.size - 3].date.toString())
                 }
 
-                var history: ArrayList<Double?>? = null
+                var history: ArrayList<PortfolioHistoryDataPoint?>? = null
                 if (PortfolioTimeFrame.FIVE_MINUTE == timeFrame) {
 
                     // Gather old portfolio data
                     historyInitial.set(ArrayList())
                     try {
-                        historyInitial.set(alpacaAPI.getPortfolioHistory(periodLength, periodUnit, timeFrame, lastOpenDate2, false).equity)
-                    } catch (e: AlpacaAPIRequestException) {
+                        historyInitial.set(alpacaAPI.portfolioHistory().get(periodLength, periodUnit, timeFrame, lastOpenDate2, false).dataPoints)
+                    } catch (e: AlpacaClientException) {
                         e.printStackTrace()
                     }
 
                     if (historyInitial.get().isNotEmpty()) {
-                        val temp: Int = historyInitial.get().last().toInt()
+                        val temp: Int = historyInitial.get().last().equity.toInt()
                         selectedAdapterInitial!!.pushFront(temp.toFloat())
                         selectedAdapterInitial.setBaseline(selectedAdapterInitial.getValue(0))
                         oneDayAdapter!!.notifyDataSetChanged()
@@ -808,22 +816,22 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
                 if (periodUnit == PortfolioPeriodUnit.DAY) {
 
                     // Assign last open datetime and check for if it is the morning of
-                    var lastOpenDate = LocalDate.parse(calendar.last().date)
-                    oldTime = LocalTime.of(calendar.last().open.substring(0, 2).toInt(), calendar.last().open.substring(3, 5).toInt())
+                    var lastOpenDate = LocalDate.parse(calendar.last().date.toString())
+                    oldTime = LocalTime.of(calendar.last().open.toString().substring(0, 2).toInt(), calendar.last().open.toString().substring(3, 5).toInt())
 
                     // Switch given open datetime from US/Eastern to System Default
                     zonedDateTime = ZonedDateTime.of(lastOpenDate2, oldTime, ZoneId.of("US/Eastern"))
                     standardDateTime = zonedDateTime.withZoneSameInstant(ZoneId.systemDefault())
                     if (standardDateTime.toLocalTime() > LocalTime.now()) {
-                        lastOpenDate = LocalDate.parse(calendar[calendar.size - 2].date)
+                        lastOpenDate = LocalDate.parse(calendar[calendar.size - 2].date.toString())
                     }
 
                     // Gather old portfolio data
                     try {
-                        val portVal = alpacaAPI.getPortfolioHistory(periodLength,
+                        val portVal = alpacaAPI.portfolioHistory().get(periodLength,
                                 periodUnit, timeFrame, lastOpenDate, true)
-                        history = portVal.equity
-                    } catch (e: AlpacaAPIRequestException) {
+                        history = portVal.dataPoints
+                    } catch (e: AlpacaClientException) {
                         e.printStackTrace()
                     }
                 } else {
@@ -831,10 +839,10 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
                     // Gather old portfolio data
                     history = ArrayList()
                     try {
-                        val portVal = alpacaAPI.getPortfolioHistory(periodLength,
+                        val portVal = alpacaAPI.portfolioHistory().get(periodLength,
                                 periodUnit, timeFrame, LocalDate.now(), true)
-                        history = portVal.equity
-                    } catch (e: AlpacaAPIRequestException) {
+                        history = portVal.dataPoints
+                    } catch (e: AlpacaClientException) {
                         e.printStackTrace()
                     }
                 }
@@ -845,7 +853,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
                     if (history!!.size != 0) {
                         for (i in 10 until history.size) {
                             if (history[i] != null) {
-                                selectedAdapterInitial!!.addVal(history[i].toString().toFloat())
+                                selectedAdapterInitial!!.addVal(history[i]?.equity.toString().toFloat())
                             }
                         }
                     }
@@ -854,14 +862,14 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
                     // Add data to chart
                     if (history!!.size != 0) {
                         for (i in history.indices) {
-                            if (history[i] != null) {
-                                selectedAdapterInitial!!.addVal(history[i].toString().toFloat())
+                            if (history[i] != null && i != history.size - 1) {
+                                selectedAdapterInitial!!.addVal(history[i]?.equity.toString().toFloat())
                             }
                         }
                     }
                 }
 
-            } catch (e: AlpacaAPIRequestException) {
+            } catch (e: AlpacaClientException) {
                 e.printStackTrace()
             }
 
@@ -897,14 +905,14 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
         val setCurrentEquityThread = Thread {
             val currentValue: String?
             try {
-                currentValue = alpacaAPI.account.portfolioValue
+                currentValue = alpacaAPI.account().get().portfolioValue
                 val amount = currentValue!!.toDouble()
 
                 // Format amount
                 val formatter = DecimalFormat("#,###.00")
                 requireActivity().runOnUiThread { tickerView!!.text = "$" + formatter.format(amount) }
 
-            } catch (e: AlpacaAPIRequestException) {
+            } catch (e: AlpacaClientException) {
                 e.printStackTrace()
             }
         }

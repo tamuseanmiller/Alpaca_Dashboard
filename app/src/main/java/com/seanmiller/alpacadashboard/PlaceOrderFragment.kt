@@ -10,11 +10,14 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import net.jacobpeterson.alpaca.AlpacaAPI
-import net.jacobpeterson.alpaca.enums.api.DataAPIType
-import net.jacobpeterson.alpaca.enums.api.EndpointAPIType
-import net.jacobpeterson.alpaca.enums.order.OrderSide
-import net.jacobpeterson.alpaca.enums.order.OrderTimeInForce
-import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException
+//import net.jacobpeterson.alpaca.enums.api.DataAPIType
+//import net.jacobpeterson.alpaca.enums.api.EndpointAPIType
+//import net.jacobpeterson.alpaca.enums.order.OrderSide
+//import net.jacobpeterson.alpaca.enums.order.OrderTimeInForce
+import net.jacobpeterson.alpaca.model.endpoint.order.enums.OrderSide
+import net.jacobpeterson.alpaca.model.endpoint.order.enums.OrderTimeInForce
+import net.jacobpeterson.alpaca.rest.AlpacaClientException
+//import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException
 import java.util.concurrent.atomic.AtomicReference
 
 class PlaceOrderFragment : AAH_FabulousFragment() {
@@ -27,13 +30,13 @@ class PlaceOrderFragment : AAH_FabulousFragment() {
         dialogBuilder.get().setNeutralButton("Cancel") { dialogInterface: DialogInterface, _: Int -> dialogInterface.dismiss() }
         dialogBuilder.get().setPositiveButton("Accept") { _: DialogInterface?, _: Int ->
             try {
-                alpacaAPI.requestNewMarketOrder(DashboardFragment.ticker!!.get(), Integer.valueOf(qty.text.toString()), side, OrderTimeInForce.DAY)
+                alpacaAPI.orders().requestMarketOrder(DashboardFragment.ticker!!.get(), Integer.valueOf(qty.text.toString()), side, OrderTimeInForce.DAY)
                 dialogBuilder.set(MaterialAlertDialogBuilder(requireContext(), R.style.DialogThemePositive))
                 dialogBuilder.get().setTitle("$side Order")
                 dialogBuilder.get().setMessage("Congrats! Your " + side + " order of " + qty.text.toString() + " stocks of " + DashboardFragment.ticker + " went through!")
                 dialogBuilder.get().setNeutralButton("Okay") { dialogInterface: DialogInterface, _: Int -> dialogInterface.dismiss() }
                 dialogBuilder.get().create().show()
-            } catch (e: AlpacaAPIRequestException) {
+            } catch (e: AlpacaClientException) {
                 dialogBuilder.set(MaterialAlertDialogBuilder(requireContext(), R.style.DialogThemeNegative))
                 dialogBuilder.get().setTitle("$side Order")
                 dialogBuilder.get().setMessage("Your " + side + " order of " + qty.text.toString() + " stocks of " + DashboardFragment.ticker + " didn't go through! ")
@@ -56,7 +59,7 @@ class PlaceOrderFragment : AAH_FabulousFragment() {
         val qty: TextInputEditText = contentView.findViewById(R.id.quantityTextField)
 
         // Place buy order on button click
-        val alpacaAPI = AlpacaAPI(null, null, SharedPreferencesManager(requireActivity()).retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
+        val alpacaAPI = AlpacaAPI(SharedPreferencesManager(requireActivity()).retrieveString("auth_token", "NULL"))
         val buy: MaterialButton = contentView.findViewById(R.id.btn_close)
         buy.setOnClickListener {
             if (qty.text.toString().isEmpty()) {
@@ -72,11 +75,11 @@ class PlaceOrderFragment : AAH_FabulousFragment() {
         val sell: MaterialButton = contentView.findViewById(R.id.sell_button)
         sell.setOnClickListener {
             try {
-                if (qty.text.toString().isEmpty() || qty.text.toString().toInt() > alpacaAPI.getOpenPositionBySymbol(DashboardFragment.ticker!!.get()).qty.toInt()) {
+                if (qty.text.toString().isEmpty() || qty.text.toString().toInt() > alpacaAPI.positions().getBySymbol(DashboardFragment.ticker!!.get()).qty.toInt()) {
                     qty.error = "Not enough shares"
                     return@setOnClickListener
                 }
-            } catch (e: AlpacaAPIRequestException) {
+            } catch (e: AlpacaClientException) {
                 e.printStackTrace()
             }
 

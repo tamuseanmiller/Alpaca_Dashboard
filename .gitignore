@@ -31,3 +31,5 @@ app/release/app-release.aab
 app/debug/app-debug.aab
 
 app/src/main/java/com/seanmiller/alpacadashboard/Properties.java
+
+.idea/
