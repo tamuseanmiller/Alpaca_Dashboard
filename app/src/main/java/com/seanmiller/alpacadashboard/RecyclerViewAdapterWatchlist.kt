@@ -21,7 +21,8 @@ import net.jacobpeterson.alpaca.rest.AlpacaClientException
 //import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException
 //import net.jacobpeterson.domain.alpaca.position.Position
 
-class RecyclerViewAdapterWatchlist internal constructor(context: Context?, data: List<String>) : RecyclerView.Adapter<RecyclerViewAdapterWatchlist.ViewHolder>() {
+class RecyclerViewAdapterWatchlist internal constructor(context: Context?, data: List<String>) :
+    RecyclerView.Adapter<RecyclerViewAdapterWatchlist.ViewHolder>() {
     private val mInflater: LayoutInflater = LayoutInflater.from(context)
     private var mClickListener: ItemClickListener? = null
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -35,8 +36,22 @@ class RecyclerViewAdapterWatchlist internal constructor(context: Context?, data:
         val stockName = mData[position]
         holder.stock_name.text = stockName
         val prefs = SharedPreferencesManager(mInflater.context)
-        val alpacaAPI = AlpacaAPI(null, null, null, prefs.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
-        val alpacaData = AlpacaAPI(null, Properties.apiKey, Properties.secretKey, null, EndpointAPIType.PAPER, DataAPIType.IEX)
+        val alpacaAPI = AlpacaAPI(
+            null,
+            null,
+            null,
+            prefs.retrieveString("auth_token", "NULL"),
+            EndpointAPIType.PAPER,
+            DataAPIType.IEX
+        )
+        val alpacaData = AlpacaAPI(
+            null,
+            Properties.apiKey,
+            Properties.secretKey,
+            null,
+            EndpointAPIType.PAPER,
+            DataAPIType.IEX
+        )
         val thread = Thread {
 
             // Get Amount of shares owned
@@ -49,18 +64,21 @@ class RecyclerViewAdapterWatchlist internal constructor(context: Context?, data:
 
             // Set shares owned
             val finalShrOwned = shrOwned
-            if (finalShrOwned != null) {
-                mainActivity.runOnUiThread {
-                    when (finalShrOwned!!.qty) {
-                        "1" -> {
-                            holder.sharesOwned.text = String.format("%s share owned", finalShrOwned.qty)
-                        }
-                        null -> {
-                            holder.sharesOwned.text = String.format("%s shares owned", 0)
-                        }
-                        else -> {
-                            holder.sharesOwned.text = String.format("%s shares owned", finalShrOwned.qty)
-                        }
+            mainActivity.runOnUiThread {
+                if (finalShrOwned == null) {
+                    holder.sharesOwned.text = String.format("%s shares owned", 0)
+                    return@runOnUiThread;
+                }
+                when (finalShrOwned.qty) {
+                    "1" -> {
+                        holder.sharesOwned.text = String.format("%s share owned", finalShrOwned.qty)
+                    }
+                    null -> {
+                        holder.sharesOwned.text = String.format("%s shares owned", 0)
+                    }
+                    else -> {
+                        holder.sharesOwned.text =
+                            String.format("%s shares owned", finalShrOwned.qty)
                     }
                 }
             }
@@ -279,7 +297,8 @@ class RecyclerViewAdapterWatchlist internal constructor(context: Context?, data:
     }
 
     // stores and recycles views as they are scrolled off screen
-    inner class ViewHolder internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
+    inner class ViewHolder internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView),
+        View.OnClickListener {
         var stock_name: TextView = itemView.findViewById(R.id.stockName)
         var percentChange: MaterialButton = itemView.findViewById(R.id.currentPrice)
         var sharesOwned: TextView = itemView.findViewById(R.id.sharesOwned)

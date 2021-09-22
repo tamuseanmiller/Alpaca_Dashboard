@@ -136,9 +136,6 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
         sparkView = mView.findViewById(R.id.sparkview)
         sparkCard = mView.findViewById(R.id.sparkCard)
         sparkCard!!.layoutParams.height = (height / 1.75).toInt()
-//        with(sparkCard) {
-//            this?.setMinimumHeight((height / 1.75).toInt())
-//        }
 
         // Set theme and icon
         val themeChange = mView.findViewById<ImageButton>(R.id.themeChange)

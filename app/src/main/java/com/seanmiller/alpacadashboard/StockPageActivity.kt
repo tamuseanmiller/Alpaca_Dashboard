@@ -197,7 +197,7 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
         sparkViewStock = findViewById(R.id.sparkviewStock)
         val height = fetchHeight()
         val sparkCardStock = findViewById<MaterialCardView>(R.id.sparkCardStock)
-        sparkCardStock.minimumHeight = (height / 1.75).toInt()
+        sparkCardStock.layoutParams.height = (height / 1.75).toInt()
 
         // Initializations
         val alpacaAPI = AlpacaAPI(
