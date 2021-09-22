@@ -35,6 +35,7 @@ class RecyclerViewAdapterPositions internal constructor(context: Context?, data:
         holder.stock_name.text = stockName
         val prefs = SharedPreferencesManager(mInflater.context)
         val alpacaAPI = AlpacaAPI(null, null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
+        val alpacaData = AlpacaAPI(null, Properties.apiKey, Properties.secretKey, null, EndpointAPIType.PAPER, DataAPIType.IEX)
 
         holder.priceOfStock.text = String.format("$%.2f", mData[position].currentPrice.toFloat())
 
@@ -51,7 +52,7 @@ class RecyclerViewAdapterPositions internal constructor(context: Context?, data:
             } else {
                 // Set values
                 try {
-                    val snapshot = alpacaAPI.marketData().getSnapshot(stockName)
+                    val snapshot = alpacaData.marketData().getSnapshot(stockName)
                     val finalClose = snapshot.prevDailyBar.c.toFloat()
 //                      val finalCurr = snapshot.latestQuote.ap.toFloat()
                     val finalCurr = snapshot.dailyBar.c.toFloat()
@@ -87,14 +88,16 @@ class RecyclerViewAdapterPositions internal constructor(context: Context?, data:
 
                 // Set shares owned
                 val finalShrOwned = shrOwned
-                mainActivity.runOnUiThread {
-                    when (finalShrOwned!!.qty) {
-                        "1" -> holder.sharesOwned.text = String.format("%s share owned", finalShrOwned.qty)
+                if (finalShrOwned != null) {
+                    mainActivity.runOnUiThread {
+                        when (finalShrOwned!!.qty) {
+                            "1" -> holder.sharesOwned.text = String.format("%s share owned", finalShrOwned.qty)
 
-                        null -> holder.sharesOwned.text = String.format("%s shares owned", 0)
+                            null -> holder.sharesOwned.text = String.format("%s shares owned", 0)
 
-                        else -> holder.sharesOwned.text = String.format("%s shares owned", finalShrOwned.qty)
+                            else -> holder.sharesOwned.text = String.format("%s shares owned", finalShrOwned.qty)
 
+                        }
                     }
                 }
 
@@ -115,7 +118,7 @@ class RecyclerViewAdapterPositions internal constructor(context: Context?, data:
                         mainActivity.runOnUiThread { updateValues(holder, percentChange, totalPercentChange, totalReturn) }
 
                     } else {
-                        val snapshot = alpacaAPI.marketData().getSnapshot(stockName)
+                        val snapshot = alpacaData.marketData().getSnapshot(stockName)
                         val finalClose = snapshot.prevDailyBar.c.toFloat()
 //                      val finalCurr = snapshot.latestQuote.ap.toFloat()
                         val finalCurr = snapshot.dailyBar.c.toFloat()

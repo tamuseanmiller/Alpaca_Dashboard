@@ -22,6 +22,8 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.android.material.appbar.CollapsingToolbarLayout
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.robinhood.ticker.TickerUtils
@@ -47,13 +49,6 @@ import net.jacobpeterson.alpaca.model.endpoint.position.Position
 import net.jacobpeterson.alpaca.model.properties.DataAPIType
 import net.jacobpeterson.alpaca.model.properties.EndpointAPIType
 import net.jacobpeterson.alpaca.rest.AlpacaClientException
-
-/*
-import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException
-import net.jacobpeterson.domain.alpaca.calendar.Calendar
-import net.jacobpeterson.domain.alpaca.order.Order
-import net.jacobpeterson.domain.alpaca.position.Position
-*/
 
 import java.text.DecimalFormat
 import java.time.LocalDate
@@ -127,7 +122,7 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
 
         // Vary size of spark view by height of screen size
         val height = fetchHeight()
-        sparkCard!!.minimumHeight = (height / 1.75).toInt()
+        sparkCard!!.layoutParams.height = (height / 1.75).toInt()
     }
 
     // Main onCreate method
@@ -140,9 +135,10 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
         val height = fetchHeight()
         sparkView = mView.findViewById(R.id.sparkview)
         sparkCard = mView.findViewById(R.id.sparkCard)
-        with(sparkCard) {
-            this?.setMinimumHeight((height / 1.75).toInt())
-        }
+        sparkCard!!.layoutParams.height = (height / 1.75).toInt()
+//        with(sparkCard) {
+//            this?.setMinimumHeight((height / 1.75).toInt())
+//        }
 
         // Set theme and icon
         val themeChange = mView.findViewById<ImageButton>(R.id.themeChange)
@@ -777,13 +773,14 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
     // Initialization for the stock graphs
     private fun initializeDashboardValues(periodLength: Int, periodUnit: PortfolioPeriodUnit, timeFrame: PortfolioTimeFrame, selectedAdapterInitial: StockAdapter?) {
         val alpacaAPI = AlpacaAPI(null, null, null, prefs!!.retrieveString("auth_token", "NULL"), EndpointAPIType.PAPER, DataAPIType.IEX)
+        val alpacaData = AlpacaAPI(Properties.apiKey, Properties.secretKey);
         val fetchHistoryThread = Thread {
             val historyInitial = AtomicReference(ArrayList<PortfolioHistoryDataPoint>())
 
             // Fetch last open day's information
             val calendar: java.util.ArrayList<Calendar>?
             try {
-                calendar = alpacaAPI.calendar().get(LocalDate.now().minusWeeks(1), LocalDate.now()) as ArrayList<Calendar>?
+                calendar = alpacaData.calendar().get(LocalDate.now().minusWeeks(1), LocalDate.now()) as ArrayList<Calendar>?
                 var lastOpenDate2 = LocalDate.now().minusDays(1)
                 var oldTime = LocalTime.now().minusHours(2)
                 if (calendar!!.size >= 2) {

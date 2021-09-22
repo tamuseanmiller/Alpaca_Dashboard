@@ -8,13 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-//import net.jacobpeterson.abstracts.enums.SortDirection
 import net.jacobpeterson.alpaca.AlpacaAPI
-//import net.jacobpeterson.alpaca.enums.api.DataAPIType
-//import net.jacobpeterson.alpaca.enums.api.EndpointAPIType
-//import net.jacobpeterson.alpaca.enums.order.OrderSide
-//import net.jacobpeterson.alpaca.enums.order.OrderStatus
-//import net.jacobpeterson.alpaca.enums.order.OrderTimeInForce
 import net.jacobpeterson.alpaca.model.endpoint.common.enums.SortDirection
 import net.jacobpeterson.alpaca.model.endpoint.order.Order
 import net.jacobpeterson.alpaca.model.endpoint.order.enums.CurrentOrderStatus
@@ -24,9 +18,6 @@ import net.jacobpeterson.alpaca.model.endpoint.position.Position
 import net.jacobpeterson.alpaca.model.properties.DataAPIType
 import net.jacobpeterson.alpaca.model.properties.EndpointAPIType
 import net.jacobpeterson.alpaca.rest.AlpacaClientException
-//import net.jacobpeterson.alpaca.rest.exception.AlpacaAPIRequestException
-//import net.jacobpeterson.domain.alpaca.order.Order
-//import net.jacobpeterson.domain.alpaca.position.Position
 import java.time.ZonedDateTime
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
