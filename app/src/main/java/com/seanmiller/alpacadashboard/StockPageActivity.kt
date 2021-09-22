@@ -35,6 +35,7 @@ import net.jacobpeterson.alpaca.rest.AlpacaClientException
 import net.jacobpeterson.alpaca.websocket.marketdata.MarketDataListener
 import net.jacobpeterson.alpaca.model.endpoint.calendar.Calendar
 import net.jacobpeterson.alpaca.model.endpoint.marketdata.historical.bar.enums.BarAdjustment
+import net.jacobpeterson.alpaca.model.endpoint.streaming.StreamingMessage
 import net.jacobpeterson.alpaca.model.properties.DataAPIType
 import net.jacobpeterson.alpaca.model.properties.EndpointAPIType
 import java.text.DecimalFormat
@@ -46,6 +47,11 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.collections.ArrayList
+import net.jacobpeterson.alpaca.model.endpoint.streaming.enums.StreamingMessageType
+
+import net.jacobpeterson.alpaca.websocket.streaming.StreamingListener
+import java.util.concurrent.TimeUnit
+
 
 class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemClickListener {
     private var sparkViewStock: CustomSparkView? = null
@@ -93,6 +99,55 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
         val thread = Thread {
 
             // Add a 'MarketDataListener' that simply prints market data information
+            val marketDataListener =
+                MarketDataListener { messageType: MarketDataMessageType, message: MarketDataMessage? ->
+                    System.out.printf(
+                        "%s: %s\n",
+                        messageType.name,
+                        message
+                    )
+                    if (messageType == MarketDataMessageType.QUOTE) {
+                        message?.messageType = messageType
+                        val askingPrice = message.toString();
+                        val amount = askingPrice.toString().toDouble()
+                        val formatter = DecimalFormat("#,###.00")
+
+                        // Render tickerView
+                        runOnUiThread {
+                            tickerV!!.text = "$" + formatter.format(amount)
+                        }
+                    }
+                }
+
+            alpacaAPI.marketDataStreaming().setListener(marketDataListener)
+
+            // Listen to 'SubscriptionsMessage', 'SuccessMessage', and 'ErrorMessage' control messages
+            // that contain information about the stream's current state. Note that these are subscribed
+            // to before the websocket is connected since these messages usually are sent
+            // upon websocket connection.
+            alpacaAPI.marketDataStreaming().subscribeToControl(
+                MarketDataMessageType.SUCCESS,
+                MarketDataMessageType.SUBSCRIPTION,
+                MarketDataMessageType.ERROR
+            )
+
+            // Connect the websocket and confirm authentication
+            alpacaAPI.marketDataStreaming().connect()
+            alpacaAPI.marketDataStreaming().waitForAuthorization(5, TimeUnit.SECONDS)
+            if (!alpacaAPI.marketDataStreaming().isValid) {
+                println("Websocket not valid!")
+                return@Thread
+            }
+
+            // Listen to the ticker's quotes
+            alpacaAPI.marketDataStreaming().subscribe(
+                null,
+                listOf(ticker?.get()),
+                null
+            )
+
+            /*
+            // Add a 'MarketDataListener' that simply prints market data information
             marketDataListener =
                 MarketDataListener { messageType: MarketDataMessageType, message: MarketDataMessage? ->
 
@@ -115,56 +170,10 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
                 listOf(DashboardFragment.ticker!!.get()),
                 null
             )
+            */
 
             // Wait for 5 seconds
             Thread.sleep(4000)
-
-            /*
-            try {
-                // Listen to TSLA quotes, trades, and minute bars and print their messages out
-                val listenerTSLA: Any = object : MarketDataListenerAdapter(
-                        ticker?.get(),
-                        TRADE,
-                        QUOTE,
-                        BAR) {
-                    override fun onStreamUpdate(streamMessageType: MarketDataMessageType, streamMessage: MarketDataMessage) {
-                        when (streamMessageType) {
-
-                            QUOTE -> {
-                                val quoteMessage = streamMessage as QuoteMessage
-                                val askingPrice = quoteMessage.askPrice
-                                val amount = askingPrice.toString().toDouble()
-                                val formatter = DecimalFormat("#,###.00")
-
-                                // Render tickerView
-                                runOnUiThread { tickerV!!.text = "$" + formatter.format(amount) }
-
-                            }
-                            SUCCESS -> TODO()
-                            ERROR -> TODO()
-                            SUBSCRIPTION -> TODO()
-                            TRADE -> TODO()
-                            BAR -> TODO()
-                        }
-                    }
-                }
-
-                // Add the 'MarketDataListener'
-                // Note that when the first 'MarketDataListener' is added, the Websocket
-                // connection is created.
-                alpacaAPI.addMarketDataStreamListener(listenerTSLA)
-
-                // Wait for 5 seconds
-                Thread.sleep(0)
-
-                // Remove the 'MarketDataListener'
-                // Note that when the last 'MarketDataListener' is removed, the Websocket
-                // connection is closed.
-                alpacaAPI.removeMarketDataStreamListener(listenerTSLA)
-            } catch (exception: WebsocketException) {
-                exception.printStackTrace()
-            }
-            */
 
         }
         thread.start()
@@ -473,7 +482,7 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
             if (marketStatus) {
 
                 // Stream live data for a stock
-//            streamStockData(alpacaAPI, DashboardFragment.ticker, tickerViewStock)
+                streamStockData(alpacaAPI, DashboardFragment.ticker, tickerViewStock)
                 while (true) {
                     try {
                         Thread.sleep(60000)
@@ -686,7 +695,7 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
         val initializationThread = Thread {
 
             // Fetch last open day's information
-            var calendarInitial: java.util.ArrayList<net.jacobpeterson.alpaca.model.endpoint.calendar.Calendar>? =
+            var calendarInitial: java.util.ArrayList<Calendar>? =
                 null
             try {
                 calendarInitial = alpacaData.calendar()
@@ -707,7 +716,7 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
 
             // Check if it is the morning of
             if (standardDateTime.toLocalTime() > LocalTime.now()) {
-                lastOpenDate = LocalDate.parse(calendarInitial[calendarInitial.size - 3].toString())
+                lastOpenDate = calendarInitial[calendarInitial.size - 3].date
             }
             val lastClose = AtomicReference(0.toFloat())
             var bars: BarsResponse? = null
@@ -724,19 +733,36 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
 
             // If one day, get bars from only today
             if (selectedAdapterInitial == oneDayStockAdapter) {
-                try {
-                    bars = alpacaData.marketData().getBars(
-                        DashboardFragment.ticker!!.get(),
-                        zonedDateTime,
-                        ZonedDateTime.now(),
-                        10000,
-                        null,
-                        multiplier,
-                        timeFrame,
-                        BarAdjustment.SPLIT
-                    )
-                } catch (e: AlpacaClientException) {
-                    e.printStackTrace()
+                if (zonedDateTime < ZonedDateTime.now()) {
+                    try {
+                        bars = alpacaData.marketData().getBars(
+                            DashboardFragment.ticker!!.get(),
+                            zonedDateTime,
+                            ZonedDateTime.now(),
+                            10000,
+                            null,
+                            multiplier,
+                            timeFrame,
+                            BarAdjustment.SPLIT
+                        )
+                    } catch (e: AlpacaClientException) {
+                        e.printStackTrace()
+                    }
+                } else {
+                    try {
+                        bars = alpacaData.marketData().getBars(
+                            DashboardFragment.ticker!!.get(),
+                            ZonedDateTime.now().minusDays(1),
+                            ZonedDateTime.now(),
+                            10000,
+                            null,
+                            multiplier,
+                            timeFrame,
+                            BarAdjustment.SPLIT
+                        )
+                    } catch (e: AlpacaClientException) {
+                        e.printStackTrace()
+                    }
                 }
 
             } else {  // Otherwise get bars from given datetime to now
