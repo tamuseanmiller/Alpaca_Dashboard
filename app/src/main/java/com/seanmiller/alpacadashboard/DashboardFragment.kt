@@ -120,6 +120,11 @@ class DashboardFragment : Fragment(), RecyclerViewAdapterPositions.ItemClickList
                 GridLayoutManager.VERTICAL, false, null))
         recyclerViewPositions!!.adapter = recycleAdapterPositions
 
+        recyclerViewWatchlist!!.layoutManager = GridLayoutManager(context, numColumns)
+        recyclerViewWatchlist!!.addItemDecoration(GridMarginDecoration(0, col,
+            GridLayoutManager.VERTICAL, false, null))
+        recyclerViewPositions!!.adapter = recycleAdapterPositions
+
         // Vary size of spark view by height of screen size
         val height = fetchHeight()
         sparkCard!!.layoutParams.height = (height / 1.75).toInt()

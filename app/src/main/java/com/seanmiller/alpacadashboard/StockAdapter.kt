@@ -57,7 +57,7 @@ class StockAdapter @RequiresApi(api = Build.VERSION_CODES.O) constructor(context
     }
 
     override fun getItem(index: Int): Any {
-        return yData[index]
+        return if (yData.size <= index) 0 else yData[index]
     }
 
     fun getValue(index: Int): Float {

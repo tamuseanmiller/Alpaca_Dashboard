@@ -482,7 +482,7 @@ class StockPageActivity : AppCompatActivity(), RecyclerViewAdapterStocks.ItemCli
             if (marketStatus) {
 
                 // Stream live data for a stock
-                streamStockData(alpacaAPI, DashboardFragment.ticker, tickerViewStock)
+//                streamStockData(alpacaAPI, DashboardFragment.ticker, tickerViewStock)
                 while (true) {
                     try {
                         Thread.sleep(60000)
